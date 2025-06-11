@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useNavigation } from "@/components/ui/line-loader"
 import {
   Plus,
   Search,
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
+  const { navigateTo } = useNavigation()
 
   useEffect(() => {
     const fetchMocks = async () => {
@@ -93,15 +95,13 @@ export default function DashboardPage() {
     }
   }
 
-  const handleDeleteMock = async (mockId: string) => {
-    try {
+  const handleDeleteMock = async (mockId: string) => {    try {
       await mockApi.deleteMock(mockId)
       setMocks(mocks.filter((mock) => mock.id !== mockId))
       setSelectedMocks(selectedMocks.filter((id) => id !== mockId))
       toast({
         title: "Mock Deleted",
         description: "Mock has been deleted successfully",
-        variant: "success",
       })
     } catch (error) {
       toast({
@@ -111,7 +111,6 @@ export default function DashboardPage() {
       })
     }
   }
-
   const handleBulkDelete = async () => {
     setIsDeleting(true)
     try {
@@ -121,7 +120,6 @@ export default function DashboardPage() {
       toast({
         title: "Mocks Deleted",
         description: `${selectedMocks.length} mocks have been deleted successfully`,
-        variant: "success",
       })
     } catch (error) {
       toast({
@@ -222,14 +220,15 @@ export default function DashboardPage() {
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
-              </motion.div>
+              </motion.div>              
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link href="/builder">
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Mock
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => navigateTo("/builder")}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Mock
+                </Button>
               </motion.div>
             </div>
           </motion.div>
@@ -397,13 +396,13 @@ export default function DashboardPage() {
             >
               <div className="text-gray-400 mb-4">
                 {searchQuery ? "No mocks found matching your search." : "No mocks created yet."}
-              </div>
-              <Link href="/builder">
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Mock
-                </Button>
-              </Link>
+              </div>              <Button 
+                onClick={() => navigateTo("/builder")}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Mock
+              </Button>
             </motion.div>
           )}
         </main>

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
-import { LineLoader } from '@/components/ui/line-loader';
+import { LineLoader, NavigationProvider } from '@/components/ui/line-loader';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,9 +21,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
-          <LineLoader />
-          {children}
-          <Toaster />
+          <NavigationProvider>
+            <LineLoader />
+            {children}
+            <Toaster />
+          </NavigationProvider>
         </ThemeProvider>
       </body>
     </html>

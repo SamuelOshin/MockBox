@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+import { useNavigation } from "@/components/ui/line-loader"
 import { 
   Home,
   Database,
@@ -104,13 +105,18 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
   }
-
   const SidebarItem = ({ item, isCollapsed }: { item: any, isCollapsed: boolean }) => {
     const isActive = pathname === item.href
     const Icon = item.icon
+    const { navigateTo } = useNavigation()
+
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault()
+      navigateTo(item.href)
+    }
 
     return (
-      <Link href={item.href}>
+      <Link href={item.href} onClick={handleClick}>
         <motion.div
           className={cn(
             "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",

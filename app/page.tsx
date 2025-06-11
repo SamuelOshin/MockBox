@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useNavigation } from "@/components/ui/line-loader"
 import { 
   Code2, 
   Share2, 
@@ -322,6 +323,7 @@ const WorldMapSVG = () => (
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [typedCode, setTypedCode] = useState("")
+  const { navigateTo } = useNavigation()
   
   // Optimized scroll with reduced calculations
   const { scrollYProgress } = useScroll()
@@ -469,8 +471,7 @@ export default function HomePage() {
           >
             Build, test, and deploy realistic API mocks in seconds. The most advanced API 
             mocking platform for modern development teams.
-          </motion.p>
-
+          </motion.p>          
           <motion.div 
             className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -478,15 +479,14 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/builder">
-                <Button 
-                  size="lg" 
-                  className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
-                >
-                  Start Building Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => navigateTo("/builder")}
+                size="lg" 
+                className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
+              >
+                Start Building Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -768,20 +768,18 @@ export default function HomePage() {
           <motion.div
             className="flex flex-col sm:flex-row gap-6 justify-center"
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            whileInView={{ opacity: 1, y: 0 }}            transition={{ duration: 0.8, delay: 0.3 }}
             viewport={{ once: true }}
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link href="/builder">
-                <Button 
-                  size="lg" 
-                  className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
-                >
-                  Start Building Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              <Button 
+                onClick={() => navigateTo("/builder")}
+                size="lg" 
+                className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
+              >
+                Start Building Free
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
