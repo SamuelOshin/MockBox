@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
 import { useNavigation } from "@/components/ui/line-loader"
+import { useTheme } from "@/components/ui/theme-provider"
 import { 
   Home,
   Database,
@@ -38,7 +39,7 @@ const navigationItems = [
   },
   {
     title: "My Mocks",
-    href: "/dashboard",
+    href: "/mocks",
     icon: Database,
     section: "Navigation"
   },
@@ -101,11 +102,34 @@ const accountItems = [
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
+  const { actualTheme } = useTheme()
+
+  // Theme-aware colors for sidebar
+  const sidebarColors = {
+    background: actualTheme === 'light' ? 'bg-white' : 'bg-[#1A1A1A]',
+    border: actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800',
+    containerBg: actualTheme === 'light' ? 'bg-slate-50' : 'bg-[#0A0A0A]',
+    itemBg: actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#2D2D2D]',
+    activeBg: actualTheme === 'light' ? 'bg-slate-200' : 'bg-[#3A3A3A]',
+    text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300',
+    textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-500',
+    tooltipBg: actualTheme === 'light' ? 'bg-slate-800' : 'bg-gray-900',
+    tooltipText: actualTheme === 'light' ? 'text-white' : 'text-white',
+    tooltipBorder: actualTheme === 'light' ? 'border-slate-700' : 'border-gray-700'
+  }
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
+  }  
+  interface SidebarItemProps {
+    title: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    section: string;
   }
-  const SidebarItem = ({ item, isCollapsed }: { item: any, isCollapsed: boolean }) => {
+  
+  const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
     const isActive = pathname === item.href
     const Icon = item.icon
     const { navigateTo } = useNavigation()
@@ -116,12 +140,13 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     }
 
     return (
-      <Link href={item.href} onClick={handleClick}>
-        <motion.div
+      <Link href={item.href} onClick={handleClick}>        <motion.div
           className={cn(
             "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
-            "hover:bg-[#2D2D2D]",
-            isActive ? "bg-[#3A3A3A] text-white" : "text-gray-300 hover:text-white",
+            sidebarColors.itemBg,
+            isActive 
+              ? `${sidebarColors.activeBg} ${sidebarColors.text}` 
+              : `${sidebarColors.textSecondary} hover:${sidebarColors.text}`,
             isCollapsed && "justify-center"
           )}
           whileHover={{ x: isCollapsed ? 0 : 2 }}
@@ -145,10 +170,18 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
 
           {/* Tooltip for collapsed state - positioned outside sidebar */}
           {isCollapsed && (
-            <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border border-gray-700">
+            <div className={cn(
+              "absolute left-full ml-3 px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
+              sidebarColors.tooltipBg.replace('bg-', 'bg-'),
+              sidebarColors.tooltipText,
+              sidebarColors.tooltipBorder.replace('border-', 'border-')
+            )}>
               {item.title}
               {/* Arrow pointing to the sidebar */}
-              <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
+              <div className={cn(
+                "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
+                sidebarColors.tooltipBg.replace('bg-', 'border-r-')
+              )}></div>
             </div>
           )}
 
@@ -174,27 +207,35 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.2 }}
-          className="px-3 py-2"
+          className={cn(
+            "px-3 py-2 text-xs font-semibold uppercase tracking-wider",
+            sidebarColors.textMuted
+          )}
         >
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            {title}
-          </h3>
+          <h3>{title}</h3>
         </motion.div>
       )}
     </AnimatePresence>
   )
 
   return (
-    <div className="flex h-screen bg-[#0A0A0A]">
+    <div className={cn("flex h-screen", sidebarColors.containerBg)}>
       {/* Sidebar */}
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? 70 : 250 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="bg-[#1A1A1A] border-r border-gray-800 flex flex-col relative z-40 flex-shrink-0"
+        className={cn(
+          "border-r flex flex-col relative z-40 flex-shrink-0",
+          sidebarColors.background,
+          sidebarColors.border
+        )}
       >
         {/* Logo and Toggle */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-800 min-h-[73px]">
+        <div className={cn(
+          "flex items-center justify-between p-4 border-b min-h-[73px]",
+          sidebarColors.border
+        )}>
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
@@ -207,10 +248,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-sm">MB</span>
                 </div>
-                <div className="whitespace-nowrap">
-                  <div className="text-white font-bold text-sm">MockBox</div>
-                  <div className="text-gray-400 text-xs">Mock API Builder</div>
-                </div>
+                <Link href="/">
+                  <div className="whitespace-nowrap">                  
+                    <div className={cn("font-bold text-sm", sidebarColors.text)}>MockBox</div>
+                    <div className={cn("text-xs", sidebarColors.textSecondary)}>Mock API Builder</div>
+                  </div>
+                </Link>
               </motion.div>
             )}
           </AnimatePresence>
@@ -224,10 +267,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={toggleSidebar}
-            className={cn(
-              "h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-[#2D2D2D] flex-shrink-0",
-              isCollapsed && "absolute -right-3 top-4 bg-[#1A1A1A] border border-gray-800 rounded-full shadow-lg"
+            onClick={toggleSidebar}            className={cn(
+              "h-8 w-8 p-0 flex-shrink-0 transition-colors",
+              sidebarColors.textSecondary,
+              `hover:${sidebarColors.text.replace('text-', 'text-')}`,
+              `hover:${sidebarColors.itemBg.replace('hover:', '')}`,
+              isCollapsed && `absolute -right-3 top-4 border rounded-full shadow-lg ${sidebarColors.background} ${sidebarColors.border}`
             )}
           >
             {isCollapsed ? (
@@ -236,15 +281,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <ChevronLeft className="h-4 w-4" />
             )}
           </Button>
-        </div>
-
+        </div>        
         {/* Navigation with ScrollbarContainer */}
         <ScrollbarContainer
           className="flex-1 py-4 space-y-1"
-          theme="dark"
+          theme="auto"
           scrollbarWidth="6px"
-          thumbColor="#4B5563"
-          trackColor="#1F2937"
           hoverOpacity={0.8}
         >
           {/* Navigation Section */}
@@ -279,9 +321,14 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         </ScrollbarContainer>
 
         {/* User Profile */}
-        <div className="border-t border-gray-800 p-4 flex-shrink-0">
-          <motion.div
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#2D2D2D] transition-colors cursor-pointer group relative"
+        <div className={cn(
+          "border-t p-4 flex-shrink-0",
+          sidebarColors.border
+        )}>          <motion.div
+            className={cn(
+              "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
+              sidebarColors.itemBg
+            )}
             whileHover={{ x: isCollapsed ? 0 : 2 }}
           >
             <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
@@ -296,18 +343,24 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                   exit={{ opacity: 0, width: 0 }}
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
-                >
-                  <div className="text-white text-sm font-medium whitespace-nowrap">John Doe</div>
-                  <div className="text-gray-400 text-xs whitespace-nowrap">john@example.com</div>
+                >                  <div className={cn("text-sm font-medium whitespace-nowrap", sidebarColors.text)}>John Doe</div>
+                  <div className={cn("text-xs whitespace-nowrap", sidebarColors.textSecondary)}>john@example.com</div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             {/* Tooltip for collapsed state */}
-            {isCollapsed && (
-              <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border border-gray-700">
+            {isCollapsed && (              <div className={cn(
+                "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
+                sidebarColors.tooltipBg,
+                sidebarColors.tooltipText,
+                sidebarColors.tooltipBorder.replace('border-', 'border-')
+              )}>
                 John Doe
-                <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
+                <div className={cn(
+                  "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
+                  sidebarColors.tooltipBg.replace('bg-', 'border-r-')
+                )}></div>
               </div>
             )}
           </motion.div>
