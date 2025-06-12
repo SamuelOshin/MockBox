@@ -331,20 +331,21 @@ export default function HomePage() {
   // Optimized scroll with reduced calculations
   const { scrollYProgress } = useScroll()
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"])
-
   useEffect(() => {
     setMounted(true)
     
     // Typing animation for code
     let i = 0
+    const charsPerStep = 5 
     const timer = setInterval(() => {
       if (i < codeExample.length) {
-        setTypedCode(codeExample.slice(0, i + 1))
-        i++
+        setTypedCode(codeExample.slice(0, i + charsPerStep))
+        i += charsPerStep
       } else {
+        setTypedCode(codeExample)
         clearInterval(timer)
       }
-    }, 30)
+    }, 10)
 
     return () => clearInterval(timer)
   }, [])
@@ -442,7 +443,9 @@ export default function HomePage() {
             <ThemeToggle variant="minimal" />
             
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0">
+              <Button 
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
+                onClick={() => navigateTo("/builder")} >
                 Get Started
               </Button>
             </motion.div>
@@ -455,15 +458,26 @@ export default function HomePage() {
         <motion.div 
           className="container mx-auto text-center max-w-6xl"
           style={{ y: backgroundY }}
-        >
-          {/* New Feature Badge */}          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-blue-500/30 mb-8"
+        >         
+         {/* New Feature Badge */}          
+        <motion.div
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 ${
+              actualTheme === 'light' 
+                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm' 
+                : 'bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-blue-500/30'
+            }`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Sparkles className="h-4 w-4 text-blue-400" />
-            <span className="text-sm font-medium text-blue-300">New: AI-Powered Mock Generation</span>
+            <Sparkles className={`h-4 w-4 ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
+            <span className={`text-sm font-semibold ${
+              actualTheme === 'light' 
+                ? 'text-blue-700' 
+                : 'text-blue-300'
+            }`}>
+              New: AI-Powered Mock Generation
+            </span>
           </motion.div>
 
           <motion.h1 
@@ -516,21 +530,26 @@ export default function HomePage() {
                 <span className="relative z-10">View Live Demo</span>
               </Button>
             </motion.div>
-          </motion.div>          {/* Floating Code Example */}
+          </motion.div>          
+          {/* Floating Code Example */}
           <motion.div
             className="max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3 }}
-          >            <Card className={`${actualTheme === 'light' ? 'bg-white border-slate-200 shadow-lg' : 'bg-black/40 border-white/10'} backdrop-blur-xl overflow-hidden`}>
+          >            
+            <Card className={`${actualTheme === 'light' ? 'bg-white border-slate-200 shadow-lg' : 'bg-black/40 border-white/10'} backdrop-blur-xl overflow-hidden h-[550px]`}>
               <CardHeader className="text-left">
                 <div className="flex items-center gap-4">
                   <div className="flex gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  </div>
-                  <Badge className="bg-gradient-to-r from-green-500/20 to-teal-500/20 text-green-600 border-green-500/30">
+                  </div>                    <Badge className={`${
+                    actualTheme === 'light' 
+                      ? 'bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 text-emerald-800 shadow-sm' 
+                      : 'bg-gradient-to-r from-green-500/20 to-teal-500/20 border-green-500/30 text-green-300'
+                  } font-semibold`}>
                     ✨ AI Generated
                   </Badge>
                 </div>
@@ -552,7 +571,8 @@ export default function HomePage() {
         {/* Simplified Floating Elements */}
         <div className="absolute top-1/4 left-10 w-20 h-20 bg-gradient-to-r from-blue-500/30 to-purple-600/30 rounded-full blur-xl opacity-50" />
         <div className="absolute top-1/2 right-10 w-32 h-32 bg-gradient-to-r from-green-500/30 to-teal-600/30 rounded-full blur-xl opacity-50" />
-      </section>      {/* Features Section - Optimized animations */}
+      </section>      
+      {/* Features Section - Optimized animations */}
       <section className="pt-32 px-4 relative z-20">
         <div className="container mx-auto">
           <motion.div 

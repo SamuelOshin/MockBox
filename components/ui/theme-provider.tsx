@@ -17,6 +17,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [actualTheme, setActualTheme] = useState<"light" | "dark">("dark")
   const [mounted, setMounted] = useState(false)
 
+  // Extract transition logic into a reusable function
+  const applyThemeTransition = (callback: () => void) => {
+    const root = window.document.documentElement
+    root.classList.add('theme-transitioning')
+    
+    callback()
+    
+    // Single place to remove transition class
+    setTimeout(() => {
+      root.classList.remove('theme-transitioning')
+    }, 200)
+  }
+
   useEffect(() => {
     setMounted(true)
     // Load theme from localStorage
@@ -32,13 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Save theme to localStorage
     localStorage.setItem("theme", theme)
 
-    // Apply theme with smooth transitions
     const root = window.document.documentElement
-    
-    // Add transition class for smooth theme switching
-    root.classList.add('theme-transitioning')
-    
-    // Remove existing theme classes
     root.classList.remove("light", "dark")
 
     if (theme === "system") {
@@ -46,7 +53,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(systemTheme)
       setActualTheme(systemTheme)
       
-      // Listen for system theme changes
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
       const handleChange = (e: MediaQueryListEvent) => {
         const newSystemTheme = e.matches ? "dark" : "light"
@@ -57,23 +63,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       
       mediaQuery.addEventListener("change", handleChange)
       
-      // Remove transition class after animation completes
-      setTimeout(() => {
-        root.classList.remove('theme-transitioning')
-      }, 200)
-      
       return () => {
         mediaQuery.removeEventListener("change", handleChange)
-        root.classList.remove('theme-transitioning')
       }
     } else {
       root.classList.add(theme)
       setActualTheme(theme)
-      
-      // Remove transition class after animation completes
-      setTimeout(() => {
-        root.classList.remove('theme-transitioning')
-      }, 200)
     }
   }, [theme, mounted])
   return (

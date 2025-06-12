@@ -36,28 +36,24 @@ export function ThemeToggle({
   useEffect(() => {
     setMounted(true)
   }, [])
-
   const themeOptions = [
     { 
       value: "light", 
       label: "Light", 
       icon: Sun,
-      description: "Always use light theme",
-      emoji: "☀️"
+      description: "Light mode"
     },
     { 
       value: "dark", 
       label: "Dark", 
       icon: Moon,
-      description: "Always use dark theme",
-      emoji: "🌙"
+      description: "Dark mode"
     },
     { 
       value: "system", 
       label: "System", 
       icon: Monitor,
-      description: "Use system preference",
-      emoji: "🖥️"
+      description: "System preference"
     }
   ]
 
@@ -96,12 +92,17 @@ export function ThemeToggle({
       transition: { duration: 0.3, ease: "easeInOut" }
     }
   }
-
-  // Button variants with enhanced styling
+  // Button variants with enhanced styling - theme-aware
   const buttonVariants = {
-    default: "bg-white/5 backdrop-blur-md border border-white/20 text-white hover:bg-white/10 hover:border-white/30 shadow-lg hover:shadow-xl transition-all duration-200",
-    minimal: "text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200",
-    button: "bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/20 text-white hover:from-blue-500/20 hover:to-purple-600/20 hover:border-blue-500/30 transition-all duration-200"
+    default: actualTheme === 'light' 
+      ? "bg-slate-100/80 backdrop-blur-md border border-slate-300 text-slate-700 hover:bg-slate-200 hover:border-slate-400 shadow-lg hover:shadow-xl transition-all duration-200"
+      : "bg-white/5 backdrop-blur-md border border-white/20 text-white hover:bg-white/10 hover:border-white/30 shadow-lg hover:shadow-xl transition-all duration-200",
+    minimal: actualTheme === 'light' 
+      ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
+      : "text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200",
+    button: actualTheme === 'light'
+      ? "bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/20 text-slate-700 hover:from-blue-500/20 hover:to-purple-600/20 hover:border-blue-500/30 transition-all duration-200"
+      : "bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/20 text-white hover:from-blue-500/20 hover:to-purple-600/20 hover:border-blue-500/30 transition-all duration-200"
   }
 
   const sizeVariants = {
@@ -152,82 +153,49 @@ export function ThemeToggle({
             />
           </Button>
         </DropdownMenuTrigger>
-        
-        <DropdownMenuContent 
+          <DropdownMenuContent 
           align={align} 
-          className="w-56 bg-black/90 backdrop-blur-xl border-white/10 shadow-2xl"
+          className={cn(
+            "w-48 border shadow-lg",
+            actualTheme === 'light' 
+              ? 'bg-white border-gray-200' 
+              : 'bg-gray-900 border-gray-700'
+          )}
           sideOffset={8}
         >
           <div className="p-1">
-            <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2 px-3 py-1">
-              Theme Preference
-            </div>
-            <AnimatePresence>
-              {themeOptions.map((option, index) => {
-                const Icon = option.icon
-                const isSelected = theme === option.value
-                
-                return (
-                  <motion.div
-                    key={option.value}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ 
-                      delay: index * 0.05,
-                      type: "spring",
-                      stiffness: 300
-                    }}
-                  >
-                    <DropdownMenuItem
-                      onClick={() => setTheme(option.value as any)}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-3 cursor-pointer rounded-lg mx-1 my-1",
-                        "text-white/80 hover:text-white hover:bg-white/10",
-                        "transition-all duration-200 relative group",
-                        isSelected && "bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-white border border-blue-500/30"
-                      )}
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className="text-base">{option.emoji}</span>
-                        <motion.div
-                          animate={{ 
-                            rotate: isSelected ? 360 : 0,
-                            scale: isSelected ? 1.1 : 1
-                          }}
-                          transition={{ duration: 0.3 }}
-                          className="flex-shrink-0"
-                        >
-                          <Icon className={cn(
-                            "h-4 w-4 transition-colors duration-200",
-                            isSelected ? "text-blue-400" : "text-white/60"
-                          )} />
-                        </motion.div>
-                        <div className="flex-1">
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-white/50 group-hover:text-white/70 transition-colors duration-200">
-                            {option.description}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <AnimatePresence>
-                        {isSelected && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 400 }}
-                            className="flex-shrink-0"
-                          >
-                            <Check className="h-4 w-4 text-blue-400" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </DropdownMenuItem>
-                  </motion.div>
-                )
-              })}
-            </AnimatePresence>
+            {themeOptions.map((option) => {
+              const Icon = option.icon
+              const isSelected = theme === option.value
+              
+              return (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => setTheme(option.value as any)}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2.5 cursor-pointer rounded-md mx-1 my-0.5",
+                    "transition-all duration-150",
+                    actualTheme === 'light' 
+                      ? 'text-gray-700 hover:bg-gray-100' 
+                      : 'text-gray-300 hover:bg-gray-800',
+                    isSelected && (actualTheme === 'light' ? 'bg-gray-100' : 'bg-gray-800')
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className="h-4 w-4" />
+                    <span className="font-medium">{option.label}</span>
+                  </div>
+                  
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="w-2 h-2 rounded-full bg-blue-500"
+                    />
+                  )}
+                </DropdownMenuItem>
+              )
+            })}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -293,110 +261,49 @@ export function ThemeToggle({
           </motion.div>
         </Button>
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent 
+        <DropdownMenuContent 
         align={align} 
-        className="w-64 bg-black/95 backdrop-blur-xl border-white/10 shadow-2xl"
+        className={cn(
+          "w-48 border shadow-lg",
+          actualTheme === 'light' 
+            ? 'bg-white border-gray-200' 
+            : 'bg-gray-900 border-gray-700'
+        )}
         sideOffset={8}
       >
-        <div className="p-2">
-          <div className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-3 px-3 py-1 border-b border-white/10">
-            Theme Preference
-          </div>
-          
-          <AnimatePresence>
-            {themeOptions.map((option, index) => {
-              const Icon = option.icon
-              const isSelected = theme === option.value
-              
-              return (
-                <motion.div
-                  key={option.value}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ 
-                    delay: index * 0.07,
-                    type: "spring",
-                    stiffness: 300
-                  }}
-                >
-                  <DropdownMenuItem
-                    onClick={() => setTheme(option.value as any)}
-                    className={cn(
-                      "flex items-center gap-4 px-3 py-4 cursor-pointer rounded-xl m-1",
-                      "text-white/80 hover:text-white hover:bg-white/10",
-                      "transition-all duration-200 relative group border border-transparent",
-                      isSelected && "bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-white border-blue-500/30 shadow-lg shadow-blue-500/10"
-                    )}
-                  >
-                    {/* Selection indicator */}
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scaleX: 0 }}
-                          animate={{ scaleX: 1 }}
-                          exit={{ scaleX: 0 }}
-                          className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-purple-500 rounded-r-full"
-                        />
-                      )}
-                    </AnimatePresence>
-                    
-                    <div className="flex items-center gap-4 flex-1">
-                      <span className="text-xl">{option.emoji}</span>
-                      <motion.div
-                        animate={{ 
-                          rotate: isSelected ? 360 : 0,
-                          scale: isSelected ? 1.1 : 1
-                        }}
-                        transition={{ duration: 0.4, type: "spring" }}
-                        className="flex-shrink-0"
-                      >
-                        <Icon className={cn(
-                          "h-5 w-5 transition-colors duration-200",
-                          isSelected ? "text-blue-400 drop-shadow-sm" : "text-white/60"
-                        )} />
-                      </motion.div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-base">{option.label}</div>
-                        <div className="text-xs text-white/50 group-hover:text-white/70 transition-colors duration-200">
-                          {option.description}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <AnimatePresence>
-                      {isSelected && (
-                        <motion.div
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: 180 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                          className="flex-shrink-0"
-                        >
-                          <div className="w-6 h-6 rounded-full bg-blue-400/20 border border-blue-400/50 flex items-center justify-center">
-                            <Check className="h-3 w-3 text-blue-400" />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </DropdownMenuItem>
-                </motion.div>
-              )
-            })}
-          </AnimatePresence>
-          
-          {/* Footer info */}
-          <motion.div 
-            className="mt-3 pt-3 px-3 border-t border-white/10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="text-xs text-white/40 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
-              <span>Preference saved automatically</span>
-            </div>
-          </motion.div>
+        <div className="p-1">
+          {themeOptions.map((option) => {
+            const Icon = option.icon
+            const isSelected = theme === option.value
+            
+            return (
+              <DropdownMenuItem
+                key={option.value}
+                onClick={() => setTheme(option.value as any)}
+                className={cn(
+                  "flex items-center justify-between px-3 py-2.5 cursor-pointer rounded-md mx-1 my-0.5",
+                  "transition-all duration-150",
+                  actualTheme === 'light' 
+                    ? 'text-gray-700 hover:bg-gray-100' 
+                    : 'text-gray-300 hover:bg-gray-800',
+                  isSelected && (actualTheme === 'light' ? 'bg-gray-100' : 'bg-gray-800')
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className="h-4 w-4" />
+                  <span className="font-medium">{option.label}</span>
+                </div>
+                
+                {isSelected && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-2 h-2 rounded-full bg-blue-500"
+                  />
+                )}
+              </DropdownMenuItem>
+            )
+          })}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

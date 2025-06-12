@@ -122,7 +122,14 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
   }  
-  const SidebarItem = ({ item, isCollapsed }: { item: any, isCollapsed: boolean }) => {
+  interface SidebarItemProps {
+    title: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    section: string;
+  }
+  
+  const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
     const isActive = pathname === item.href
     const Icon = item.icon
     const { navigateTo } = useNavigation()
@@ -133,12 +140,13 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     }
 
     return (
-      <Link href={item.href} onClick={handleClick}>
-        <motion.div
+      <Link href={item.href} onClick={handleClick}>        <motion.div
           className={cn(
             "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
             sidebarColors.itemBg,
-            isActive ? `${sidebarColors.activeBg} ${sidebarColors.text}` : `${sidebarColors.textSecondary} hover:${sidebarColors.text.replace('text-', 'text-')}`,
+            isActive 
+              ? `${sidebarColors.activeBg} ${sidebarColors.text}` 
+              : `${sidebarColors.textSecondary} hover:${sidebarColors.text}`,
             isCollapsed && "justify-center"
           )}
           whileHover={{ x: isCollapsed ? 0 : 2 }}
