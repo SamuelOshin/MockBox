@@ -17,6 +17,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useTheme } from "@/components/ui/theme-provider"
 import {
   Play,
   Copy,
@@ -76,6 +77,7 @@ const statusCodes = [
 ]
 
 export default function BuilderPage() {
+  const { actualTheme } = useTheme()
   const [method, setMethod] = useState("GET")
   const [path, setPath] = useState("/api/users")
   const [statusCode, setStatusCode] = useState("200")
@@ -92,6 +94,20 @@ export default function BuilderPage() {
   const { toast } = useToast()
 
   const generatedUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/mock${path}`
+
+  // Theme-aware colors
+  const themeColors = {
+    background: actualTheme === 'light' 
+      ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100' 
+      : 'bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A]',
+    text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    cardBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#1A1A1A] border-gray-800',
+    inputBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    buttonBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300 hover:bg-slate-200' : 'bg-[#2D2D2D] border-gray-700 hover:bg-[#3A3A3A]',
+    selectBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    tabsBg: actualTheme === 'light' ? 'bg-slate-100' : 'bg-[#2D2D2D]',
+    tabsActive: actualTheme === 'light' ? 'bg-white' : 'bg-[#3A3A3A]'
+  }
 
   // Enhanced JSON validation with better error messages
   const validateJson = (jsonString: string) => {
@@ -282,10 +298,9 @@ export default function BuilderPage() {
         return "w-full"
     }
   }
-
   return (
     <SidebarLayout>
-      <div className="flex-1 bg-[#0A0A0A] text-white overflow-hidden">
+      <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>
         <Header />
         <main className="p-4 lg:p-6 overflow-x-hidden h-[calc(100vh-4rem)] overflow-y-auto">
           <div className="max-w-7xl mx-auto">
@@ -301,14 +316,13 @@ export default function BuilderPage() {
                   <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
                     <Code className="h-5 w-5 text-white" />
                   </div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-white compact-leading">
+                  <h1 className={`text-xl lg:text-2xl font-bold ${themeColors.text} compact-leading`}>
                     Mock Builder
-                  </h1>
-                </div>
-                <p className="text-gray-400 mt-1 text-sm">Create and configure your API mock endpoint</p>
+                  </h1>                </div>
+                <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-1 text-sm`}>Create and configure your API mock endpoint</p>
                 {lastSaved && (
                   <motion.div 
-                    className="flex items-center gap-2 mt-2 text-xs text-gray-400"
+                    className={`flex items-center gap-2 mt-2 text-xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
@@ -320,14 +334,13 @@ export default function BuilderPage() {
               </div>
 
               {/* Enhanced Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleTest}
                     disabled={isTesting || !!jsonError}
-                    className="w-full sm:w-auto bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A] text-xs"
+                    className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs`}
                   >
                     {isTesting ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Play className="h-3 w-3 mr-2" />}
                     {isTesting ? "Testing..." : "Test"}
@@ -340,7 +353,7 @@ export default function BuilderPage() {
                     size="sm"
                     onClick={handleSave}
                     disabled={isLoading || !!jsonError}
-                    className="w-full sm:w-auto bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A] text-xs"
+                    className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs`}
                   >
                     {isLoading ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
                     {isLoading ? "Saving..." : "Save Draft"}
@@ -395,40 +408,38 @@ export default function BuilderPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <div className="p-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
                       <Settings className="h-3 w-3 text-white" />
-                    </div>
-                    <h2 className="text-lg font-semibold text-white">Configure Endpoint</h2>
+                    </div>                    <h2 className={`text-lg font-semibold ${themeColors.text}`}>Configure Endpoint</h2>
                   </div>
 
-                  <Card className="border-gray-800 bg-[#1A1A1A]">
+                  <Card className={themeColors.cardBg}>
                     <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-white text-sm">
+                      <CardTitle className={`flex items-center gap-2 ${themeColors.text} text-sm`}>
                         <Sparkles className="h-4 w-4 text-blue-400" />
                         Basic Configuration
                       </CardTitle>
-                      <CardDescription className="text-gray-400 text-xs">Set up the fundamental properties of your mock endpoint</CardDescription>
+                      <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-xs`}>Set up the fundamental properties of your mock endpoint</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div>
-                        <Label htmlFor="mock-name" className="text-white text-xs">Mock Name</Label>
+                        <Label htmlFor="mock-name" className={`${themeColors.text} text-xs`}>Mock Name</Label>
                         <Input
                           id="mock-name"
                           value={mockName}
                           onChange={(e) => setMockName(e.target.value)}
                           placeholder="Enter a descriptive name"
-                          className="mt-1 bg-[#2D2D2D] border-gray-700 text-white text-xs h-8"
+                          className={`mt-1 ${themeColors.inputBg} ${themeColors.text} text-xs h-8`}
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor="method" className="text-white text-xs">HTTP Method</Label>
+                          <Label htmlFor="method" className={`${themeColors.text} text-xs`}>HTTP Method</Label>
                           <Select value={method} onValueChange={setMethod}>
-                            <SelectTrigger className="mt-1 bg-[#2D2D2D] border-gray-700 text-white h-8 text-xs">
+                            <SelectTrigger className={`mt-1 ${themeColors.selectBg} ${themeColors.text} h-8 text-xs`}>
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#2D2D2D] border-gray-700">
-                              {httpMethods.map((m) => (
-                                <SelectItem key={m} value={m} className="text-white hover:bg-[#3A3A3A] text-xs">
+                            <SelectContent className={themeColors.selectBg}>                              {httpMethods.map((m) => (
+                                <SelectItem key={m} value={m} className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'} text-xs`}>
                                   <div className="flex items-center gap-2">
                                     <Badge
                                       variant="secondary"
@@ -451,48 +462,46 @@ export default function BuilderPage() {
                         </div>
 
                         <div>
-                          <Label htmlFor="status-code" className="text-white text-xs">Status Code</Label>
+                          <Label htmlFor="status-code" className={`${themeColors.text} text-xs`}>Status Code</Label>
                           <Select value={statusCode} onValueChange={setStatusCode}>
-                            <SelectTrigger className="mt-1 bg-[#2D2D2D] border-gray-700 text-white h-8 text-xs">
+                            <SelectTrigger className={`mt-1 ${themeColors.selectBg} ${themeColors.text} h-8 text-xs`}>
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#2D2D2D] border-gray-700">
+                            <SelectContent className={themeColors.selectBg}>
                               {statusCodes.map((code) => (
-                                <SelectItem key={code.value} value={code.value} className="text-white hover:bg-[#3A3A3A] text-xs">
+                                <SelectItem key={code.value} value={code.value} className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'} text-xs`}>
                                   {code.label}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="path" className="text-white text-xs">Endpoint Path</Label>
+                      </div>                      <div>
+                        <Label htmlFor="path" className={`${themeColors.text} text-xs`}>Endpoint Path</Label>
                         <Input
                           id="path"
                           value={path}
                           onChange={(e) => setPath(e.target.value)}
                           placeholder="/api/endpoint"
-                          className="mt-1 font-mono bg-[#2D2D2D] border-gray-700 text-white text-xs h-8"
+                          className={`mt-1 font-mono ${themeColors.inputBg} ${themeColors.text} text-xs h-8`}
                         />
                       </div>
 
                       <div>
-                        <Label className="text-white text-xs">Response Delay: {delay[0]}ms</Label>
+                        <Label className={`${themeColors.text} text-xs`}>Response Delay: {delay[0]}ms</Label>
                         <Slider value={delay} onValueChange={setDelay} max={5000} step={50} className="mt-2" />
-                        <div className="flex justify-between text-2xs text-gray-400 mt-1">
+                        <div className={`flex justify-between text-2xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'} mt-1`}>
                           <span>0ms</span>
                           <span>5000ms</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-2 border border-gray-700 rounded-lg bg-[#2D2D2D]">
+                      <div className={`flex items-center justify-between p-2 ${actualTheme === 'light' ? 'border-slate-300 bg-slate-50' : 'border-gray-700 bg-[#2D2D2D]'} rounded-lg`}>
                         <div>
-                          <Label htmlFor="public-toggle" className="font-medium text-white text-xs">
+                          <Label htmlFor="public-toggle" className={`font-medium ${themeColors.text} text-xs`}>
                             Public Endpoint
                           </Label>
-                          <p className="text-2xs text-gray-400">Allow anyone to access this mock</p>
+                          <p className={`text-2xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}>Allow anyone to access this mock</p>
                         </div>
                         <Switch id="public-toggle" checked={isPublic} onCheckedChange={setIsPublic} />
                       </div>
@@ -503,26 +512,24 @@ export default function BuilderPage() {
                 {/* Enhanced JSON Snippets */}
                 <div>
                   <JsonSnippets onSnippetSelect={handleSnippetSelect} />
-                </div>
-
-                {/* Advanced Options */}
+                </div>                {/* Advanced Options */}
                 <Accordion type="single" collapsible>
-                  <AccordionItem value="advanced" className="border-gray-800">
-                    <AccordionTrigger className="text-sm font-medium text-white">Advanced Options</AccordionTrigger>
+                  <AccordionItem value="advanced" className={actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800'}>
+                    <AccordionTrigger className={`text-sm font-medium ${themeColors.text}`}>Advanced Options</AccordionTrigger>
                     <AccordionContent className="space-y-3 pt-3">
                       <div>
-                        <Label htmlFor="headers" className="text-white text-xs">Custom Headers</Label>
+                        <Label htmlFor="headers" className={`${themeColors.text} text-xs`}>Custom Headers</Label>
                         <Textarea
                           id="headers"
                           placeholder="Content-Type: application/json&#10;X-Custom-Header: value"
                           rows={3}
-                          className="mt-1 font-mono text-xs bg-[#2D2D2D] border-gray-700 text-white"
+                          className={`mt-1 font-mono text-xs ${themeColors.inputBg} ${themeColors.text}`}
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="cors" className="text-white text-xs">CORS Settings</Label>
-                        <Input id="cors" placeholder="https://example.com, https://app.example.com" className="mt-1 bg-[#2D2D2D] border-gray-700 text-white text-xs h-8" />
+                        <Label htmlFor="cors" className={`${themeColors.text} text-xs`}>CORS Settings</Label>
+                        <Input id="cors" placeholder="https://example.com, https://app.example.com" className={`mt-1 ${themeColors.inputBg} ${themeColors.text} text-xs h-8`} />
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -542,7 +549,7 @@ export default function BuilderPage() {
                     <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600">
                       <Code className="h-3 w-3 text-white" />
                     </div>
-                    <h2 className="text-lg font-semibold text-white">Mock Response</h2>
+                    <h2 className={`text-lg font-semibold ${themeColors.text}`}>Mock Response</h2>
                   </div>
 
                   <MonacoJsonEditor
@@ -553,20 +560,18 @@ export default function BuilderPage() {
                     showToolbar={true}
                     placeholder="Enter your JSON response..."
                   />
-                </div>
-
-                {/* Enhanced Preview Output Section */}
+                </div>                {/* Enhanced Preview Output Section */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <div className="p-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-red-600">
                         <Eye className="h-3 w-3 text-white" />
                       </div>
-                      <h2 className="text-lg font-semibold text-white">Preview Output</h2>
+                      <h2 className={`text-lg font-semibold ${themeColors.text}`}>Preview Output</h2>
                     </div>
 
                     {/* Device Preview Toggle */}
-                    <div className="flex items-center gap-1 border border-gray-700 rounded-lg p-1 bg-[#2D2D2D]">
+                    <div className={`flex items-center gap-1 ${actualTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-gray-700 bg-[#2D2D2D]'} rounded-lg p-1`}>
                       <Button
                         variant={previewDevice === "desktop" ? "default" : "ghost"}
                         size="sm"
@@ -592,57 +597,53 @@ export default function BuilderPage() {
                         <Smartphone className="h-3 w-3" />
                       </Button>
                     </div>
-                  </div>
-
-                  <div className={getDevicePreviewClass()}>
-                    <Card className="border-gray-800 bg-[#1A1A1A]">
+                  </div>                  <div className={getDevicePreviewClass()}>
+                    <Card className={themeColors.cardBg}>
                       <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-white text-sm">
+                        <CardTitle className={`flex items-center gap-2 ${themeColors.text} text-sm`}>
                           <Eye className="h-4 w-4 text-blue-400" />
                           Live Preview
                         </CardTitle>
-                        <CardDescription className="text-gray-400 text-xs">Preview your mock endpoint and integration examples</CardDescription>
+                        <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-xs`}>Preview your mock endpoint and integration examples</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <Tabs defaultValue="endpoint" className="w-full">
-                          <TabsList className="grid w-full grid-cols-3 bg-[#2D2D2D] h-8">
-                            <TabsTrigger value="endpoint" className="text-white data-[state=active]:bg-[#3A3A3A] text-xs">Endpoint</TabsTrigger>
-                            <TabsTrigger value="curl" className="text-white data-[state=active]:bg-[#3A3A3A] text-xs">cURL</TabsTrigger>
-                            <TabsTrigger value="javascript" className="text-white data-[state=active]:bg-[#3A3A3A] text-xs">JavaScript</TabsTrigger>
+                          <TabsList className={`grid w-full grid-cols-3 ${themeColors.tabsBg} h-8`}>
+                            <TabsTrigger value="endpoint" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>Endpoint</TabsTrigger>
+                            <TabsTrigger value="curl" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>cURL</TabsTrigger>
+                            <TabsTrigger value="javascript" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>JavaScript</TabsTrigger>
                           </TabsList>
 
                           <TabsContent value="endpoint" className="space-y-3 mt-3">
                             <div>
-                              <Label className="text-white text-xs">Generated URL</Label>
+                              <Label className={`${themeColors.text} text-xs`}>Generated URL</Label>
                               <div className="flex items-center gap-2 mt-1">
-                                <Input value={generatedUrl} readOnly className="font-mono text-xs bg-[#2D2D2D] border-gray-700 text-white h-8" />
-                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedUrl)} className="bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A] h-8 w-8 p-0">
+                                <Input value={generatedUrl} readOnly className={`font-mono text-xs ${themeColors.inputBg} ${themeColors.text} h-8`} />
+                                <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedUrl)} className={`${themeColors.buttonBg} ${themeColors.text} h-8 w-8 p-0`}>
                                   <Copy className="h-3 w-3" />
                                 </Button>
                               </div>
                             </div>
 
-                            <Separator className="bg-gray-700" />
-
-                            <div>
-                              <Label className="text-white text-xs">Response Preview</Label>
-                              <div className="mt-1 p-2 bg-[#2D2D2D] rounded-lg font-mono text-xs max-h-32 overflow-auto border border-gray-700">
-                                <pre className="whitespace-pre-wrap break-words text-gray-300">{response}</pre>
+                            <Separator className={actualTheme === 'light' ? 'bg-slate-200' : 'bg-gray-700'} />                            <div>
+                              <Label className={`${themeColors.text} text-xs`}>Response Preview</Label>
+                              <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs max-h-32 overflow-auto border`}>
+                                <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{response}</pre>
                               </div>
                             </div>
                           </TabsContent>
 
                           <TabsContent value="curl" className="mt-3">
                             <div>
-                              <Label className="text-white text-xs">cURL Command</Label>
-                              <div className="mt-1 p-2 bg-[#2D2D2D] rounded-lg font-mono text-xs overflow-x-auto border border-gray-700">
-                                <pre className="whitespace-pre-wrap break-all text-gray-300">{`curl -X ${method} "${generatedUrl}" \\
+                              <Label className={`${themeColors.text} text-xs`}>cURL Command</Label>
+                              <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
+                                <pre className={`whitespace-pre-wrap break-all ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`curl -X ${method} "${generatedUrl}" \\
   -H "Content-Type: application/json"`}</pre>
                               </div>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="mt-2 bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A] text-xs h-7"
+                                className={`mt-2 ${themeColors.buttonBg} ${themeColors.text} text-xs h-7`}
                                 onClick={() =>
                                   copyToClipboard(
                                     `curl -X ${method} "${generatedUrl}" -H "Content-Type: application/json"`,
@@ -653,13 +654,11 @@ export default function BuilderPage() {
                                 Copy
                               </Button>
                             </div>
-                          </TabsContent>
-
-                          <TabsContent value="javascript" className="mt-3">
+                          </TabsContent>                          <TabsContent value="javascript" className="mt-3">
                             <div>
-                              <Label className="text-white text-xs">JavaScript Fetch</Label>
-                              <div className="mt-1 p-2 bg-[#2D2D2D] rounded-lg font-mono text-xs overflow-x-auto border border-gray-700">
-                                <pre className="whitespace-pre-wrap break-words text-gray-300">{`fetch('${generatedUrl}', {
+                              <Label className={`${themeColors.text} text-xs`}>JavaScript Fetch</Label>
+                              <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
+                                <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`fetch('${generatedUrl}', {
   method: '${method}',
   headers: {
     'Content-Type': 'application/json'
@@ -671,7 +670,7 @@ export default function BuilderPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="mt-2 bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A] text-xs h-7"
+                                className={`mt-2 ${themeColors.buttonBg} ${themeColors.text} text-xs h-7`}
                                 onClick={() =>
                                   copyToClipboard(
                                     `fetch('${generatedUrl}', {\n  method: '${method}',\n  headers: {\n    'Content-Type': 'application/json'\n  }\n})\n.then(response => response.json())\n.then(data => console.log(data));`,

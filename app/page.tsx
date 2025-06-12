@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useNavigation } from "@/components/ui/line-loader"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { useTheme } from "@/components/ui/theme-provider"
 import { 
   Code2, 
   Share2, 
@@ -153,7 +155,7 @@ const codeExample = `{
 }`
 
 // Animated Grid Background Component
-const AnimatedGrid = () => (
+const AnimatedGrid = ({ theme }: { theme: "light" | "dark" }) => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <svg
       className="absolute inset-0 w-full h-full"
@@ -169,7 +171,7 @@ const AnimatedGrid = () => (
           <path
             d="M 60 0 L 0 0 0 60"
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke={theme === 'light' ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.08)"}
             strokeWidth="1"
           />
         </pattern>
@@ -182,7 +184,7 @@ const AnimatedGrid = () => (
           <path
             d="M 120 0 L 0 0 0 120"
             fill="none"
-            stroke="rgba(255,255,255,0.04)"
+            stroke={theme === 'light' ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.04)"}
             strokeWidth="1.5"
           />
         </pattern>
@@ -324,6 +326,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [typedCode, setTypedCode] = useState("")
   const { navigateTo } = useNavigation()
+  const { actualTheme } = useTheme()
   
   // Optimized scroll with reduced calculations
   const { scrollYProgress } = useScroll()
@@ -348,10 +351,22 @@ export default function HomePage() {
 
   if (!mounted) return null
 
+  // Theme-aware colors
+  const themeColors = {
+    background: actualTheme === 'light' 
+      ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100' 
+      : 'bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A]',
+    text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300',
+    textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400',
+    border: actualTheme === 'light' ? 'border-slate-200' : 'border-white/10',
+    cardBg: actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20',
+    cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A] text-white overflow-hidden relative">
-      {/* Animated Grid Background */}
-      <AnimatedGrid />
+    <div className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200`}>      {/* Animated Grid Background */}
+      <AnimatedGrid theme={actualTheme} />
       
       {/* Floating Particles */}
       <FloatingParticles />
@@ -383,10 +398,8 @@ export default function HomePage() {
             delay: 2,
           }}
         />
-      </div>
-
-      {/* Header */}
-      <header className="relative z-50 border-b border-white/10 bg-black/20 backdrop-blur-xl">
+      </div>      {/* Header */}
+      <header className={`relative z-50 border-b ${themeColors.border} ${actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20'} backdrop-blur-xl`}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <motion.div 
@@ -396,7 +409,7 @@ export default function HomePage() {
             >
               <span className="text-white font-bold text-lg">MB</span>
             </motion.div>
-            <span className="font-bold text-xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            <span className={`font-bold text-xl ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
               MockBox
             </span>
           </Link>
@@ -406,7 +419,7 @@ export default function HomePage() {
               <motion.a
                 key={item}
                 href="#"
-                className="text-gray-300 hover:text-white transition-colors relative"
+                className={`${themeColors.textSecondary} hover:${themeColors.text} transition-colors relative`}
                 whileHover={{ y: -2 }}
               >
                 {item}
@@ -421,9 +434,13 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="text-white hover:bg-white/10">
+            <Button variant="ghost" className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-white/10'}`}>
               Sign In
             </Button>
+            
+            {/* Theme Toggle */}
+            <ThemeToggle variant="minimal" />
+            
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0">
                 Get Started
@@ -439,8 +456,7 @@ export default function HomePage() {
           className="container mx-auto text-center max-w-6xl"
           style={{ y: backgroundY }}
         >
-          {/* New Feature Badge */}
-          <motion.div
+          {/* New Feature Badge */}          <motion.div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-blue-500/30 mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -460,18 +476,18 @@ export default function HomePage() {
               Mock APIs
             </span>
             <br />
-            <span className="text-white">Like Never Before</span>
+            <span className={actualTheme === 'light' ? 'text-slate-900' : 'text-white'}>Like Never Before</span>
           </motion.h1>
 
           <motion.p 
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed"
+            className={`text-xl md:text-2xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300'} mb-12 max-w-4xl mx-auto leading-relaxed`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             Build, test, and deploy realistic API mocks in seconds. The most advanced API 
             mocking platform for modern development teams.
-          </motion.p>          
+          </motion.p>
           <motion.div 
             className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -488,29 +504,25 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
-            
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="text-lg px-12 py-6 bg-white/5 backdrop-blur-md border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 transition-all duration-300 font-semibold relative overflow-hidden group"
+                className={`text-lg px-12 py-6 ${actualTheme === 'light' ? 'bg-slate-100/50 border-2 border-slate-300 text-slate-900 hover:bg-slate-200/70 hover:border-slate-400' : 'bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30'} backdrop-blur-md hover:shadow-lg transition-all duration-300 font-semibold relative overflow-hidden group`}
               >
                 {/* Glass effect overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className={`absolute inset-0 bg-gradient-to-r ${actualTheme === 'light' ? 'from-slate-200/30 via-slate-100/20 to-transparent' : 'from-white/10 via-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 <Activity className="mr-2 h-5 w-5 relative z-10" />
                 <span className="relative z-10">View Live Demo</span>
               </Button>
             </motion.div>
-          </motion.div>
-
-          {/* Floating Code Example */}
+          </motion.div>          {/* Floating Code Example */}
           <motion.div
             className="max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3 }}
-          >
-            <Card className="bg-black/40 border-white/10 backdrop-blur-xl overflow-hidden">
+          >            <Card className={`${actualTheme === 'light' ? 'bg-white border-slate-200 shadow-lg' : 'bg-black/40 border-white/10'} backdrop-blur-xl overflow-hidden`}>
               <CardHeader className="text-left">
                 <div className="flex items-center gap-4">
                   <div className="flex gap-2">
@@ -518,13 +530,13 @@ export default function HomePage() {
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
-                  <Badge className="bg-gradient-to-r from-green-500/20 to-teal-500/20 text-green-300 border-green-500/30">
+                  <Badge className="bg-gradient-to-r from-green-500/20 to-teal-500/20 text-green-600 border-green-500/30">
                     ✨ AI Generated
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <pre className="text-left text-sm font-mono text-gray-300 overflow-x-auto">
+                <pre className={`text-left text-sm font-mono ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'} overflow-x-auto`}>
                   <code>{typedCode}</code>
                   <motion.span 
                     className="inline-block w-2 h-5 bg-blue-400 ml-1"
@@ -540,10 +552,8 @@ export default function HomePage() {
         {/* Simplified Floating Elements */}
         <div className="absolute top-1/4 left-10 w-20 h-20 bg-gradient-to-r from-blue-500/30 to-purple-600/30 rounded-full blur-xl opacity-50" />
         <div className="absolute top-1/2 right-10 w-32 h-32 bg-gradient-to-r from-green-500/30 to-teal-600/30 rounded-full blur-xl opacity-50" />
-      </section>
-
-      {/* Features Section - Optimized animations */}
-      <section className="py-32 px-4 relative z-20">
+      </section>      {/* Features Section - Optimized animations */}
+      <section className="pt-32 px-4 relative z-20">
         <div className="container mx-auto">
           <motion.div 
             className="text-center mb-20"
@@ -552,10 +562,10 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            <h2 className={`text-5xl font-bold mb-6 ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
               Everything you need to mock APIs
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            <p className={`text-xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} max-w-3xl mx-auto`}>
               Powerful features designed for modern development workflows
             </p>
           </motion.div>
@@ -574,19 +584,19 @@ export default function HomePage() {
                 }}
                 className="group"
               >
-                <Card className="h-full bg-black/20 border-white/10 backdrop-blur-xl hover:bg-black/30 transition-all duration-300 hover:border-white/20 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <Card className={`h-full ${actualTheme === 'light' ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'} backdrop-blur-xl transition-all duration-300 overflow-hidden relative`}>
+                  <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/50 to-transparent' : 'bg-gradient-to-br from-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   
                   <CardHeader className="relative z-10">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                       <feature.icon className="h-8 w-8 text-white" />
                     </div>
-                    <CardTitle className="text-xl text-white group-hover:text-white transition-colors">
+                    <CardTitle className={`text-xl ${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} group-hover:${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} transition-colors`}>
                       {feature.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <CardDescription className="text-gray-400 text-base leading-relaxed">
+                    <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-base leading-relaxed`}>
                       {feature.description}
                     </CardDescription>
                   </CardContent>
@@ -603,9 +613,8 @@ export default function HomePage() {
         <div className="absolute inset-0 flex items-center justify-center">
           <WorldMapSVG />
         </div>
-        
-        {/* Subtle overlay to ensure readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-transparent" />
+          {/* Subtle overlay to ensure readability */}
+        <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${actualTheme === 'light' ? 'via-slate-200/20' : 'via-black/20'} to-transparent`} />
         
         <div className="container mx-auto relative z-10">
           <motion.div 
@@ -617,11 +626,11 @@ export default function HomePage() {
           >
             <div className="flex items-center justify-center gap-3 mb-6">
               <Globe className="h-8 w-8 text-blue-400" />
-              <h2 className="text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              <h2 className={`text-5xl font-bold ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
                 Loved by developers worldwide
               </h2>
             </div>
-            <p className="text-xl text-gray-400">Join 50,000+ developers building faster with MockBox</p>
+            <p className={`text-xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'}`}>Join 50,000+ developers building faster with MockBox</p>
             
             {/* Global stats */}
             <motion.div 
@@ -757,11 +766,10 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-        >
-          <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent">
+        >          <h2 className={`text-5xl font-bold mb-6 ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent'}`}>
             Ready to build the future?
           </h2>
-          <p className="text-xl mb-12 text-gray-300 max-w-2xl mx-auto">
+          <p className={`text-xl mb-12 ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300'} max-w-2xl mx-auto`}>
             Join thousands of developers who ship faster with MockBox. Start building your next project today.
           </p>
           
@@ -781,25 +789,22 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
-            
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="text-lg px-12 py-6 bg-white/5 backdrop-blur-md border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30 hover:shadow-lg hover:shadow-white/10 transition-all duration-300 font-semibold relative overflow-hidden group"
+                className={`text-lg px-12 py-6 ${actualTheme === 'light' ? 'bg-slate-100/50 border-2 border-slate-300 text-slate-900 hover:bg-slate-200/70 hover:border-slate-400' : 'bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30'} backdrop-blur-md hover:shadow-lg transition-all duration-300 font-semibold relative overflow-hidden group`}
               >
                 {/* Glass effect overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className={`absolute inset-0 bg-gradient-to-r ${actualTheme === 'light' ? 'from-slate-200/30 via-slate-100/20 to-transparent' : 'from-white/10 via-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 <Github className="mr-2 h-5 w-5 relative z-10" />
                 <span className="relative z-10">View on GitHub</span>
               </Button>
             </motion.div>
           </motion.div>
         </motion.div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-16 px-4 bg-black/20 backdrop-blur-xl relative z-20">
+      </section>      {/* Footer */}
+      <footer className={`border-t ${themeColors.border} py-16 px-4 ${actualTheme === 'light' ? 'bg-slate-50/50' : 'bg-black/20'} backdrop-blur-xl relative z-20`}>
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-12">
             <div>
@@ -807,19 +812,19 @@ export default function HomePage() {
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                   <span className="text-white font-bold text-sm">MB</span>
                 </div>
-                <span className="font-bold text-xl text-white">MockBox</span>
+                <span className={`font-bold text-xl ${themeColors.text}`}>MockBox</span>
               </Link>
-              <p className="text-gray-400 leading-relaxed">
+              <p className={`${themeColors.textSecondary} leading-relaxed`}>
                 The most advanced API mocking platform for modern development teams.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-6 text-white">Product</h3>
-              <ul className="space-y-3 text-gray-400">
+              <h3 className={`font-semibold mb-6 ${themeColors.text}`}>Product</h3>
+              <ul className={`space-y-3 ${themeColors.textSecondary}`}>
                 {["Features", "Pricing", "Documentation", "API Reference", "Templates"].map((item) => (
                   <li key={item}>
-                    <Link href="#" className="hover:text-white transition-colors">
+                    <Link href="#" className={`hover:${themeColors.text} transition-colors`}>
                       {item}
                     </Link>
                   </li>
@@ -828,11 +833,11 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-6 text-white">Company</h3>
-              <ul className="space-y-3 text-gray-400">
+              <h3 className={`font-semibold mb-6 ${themeColors.text}`}>Company</h3>
+              <ul className={`space-y-3 ${themeColors.textSecondary}`}>
                 {["About", "Blog", "Careers", "Contact", "Privacy"].map((item) => (
                   <li key={item}>
-                    <Link href="#" className="hover:text-white transition-colors">
+                    <Link href="#" className={`hover:${themeColors.text} transition-colors`}>
                       {item}
                     </Link>
                   </li>
@@ -841,7 +846,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-6 text-white">Connect</h3>
+              <h3 className={`font-semibold mb-6 ${themeColors.text}`}>Connect</h3>
               <div className="flex gap-4">
                 {[
                   { icon: Github, href: "#" },
@@ -851,7 +856,7 @@ export default function HomePage() {
                   <motion.a
                     key={index}
                     href={href}
-                    className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/20 transition-all"
+                    className={`w-10 h-10 rounded-lg ${actualTheme === 'light' ? 'bg-slate-200/50 text-slate-600 hover:text-slate-900 hover:bg-slate-300/70' : 'bg-white/10 text-gray-400 hover:text-white hover:bg-white/20'} flex items-center justify-center transition-all`}
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -862,7 +867,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="border-t border-white/10 mt-12 pt-8 text-center text-gray-400">
+          <div className={`border-t ${themeColors.border} mt-12 pt-8 text-center ${themeColors.textSecondary}`}>
             <p>&copy; 2024 MockBox. Built with ❤️ for developers worldwide.</p>
           </div>
         </div>

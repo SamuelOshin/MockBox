@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Editor } from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
+import { useTheme } from "@/components/ui/theme-provider"
 import { 
   Copy, 
   Check, 
@@ -16,6 +17,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 interface MonacoJsonEditorProps {
   value: string
@@ -41,6 +43,22 @@ export default function MonacoJsonEditor({
   const [isDownloading, setIsDownloading] = useState(false)
   const [isFormatting, setIsFormatting] = useState(false)
   const { toast } = useToast()
+  const { actualTheme } = useTheme()
+
+  // Theme-aware colors
+  const themeColors = {
+    toolbarBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    editorBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-[#1E1E1E] border-gray-700',
+    text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400',
+    textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-500',
+    buttonHover: actualTheme === 'light' ? 'hover:bg-slate-200 hover:text-slate-900' : 'hover:bg-[#3A3A3A] hover:text-white',
+    separator: actualTheme === 'light' ? 'bg-slate-300' : 'bg-gray-600',
+    validationValid: 'bg-green-500',
+    validationInvalid: 'bg-red-500'
+  }
+
+  const monacoTheme = actualTheme === 'light' ? 'vs' : 'vs-dark'
 
   const handleCopy = async () => {
     try {
@@ -185,183 +203,182 @@ export default function MonacoJsonEditor({
 
   return (
     <motion.div 
-      className={`border border-gray-700 rounded-lg overflow-hidden bg-[#1A1A1A] ${
-        isFullscreen ? 'fixed inset-4 z-50' : ''
-      }`}
-      layout
-      transition={{ duration: 0.3 }}
+      className={cn(
+        "rounded-lg border overflow-hidden",
+        themeColors.editorBg,
+        isFullscreen && "fixed inset-4 z-50 rounded-xl shadow-2xl"
+      )}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
     >
       {/* Enhanced Toolbar */}
-      <div className="flex items-center justify-between p-2 border-b border-gray-700 bg-[#2D2D2D]">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Code className="h-3 w-3 text-blue-400" />
-            <span className="text-xs font-medium text-white">JSON Response Editor</span>
-          </div>
-          
-          {showValidation && (
-            <motion.div 
-              className="flex items-center gap-1"
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className={`w-2 h-2 rounded-full ${isValid ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-xs text-gray-400">
-                {isValid ? 'Valid' : 'Invalid'}
-              </span>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Toolbar Actions */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={formatJson}
-            disabled={isFormatting || !value.trim()}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title="Format JSON"
-          >
-            {isFormatting ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      {showToolbar && (
+        <div className={cn(
+          "flex items-center justify-between px-3 py-2 border-b",
+          themeColors.toolbarBg
+        )}>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <Code className="h-3 w-3 text-blue-400" />
+              <span className={cn("text-xs font-medium", themeColors.text)}>JSON Response Editor</span>
+            </div>
+            
+            {showValidation && (
+              <motion.div 
+                className="flex items-center gap-1"
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.2 }}
               >
-                <Code className="h-3 w-3" />
+                <div className={cn("w-2 h-2 rounded-full", isValid ? themeColors.validationValid : themeColors.validationInvalid)} />
+                <span className={cn("text-xs", themeColors.textSecondary)}>
+                  {isValid ? 'Valid' : 'Invalid'}
+                </span>
               </motion.div>
-            ) : (
-              <Code className="h-3 w-3" />
             )}
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopy}
-            disabled={!value.trim()}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title="Copy JSON"
-          >
-            <AnimatePresence mode="wait">
-              {copied ? (
+          </div>
+
+          {/* Toolbar Actions */}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={formatJson}
+              disabled={isFormatting || !value.trim()}
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title="Format JSON"
+            >
+              {isFormatting ? (
                 <motion.div
-                  key="check"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{ duration: 0.2 }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 >
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Code className="h-3 w-3" />
                 </motion.div>
               ) : (
-                <motion.div
-                  key="copy"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Copy className="h-3 w-3" />
-                </motion.div>
+                <Code className="h-3 w-3" />
               )}
-            </AnimatePresence>
-          </Button>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopy}
+              disabled={!value.trim()}
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title="Copy JSON"
+            >
+              <AnimatePresence mode="wait">
+                {copied ? (
+                  <motion.div
+                    key="check"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Check className="h-3 w-3 text-green-500" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="copy"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Copy className="h-3 w-3" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={downloadJson}
-            disabled={isDownloading || !value.trim()}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title="Download JSON"
-          >
-            {isDownloading ? (
-              <motion.div
-                animate={{ y: [0, -2, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity }}
-              >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={downloadJson}
+              disabled={isDownloading || !value.trim()}
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title="Download JSON"
+            >
+              {isDownloading ? (
+                <motion.div
+                  animate={{ y: [0, -2, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity }}
+                >
+                  <Download className="h-3 w-3" />
+                </motion.div>
+              ) : (
                 <Download className="h-3 w-3" />
-              </motion.div>
-            ) : (
-              <Download className="h-3 w-3" />
-            )}
-          </Button>
+              )}
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={uploadJson}
-            disabled={isUploading}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title="Upload JSON"
-          >
-            {isUploading ? (
-              <motion.div
-                animate={{ y: [0, 2, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity }}
-              >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={uploadJson}
+              disabled={isUploading}
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title="Upload JSON"
+            >
+              {isUploading ? (
+                <motion.div
+                  animate={{ y: [0, 2, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity }}
+                >
+                  <Upload className="h-3 w-3" />
+                </motion.div>
+              ) : (
                 <Upload className="h-3 w-3" />
-              </motion.div>
-            ) : (
-              <Upload className="h-3 w-3" />
-            )}
-          </Button>
+              )}
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={resetEditor}
-            disabled={!value.trim()}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title="Reset"
-          >
-            <RotateCcw className="h-3 w-3" />
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetEditor}
+              disabled={!value.trim()}
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title="Reset"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </Button>
 
-          <div className="w-px h-4 bg-gray-600 mx-1" />
+            <div className={cn("w-px h-4 mx-1", themeColors.separator)} />
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleFullscreen}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="h-3 w-3" />
-            ) : (
-              <Maximize2 className="h-3 w-3" />
-            )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleFullscreen}
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="h-3 w-3" />
+              ) : (
+                <Maximize2 className="h-3 w-3" />
+              )}
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
-            title="Settings"
-          >
-            <Settings className="h-3 w-3" />
-          </Button>
-
-          {/* Theme Selector */}
-          <select 
-            className="text-xs bg-[#1A1A1A] border border-gray-600 text-white rounded px-2 py-1 h-6"
-            defaultValue="dark"
-          >
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-          </select>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+              title="Settings"
+            >
+              <Settings className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <Editor
         height={isFullscreen ? "calc(100vh - 120px)" : height}
         defaultLanguage="json"
         value={value}
         onChange={handleEditorChange}
-        theme="vs-dark"
+        theme={monacoTheme}
         options={{
           minimap: { enabled: false },
           scrollBeyondLastLine: false,

@@ -49,25 +49,25 @@
     --scrollbar-thumb: #888888;
   }
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 220 90% 56%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 220 90% 56%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -86,6 +86,54 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Enhanced theme transitions */
+  html {
+    transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
+  }
+  
+  html.theme-transitioning * {
+    transition: 
+      background-color 200ms ease-in-out,
+      border-color 200ms ease-in-out,
+      color 200ms ease-in-out,
+      fill 200ms ease-in-out,
+      stroke 200ms ease-in-out,
+      opacity 200ms ease-in-out,
+      box-shadow 200ms ease-in-out,
+      transform 200ms ease-in-out,
+      backdrop-filter 200ms ease-in-out !important;
+  }
+  
+  /* Normal smooth transitions for interactive elements */
+  html:not(.theme-transitioning) * {
+    transition: 
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      fill 150ms ease,
+      stroke 150ms ease,
+      opacity 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease,
+      backdrop-filter 150ms ease;
+  }
+  
+  /* Disable transitions for elements that should be instant */
+  .no-transition,
+  .no-transition * {
+    transition: none !important;
+  }
+  
+  /* Special transitions for theme toggle components */
+  [data-theme-toggle] {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  /* Enhance backdrop blur transitions */
+  .backdrop-blur-xl {
+    transition: backdrop-filter 200ms ease-in-out;
   }
 }
 
