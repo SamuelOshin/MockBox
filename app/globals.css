@@ -186,6 +186,19 @@
 
 /* Global theme-aware scrollbar styles */
 @layer utilities {
+  /* Page zoom utilities for specific pages */
+  .zoom-90 {
+    zoom: 0.9;
+  }
+  
+  .zoom-95 {
+    zoom: 0.95;
+  }
+  
+  .zoom-100 {
+    zoom: 1.0;
+  }
+
   /* Primary theme-aware scrollbar */
   .scrollbar-theme {
     scrollbar-width: thin;

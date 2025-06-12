@@ -362,11 +362,12 @@ export default function HomePage() {
     textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400',
     border: actualTheme === 'light' ? 'border-slate-200' : 'border-white/10',
     cardBg: actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20',
-    cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'
-  }
-
-  return (
-    <div className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200`}>      {/* Animated Grid Background */}
+    cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'  }    
+    return (
+    <div 
+      className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200 zoom-90`}
+    >
+        {/* Animated Grid Background */}
       <AnimatedGrid theme={actualTheme} />
       
       {/* Floating Particles */}

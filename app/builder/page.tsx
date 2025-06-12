@@ -298,28 +298,25 @@ export default function BuilderPage() {
         return "w-full"
     }
   }
-  return (
-    <SidebarLayout>
-      <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>
-        <Header />
-        <main className="p-4 lg:p-6 overflow-x-hidden h-[calc(100vh-4rem)] overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+  return (    <SidebarLayout>
+      <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>        <Header />
+        <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
             {/* Enhanced Header with Premium Styling */}
             <motion.div 
-              className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6"
+              className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2.5 mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-            >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
-                    <Code className="h-5 w-5 text-white" />
+            >              <div className="flex-1">
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <div className="p-1.5 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
+                    <Code className="h-4 w-4 text-white" />
                   </div>
-                  <h1 className={`text-xl lg:text-2xl font-bold ${themeColors.text} compact-leading`}>
+                  <h1 className={`text-lg lg:text-xl font-bold ${themeColors.text} compact-leading`}>
                     Mock Builder
                   </h1>                </div>
-                <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-1 text-sm`}>Create and configure your API mock endpoint</p>
+                <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-0.5 text-xs`}>Create and configure your API mock endpoint</p>
                 {lastSaved && (
                   <motion.div 
                     className={`flex items-center gap-2 mt-2 text-xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}
@@ -331,18 +328,16 @@ export default function BuilderPage() {
                     Last saved {lastSaved.toLocaleTimeString()}
                   </motion.div>
                 )}
-              </div>
-
-              {/* Enhanced Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              </div>              {/* Enhanced Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 w-full lg:w-auto">                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleTest}
                     disabled={isTesting || !!jsonError}
-                    className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs`}
+                    className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs h-7 px-3`}
                   >
-                    {isTesting ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Play className="h-3 w-3 mr-2" />}
+                    {isTesting ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Play className="h-3 w-3 mr-1.5" />}
                     {isTesting ? "Testing..." : "Test"}
                   </Button>
                 </motion.div>
@@ -353,9 +348,9 @@ export default function BuilderPage() {
                     size="sm"
                     onClick={handleSave}
                     disabled={isLoading || !!jsonError}
-                    className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs`}
+                    className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs h-7 px-3`}
                   >
-                    {isLoading ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <Save className="h-3 w-3 mr-2" />}
+                    {isLoading ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
                     {isLoading ? "Saving..." : "Save Draft"}
                   </Button>
                 </motion.div>
@@ -364,38 +359,35 @@ export default function BuilderPage() {
                   <Button
                     onClick={handlePublish}
                     disabled={isPublishing || !!jsonError}
-                    className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg text-xs"
+                    className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg text-xs h-7 px-3"
                     size="sm"
                   >
                     {isPublishing ? (
-                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
                     ) : (
-                      <Globe className="h-3 w-3 mr-2" />
+                      <Globe className="h-3 w-3 mr-1.5" />
                     )}
                     {isPublishing ? "Publishing..." : "Publish Live"}
                   </Button>
                 </motion.div>
               </div>
-            </motion.div>
-
-            {/* Enhanced JSON Error Alert */}
+            </motion.div>            {/* Enhanced JSON Error Alert */}
             {jsonError && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Alert variant="destructive" className="mb-4 border-red-500/20 bg-red-500/10">
+                <Alert variant="destructive" className="mb-3 border-red-500/20 bg-red-500/10">
                   <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
+                  <AlertDescription className="text-xs">
                     <strong>JSON Syntax Error:</strong> {jsonError}
                   </AlertDescription>
                 </Alert>
               </motion.div>
-            )}
-
+            )}            
             {/* Enhanced Responsive Grid Layout */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
               {/* Left Panel - Configuration */}
               <motion.div 
                 className="space-y-4"
@@ -404,22 +396,22 @@ export default function BuilderPage() {
                 transition={{ duration: 0.6, delay: 0.1 }}
               >
                 {/* Configure Endpoint Section */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
+                <div>                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="p-1 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
                       <Settings className="h-3 w-3 text-white" />
-                    </div>                    <h2 className={`text-lg font-semibold ${themeColors.text}`}>Configure Endpoint</h2>
+                    </div>                    
+                    <h2 className={`text-sm font-semibold ${themeColors.text}`}>Configure Endpoint</h2>
                   </div>
 
-                  <Card className={themeColors.cardBg}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className={`flex items-center gap-2 ${themeColors.text} text-sm`}>
-                        <Sparkles className="h-4 w-4 text-blue-400" />
+                  <Card className={themeColors.cardBg}>                    <CardHeader className="pb-1.5 pt-3 px-3">
+                      <CardTitle className={`flex items-center gap-1.5 ${themeColors.text} text-xs`}>
+                        <Sparkles className="h-3 w-3 text-blue-400" />
                         Basic Configuration
                       </CardTitle>
-                      <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-xs`}>Set up the fundamental properties of your mock endpoint</CardDescription>
+                      <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-2xs`}>Set up the fundamental properties of your mock endpoint</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
+                      
                       <div>
                         <Label htmlFor="mock-name" className={`${themeColors.text} text-xs`}>Mock Name</Label>
                         <Input
@@ -534,33 +526,32 @@ export default function BuilderPage() {
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
-              </motion.div>
-
+              </motion.div>              
               {/* Right Panel - Response Editor & Preview */}
               <motion.div 
-                className="space-y-4"
+                className="space-y-2.5"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 {/* Mock Response Section */}
                 <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="p-1 rounded-md bg-gradient-to-r from-purple-500 to-pink-600">
                       <Code className="h-3 w-3 text-white" />
                     </div>
-                    <h2 className={`text-lg font-semibold ${themeColors.text}`}>Mock Response</h2>
+                    <h2 className={`text-sm font-semibold ${themeColors.text}`}>Mock Response</h2>
                   </div>
 
                   <MonacoJsonEditor
                     value={response}
                     onChange={handleResponseChange}
-                    height="400px"
+                    height="350px"
                     showValidation={true}
                     showToolbar={true}
                     placeholder="Enter your JSON response..."
                   />
-                </div>                {/* Enhanced Preview Output Section */}
+                </div>{/* Enhanced Preview Output Section */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
