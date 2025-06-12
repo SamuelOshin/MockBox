@@ -588,7 +588,8 @@ export default function BuilderPage() {
                         <Smartphone className="h-3 w-3" />
                       </Button>
                     </div>
-                  </div>                  <div className={getDevicePreviewClass()}>
+                  </div>                  
+                  <div className={getDevicePreviewClass()}>
                     <Card className={themeColors.cardBg}>
                       <CardHeader className="pb-3">
                         <CardTitle className={`flex items-center gap-2 ${themeColors.text} text-sm`}>
@@ -628,8 +629,7 @@ export default function BuilderPage() {
                             <div>
                               <Label className={`${themeColors.text} text-xs`}>cURL Command</Label>
                               <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
-                                <pre className={`whitespace-pre-wrap break-all ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`curl -X ${method} "${generatedUrl}" \\
-  -H "Content-Type: application/json"`}</pre>
+                                <pre className={`whitespace-pre-wrap break-all ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`curl -X ${method} "${generatedUrl}" \\-H "Content-Type: application/json"`}</pre>
                               </div>
                               <Button
                                 variant="outline"
@@ -650,13 +650,14 @@ export default function BuilderPage() {
                               <Label className={`${themeColors.text} text-xs`}>JavaScript Fetch</Label>
                               <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
                                 <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`fetch('${generatedUrl}', {
-  method: '${method}',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
-.then(response => response.json())
-.then(data => console.log(data));`}</pre>
+                                    method: '${method}',
+                                    headers: {
+                                      'Content-Type': 'application/json'
+                                    }
+                                  })
+                                  .then(response => response.json())
+                                  .then(data => console.log(data));`}
+                                </pre>
                               </div>
                               <Button
                                 variant="outline"
