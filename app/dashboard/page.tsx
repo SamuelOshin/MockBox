@@ -4,54 +4,87 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Header } from "@/components/layout/header"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useNavigation } from "@/components/ui/line-loader"
 import {
   Plus,
-  Search,
-  Filter,
-  MoreHorizontal,
-  Edit,
-  Copy,
-  Trash2,
-  ExternalLink,
-  Download,
   Eye,
   TrendingUp,
-  Loader2,
   Zap,
   Globe,
-  Activity
+  Activity,
+  Database,
+  Clock,
+  Users,
+  BarChart3,
+  ArrowRight,
+  CheckCircle,
+  AlertCircle,
+  Calendar,
+  Cpu,
+  Shield,
+  Rocket,
+  Search,
+  Filter,
+  Download,
+  Loader2,
+  Trash2,
+  Copy,
+  Edit,
+  ExternalLink,
+  MoreHorizontal
 } from "lucide-react"
 import { sampleMocks } from "@/lib/mock-data"
 import type { MockEndpoint } from "@/lib/types"
 import { mockApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { SidebarLayout } from "@/components/layout/sidebar"
-import Link from "next/link"
+import { useTheme } from "@/components/ui/theme-provider"
 
+// Method colors for badges
 const methodColors = {
-  GET: "bg-green-600 text-white",
-  POST: "bg-blue-600 text-white",
-  PUT: "bg-orange-600 text-white",
-  DELETE: "bg-red-600 text-white",
-  PATCH: "bg-purple-600 text-white",
+  GET: "bg-green-100 text-green-800 hover:bg-green-200",
+  POST: "bg-blue-100 text-blue-800 hover:bg-blue-200", 
+  PUT: "bg-orange-100 text-orange-800 hover:bg-orange-200",
+  DELETE: "bg-red-100 text-red-800 hover:bg-red-200",
+  PATCH: "bg-purple-100 text-purple-800 hover:bg-purple-200"
 }
 
 export default function DashboardPage() {
   const [mocks, setMocks] = useState<MockEndpoint[]>(sampleMocks)
-  const [selectedMocks, setSelectedMocks] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState<"name" | "method" | "created" | "accessed">("created")
   const [isLoading, setIsLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedMocks, setSelectedMocks] = useState<string[]>([])
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
   const { navigateTo } = useNavigation()
+  const { actualTheme } = useTheme()
+
+  // Theme-aware colors
+  const themeColors = {
+    background: actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100' : 'bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A]',
+    text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400',
+    textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-500',
+    cardBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#1A1A1A] border-gray-800',
+    cardHover: actualTheme === 'light' ? 'hover:bg-slate-50' : 'hover:bg-[#1F1F1F]',
+    buttonBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300 hover:bg-slate-200' : 'bg-[#2D2D2D] border-gray-700 hover:bg-[#3A3A3A]',
+    accent: actualTheme === 'light' ? 'bg-blue-50' : 'bg-blue-950/30',
+    accentBorder: actualTheme === 'light' ? 'border-blue-200' : 'border-blue-800',
+    tableBg: actualTheme === 'light' ? 'border-slate-200 hover:bg-slate-50' : 'border-gray-800 hover:bg-[#2D2D2D]',
+    menuBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#2D2D2D] border-gray-700',
+    menuItemHover: actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'
+  }
 
   useEffect(() => {
     const fetchMocks = async () => {
@@ -59,18 +92,25 @@ export default function DashboardPage() {
         const data = await mockApi.getAllMocks()
         setMocks(data)
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch mocks",
-          variant: "destructive",
-        })
+        // Use sample data for demo
+        setMocks(sampleMocks)
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchMocks()
-  }, [toast])
+  }, [])
+
+  // Calculate dashboard metrics
+  const totalRequests = mocks.reduce((sum, mock) => sum + mock.accessCount, 0)
+  const publicMocks = mocks.filter((mock) => mock.isPublic).length
+  const recentMocks = mocks.filter((mock) => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    return mock.createdAt > weekAgo
+  }).length
+  const avgResponseTime = Math.round(mocks.reduce((sum, mock) => sum + mock.delay, 0) / mocks.length) || 0
 
   const filteredMocks = mocks.filter(
     (mock) =>
@@ -95,7 +135,8 @@ export default function DashboardPage() {
     }
   }
 
-  const handleDeleteMock = async (mockId: string) => {    try {
+  const handleDeleteMock = async (mockId: string) => {
+    try {
       await mockApi.deleteMock(mockId)
       setMocks(mocks.filter((mock) => mock.id !== mockId))
       setSelectedMocks(selectedMocks.filter((id) => id !== mockId))
@@ -111,6 +152,7 @@ export default function DashboardPage() {
       })
     }
   }
+
   const handleBulkDelete = async () => {
     setIsDeleting(true)
     try {
@@ -134,73 +176,123 @@ export default function DashboardPage() {
 
   return (
     <SidebarLayout>
-      <div className="flex-1 bg-[#0A0A0A] text-white overflow-hidden">
+      <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
         <Header />
 
         <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
-          {/* Enhanced Stats Cards with Animations */}
+          {/* Welcome Section */}
           <motion.div 
-            className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+            className="mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, staggerChildren: 0.1 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className={`text-4xl font-bold ${themeColors.text} mb-2`}>
+              Welcome back! 👋
+            </h1>
+            <p className={`${themeColors.textSecondary} text-lg mb-6`}>
+              Here's what's happening with your API mocks today.
+            </p>
+            
+            {/* Quick Actions */}
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={() => navigateTo("/builder")}
+                className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Create New Mock
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigateTo("/mocks")}
+                className={`${themeColors.buttonBg} gap-2`}
+              >
+                <Database className="h-4 w-4" />
+                View All Mocks
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigateTo("/analytics")}
+                className={`${themeColors.buttonBg} gap-2`}
+              >
+                <BarChart3 className="h-4 w-4" />
+                Analytics
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Key Metrics */}
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
           >
             {[
               {
                 title: "Total Mocks",
                 value: mocks.length,
-                change: "+2 from last week",
-                icon: Eye,
-                gradient: "from-blue-500 to-purple-600"
+                change: `+${recentMocks} this week`,
+                icon: Database,
+                gradient: "from-blue-500 to-purple-600",
+                color: "text-blue-500"
               },
               {
                 title: "Total Requests",
-                value: mocks.reduce((sum, mock) => sum + mock.accessCount, 0),
+                value: totalRequests.toLocaleString(),
                 change: "+12% from last week",
-                icon: TrendingUp,
-                gradient: "from-green-500 to-teal-600"
+                icon: Activity,
+                gradient: "from-green-500 to-teal-600",
+                color: "text-green-500"
               },
               {
                 title: "Public Mocks",
-                value: mocks.filter((mock) => mock.isPublic).length,
-                change: `${Math.round((mocks.filter((mock) => mock.isPublic).length / mocks.length) * 100)}% of total`,
+                value: publicMocks,
+                change: `${Math.round((publicMocks / mocks.length) * 100)}% of total`,
                 icon: Globe,
-                gradient: "from-orange-500 to-red-600"
+                gradient: "from-orange-500 to-red-600",
+                color: "text-orange-500"
               },
               {
-                title: "Avg Response Time",
-                value: `${Math.round(mocks.reduce((sum, mock) => sum + mock.delay, 0) / mocks.length)}ms`,
-                change: "-5ms from last week",
+                title: "Avg Response",
+                value: `${avgResponseTime}ms`,
+                change: "-5ms improvement",
                 icon: Zap,
-                gradient: "from-purple-500 to-pink-600"
+                gradient: "from-purple-500 to-pink-600",
+                color: "text-purple-500"
               }
-            ].map((stat, index) => (
+            ].map((metric, index) => (
               <motion.div
-                key={stat.title}
+                key={metric.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.05 }}
                 whileHover={{ scale: 1.02, y: -2 }}
                 className="group"
               >
-                <Card className="relative overflow-hidden border-gray-800 bg-[#1A1A1A] hover:bg-[#1F1F1F] transition-all duration-300">
-                  <div className={`absolute inset-0 bg-gradient-to-r ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                <Card className={`relative overflow-hidden ${themeColors.cardBg} ${themeColors.cardHover} transition-all duration-300`}>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${metric.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                    <CardTitle className="text-sm font-medium text-gray-400">{stat.title}</CardTitle>
-                    <div className={`p-2 rounded-lg bg-gradient-to-r ${stat.gradient} group-hover:scale-110 transition-transform duration-300`}>
-                      <stat.icon className="h-4 w-4 text-white" />
-                    </div>
+                    <CardTitle className={`text-sm font-medium ${themeColors.textSecondary}`}>
+                      {metric.title}
+                    </CardTitle>
+                    <metric.icon className={`h-5 w-5 ${metric.color}`} />
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <div className="text-2xl font-bold text-white">{stat.value}</div>
-                    <p className="text-xs text-gray-400">{stat.change}</p>
+                    <div className={`text-2xl font-bold ${themeColors.text} mb-1`}>
+                      {metric.value}
+                    </div>
+                    <p className={`text-xs ${themeColors.textMuted}`}>
+                      {metric.change}
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Enhanced Header with Gradient */}
+          {/* Enhanced Header with Search and Actions */}
           <motion.div 
             className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"
             initial={{ opacity: 0, y: 20 }}
@@ -208,32 +300,28 @@ export default function DashboardPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div>
-              <h1 className="text-3xl font-bold text-white">
+              <h2 className={`text-2xl font-bold ${themeColors.text}`}>
                 My Mocks
-              </h1>
-              <p className="text-gray-400">Manage your API mock endpoints</p>
+              </h2>
+              <p className={themeColors.textSecondary}>Manage your API mock endpoints</p>
             </div>
 
             <div className="flex items-center gap-2">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button variant="outline" className="bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A]">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </motion.div>              
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button 
-                  onClick={() => navigateTo("/builder")}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Mock
-                </Button>
-              </motion.div>
+              <Button variant="outline" className={`${themeColors.buttonBg} ${themeColors.text}`}>
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button 
+                onClick={() => navigateTo("/builder")}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Mock
+              </Button>
             </div>
           </motion.div>
 
-          {/* Enhanced Search and Filters */}
+          {/* Search and Filters */}
           <motion.div 
             className="flex flex-col sm:flex-row gap-4 mb-6"
             initial={{ opacity: 0, y: 20 }}
@@ -241,22 +329,21 @@ export default function DashboardPage() {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${themeColors.textSecondary}`} />
               <Input
                 placeholder="Search mocks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-[#2D2D2D] border-gray-700 text-white placeholder-gray-400"
+                className={`pl-10 ${actualTheme === 'light' ? 'bg-white border-slate-300 text-slate-900 placeholder-slate-500' : 'bg-[#2D2D2D] border-gray-700 text-white placeholder-gray-400'} transition-colors duration-200`}
               />
             </div>
-
-            <Button variant="outline" className="bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A]">
+            <Button variant="outline" className={`${themeColors.buttonBg} ${themeColors.text}`}>
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
           </motion.div>
 
-          {/* Bulk Actions with Animation */}
+          {/* Bulk Actions */}
           {selectedMocks.length > 0 && (
             <motion.div 
               className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/20 rounded-lg"
@@ -265,19 +352,19 @@ export default function DashboardPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3 }}
             >
-              <span className="text-sm font-medium text-white">{selectedMocks.length} selected</span>
+              <span className={`text-sm font-medium ${themeColors.text}`}>{selectedMocks.length} selected</span>
               <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isDeleting}>
                 {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
-              <Button variant="outline" size="sm" className="bg-[#2D2D2D] border-gray-700 text-white hover:bg-[#3A3A3A]">
+              <Button variant="outline" size="sm" className={`${themeColors.buttonBg} ${themeColors.text}`}>
                 <Copy className="h-4 w-4 mr-2" />
                 Duplicate
               </Button>
             </motion.div>
           )}
 
-          {/* Enhanced Mocks Table */}
+          {/* Mocks Table */}
           {isLoading ? (
             <motion.div 
               className="flex items-center justify-center py-12"
@@ -285,8 +372,8 @@ export default function DashboardPage() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
             >
-              <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-              <span className="ml-2 text-white">Loading mocks...</span>
+              <Loader2 className={`h-8 w-8 animate-spin ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
+              <span className={`ml-2 ${themeColors.text}`}>Loading mocks...</span>
             </motion.div>
           ) : (
             <motion.div
@@ -294,22 +381,22 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Card className="border-gray-800 bg-[#1A1A1A]">
+              <Card className={`${themeColors.cardBg} transition-colors duration-200`}>
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-800">
+                    <TableRow className={`${actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800'}`}>
                       <TableHead className="w-12">
                         <Checkbox
                           checked={selectedMocks.length === filteredMocks.length && filteredMocks.length > 0}
                           onCheckedChange={handleSelectAll}
                         />
                       </TableHead>
-                      <TableHead className="text-gray-400">Method</TableHead>
-                      <TableHead className="text-gray-400">Path</TableHead>
-                      <TableHead className="text-gray-400">Status</TableHead>
-                      <TableHead className="text-gray-400">Requests</TableHead>
-                      <TableHead className="text-gray-400">Last Used</TableHead>
-                      <TableHead className="text-gray-400">Visibility</TableHead>
+                      <TableHead className={themeColors.textSecondary}>Method</TableHead>
+                      <TableHead className={themeColors.textSecondary}>Path</TableHead>
+                      <TableHead className={themeColors.textSecondary}>Status</TableHead>
+                      <TableHead className={themeColors.textSecondary}>Requests</TableHead>
+                      <TableHead className={themeColors.textSecondary}>Last Used</TableHead>
+                      <TableHead className={themeColors.textSecondary}>Visibility</TableHead>
                       <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -320,7 +407,7 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="border-gray-800 hover:bg-[#2D2D2D] transition-colors group"
+                        className={`${actualTheme === 'light' ? 'border-slate-200 hover:bg-slate-50' : 'border-gray-800 hover:bg-[#2D2D2D]'} transition-colors group`}
                       >
                         <TableCell>
                           <Checkbox
@@ -329,24 +416,24 @@ export default function DashboardPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Badge className={methodColors[mock.method]}>{mock.method}</Badge>
+                          <Badge className={methodColors[mock.method as keyof typeof methodColors]}>{mock.method}</Badge>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium text-white">{mock.name || "Unnamed Mock"}</div>
-                            <div className="text-sm text-gray-400 font-mono">{mock.path}</div>
+                            <div className={`font-medium ${themeColors.text}`}>{mock.name || "Unnamed Mock"}</div>
+                            <div className={`text-sm ${themeColors.textSecondary} font-mono`}>{mock.path}</div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant={mock.statusCode >= 400 ? "destructive" : "secondary"}>{mock.statusCode}</Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2 text-white">
-                            <Activity className="h-4 w-4 text-gray-400" />
+                          <div className={`flex items-center gap-2 ${themeColors.text}`}>
+                            <Activity className={`h-4 w-4 ${themeColors.textSecondary}`} />
                             {mock.accessCount}
                           </div>
                         </TableCell>
-                        <TableCell className="text-white">{mock.lastAccessed.toLocaleDateString()}</TableCell>
+                        <TableCell className={themeColors.text}>{mock.lastAccessed.toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Badge variant={mock.isPublic ? "default" : "secondary"}>
                             {mock.isPublic ? "Public" : "Private"}
@@ -355,24 +442,24 @@ export default function DashboardPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-white hover:bg-[#3A3A3A]">
+                              <Button variant="ghost" size="icon" className={`opacity-0 group-hover:opacity-100 transition-opacity ${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-[#2D2D2D] border-gray-700">
-                              <DropdownMenuItem className="text-white hover:bg-[#3A3A3A]">
+                            <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                              <DropdownMenuItem className={`${themeColors.text} ${themeColors.menuItemHover}`}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-white hover:bg-[#3A3A3A]">
+                              <DropdownMenuItem className={`${themeColors.text} ${themeColors.menuItemHover}`}>
                                 <Copy className="h-4 w-4 mr-2" />
                                 Duplicate
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-white hover:bg-[#3A3A3A]">
+                              <DropdownMenuItem className={`${themeColors.text} ${themeColors.menuItemHover}`}>
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 View Endpoint
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive hover:bg-[#3A3A3A]" onClick={() => handleDeleteMock(mock.id)}>
+                              <DropdownMenuItem className={`text-destructive ${themeColors.menuItemHover}`} onClick={() => handleDeleteMock(mock.id)}>
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete
                               </DropdownMenuItem>
@@ -387,6 +474,7 @@ export default function DashboardPage() {
             </motion.div>
           )}
 
+          {/* Empty State */}
           {filteredMocks.length === 0 && !isLoading && (
             <motion.div 
               className="text-center py-12"
@@ -394,15 +482,54 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="text-gray-400 mb-4">
+              <div className={`${themeColors.textSecondary} mb-4`}>
                 {searchQuery ? "No mocks found matching your search." : "No mocks created yet."}
-              </div>              <Button 
+              </div>
+              <Button 
                 onClick={() => navigateTo("/builder")}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Mock
               </Button>
+            </motion.div>
+          )}
+
+          {/* Getting Started Section for empty dashboard */}
+          {mocks.length === 0 && !isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <Card className={`${themeColors.cardBg} text-center p-8`}>
+                <div className="mb-6">
+                  <Rocket className="h-16 w-16 mx-auto text-blue-500 mb-4" />
+                  <h3 className={`text-2xl font-bold ${themeColors.text} mb-2`}>
+                    Welcome to MockBox!
+                  </h3>
+                  <p className={`${themeColors.textSecondary} text-lg mb-6`}>
+                    Get started by creating your first API mock
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    onClick={() => navigateTo("/builder")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create Your First Mock
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigateTo("/templates")}
+                    className={`${themeColors.buttonBg} gap-2`}
+                  >
+                    <Eye className="h-4 w-4" />
+                    Browse Templates
+                  </Button>
+                </div>
+              </Card>
             </motion.div>
           )}
         </main>
