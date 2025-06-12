@@ -240,9 +240,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-sm">MB</span>
                 </div>
-                <div className="whitespace-nowrap">                  <div className={cn("font-bold text-sm", sidebarColors.text)}>MockBox</div>
-                  <div className={cn("text-xs", sidebarColors.textSecondary)}>Mock API Builder</div>
-                </div>
+                <Link href="/">
+                  <div className="whitespace-nowrap">                  
+                    <div className={cn("font-bold text-sm", sidebarColors.text)}>MockBox</div>
+                    <div className={cn("text-xs", sidebarColors.textSecondary)}>Mock API Builder</div>
+                  </div>
+                </Link>
               </motion.div>
             )}
           </AnimatePresence>
@@ -270,15 +273,12 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <ChevronLeft className="h-4 w-4" />
             )}
           </Button>
-        </div>
-
+        </div>        
         {/* Navigation with ScrollbarContainer */}
         <ScrollbarContainer
           className="flex-1 py-4 space-y-1"
-          theme="dark"
+          theme="auto"
           scrollbarWidth="6px"
-          thumbColor="#4B5563"
-          trackColor="#1F2937"
           hoverOpacity={0.8}
         >
           {/* Navigation Section */}

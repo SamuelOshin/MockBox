@@ -184,11 +184,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
     codeBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
     codeText: actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'
   }
-
-  const scrollbarTheme = actualTheme === 'light' ? 'light' : 'dark'
-  const scrollbarColors = actualTheme === 'light' 
-    ? { thumbColor: "#94a3b8", trackColor: "#f1f5f9" }
-    : { thumbColor: "#4B5563", trackColor: "#1F2937" }
+  const scrollbarTheme = "auto"
   const categories = Array.from(new Set(snippets.map(s => s.category)))
 
   const copySnippet = async (snippet: object, snippetId: string, e: React.MouseEvent) => {
@@ -257,16 +253,13 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
       </div>
       <p className={cn("text-xs mb-4", themeColors.textMuted)}>Quick start templates for common API response patterns</p>
       
-      {/* Scrollable container with custom scrollbar */}
-      <ScrollbarContainer 
+      {/* Scrollable container with custom scrollbar */}      <ScrollbarContainer 
         maxHeight="384px"
         className="pr-2 space-y-4"
         theme={scrollbarTheme}
         scrollbarWidth="6px"
-        thumbColor={scrollbarColors.thumbColor}
-        trackColor={scrollbarColors.trackColor}
         hoverOpacity={0.8}
-      >        {categories.map(category => (
+      >{categories.map(category => (
           <div key={category}>
             <h4 className={cn("text-sm font-medium mb-2 uppercase tracking-wide", themeColors.textMuted)}>{category}</h4>
             <div className="grid grid-cols-1 gap-2">
