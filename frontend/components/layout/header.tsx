@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -27,11 +28,23 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useTheme } from "@/components/ui/theme-provider"
+import { useAuth } from "@/lib/auth-context"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export function Header() {
   const { theme, setTheme, actualTheme } = useTheme()
+  const { user, signOut, loading } = useAuth()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
 
   const themeOptions = [
     { value: "light", label: "Light", icon: Sun },
@@ -137,18 +150,19 @@ export function Header() {
           <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-bold">2</span>
           </div>
-        </div>
-
-        <div className={`h-6 w-px ${headerColors.divider}`} />
-
-        <DropdownMenu>
+        </div>        <div className={`h-6 w-px ${headerColors.divider}`} />        {loading ? (
+          <div className={`h-8 w-8 rounded-full animate-pulse ${actualTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
+        ) : user ? (
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                  <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
                   <AvatarFallback>
                     <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-xs">JD</span>
+                      <span className="text-white font-bold text-xs">
+                        {user?.email?.charAt(0).toUpperCase() || "U"}
+                      </span>
                     </div>
                   </AvatarFallback>
                 </Avatar>
@@ -157,8 +171,12 @@ export function Header() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">John Doe</p>
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">john@example.com</p>
+                  <p className="font-medium">
+                    {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                  </p>
+                  <p className="w-[200px] truncate text-sm text-muted-foreground">
+                    {user.email}
+                  </p>
                 </div>
               </div>
               <DropdownMenuSeparator />
@@ -171,12 +189,26 @@ export function Header() {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu>        ) : (
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={() => {
+              const currentPath = window.location.pathname
+              const redirectUrl = encodeURIComponent(currentPath === '/auth/login' ? '/dashboard' : currentPath)
+              router.push(`/auth/login?redirect=${redirectUrl}`)
+            }}
+            disabled={loading}
+            className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {loading ? "Loading..." : "Sign In"}
+          </Button>
+        )}
       </div>
     </header>
   )

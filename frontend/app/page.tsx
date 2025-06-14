@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { useNavigation } from "@/components/ui/line-loader"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useTheme } from "@/components/ui/theme-provider"
+import { useAuth } from "@/lib/auth-context"
 import { 
   Code2, 
   Share2, 
@@ -24,7 +25,8 @@ import {
   Sparkles,
   Boxes,
   Shield,
-  Clock
+  Clock,
+  User
 } from "lucide-react"
 
 const features = [
@@ -327,6 +329,7 @@ export default function HomePage() {
   const [typedCode, setTypedCode] = useState("")
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
+  const { user, loading } = useAuth()
   
   // Optimized scroll with reduced calculations
   const { scrollYProgress } = useScroll()
@@ -433,12 +436,29 @@ export default function HomePage() {
                 />
               </motion.a>
             ))}
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-white/10'}`}>
-              Sign In
-            </Button>
+          </nav>          <div className="flex items-center gap-4">
+            {loading ? (
+              <div className="h-8 w-8 rounded-full animate-pulse bg-gray-300" />
+            ) : user ? (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">
+                    {user.email?.charAt(0).toUpperCase() || "U"}
+                  </span>
+                </div>
+                <span className={`text-sm font-medium ${themeColors.text}`}>
+                  {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                </span>
+              </div>
+            ) : (
+              <Button 
+                variant="ghost" 
+                className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-white/10'}`}
+                onClick={() => navigateTo("/auth/login")}
+              >
+                Sign In
+              </Button>
+            )}
             
             {/* Theme Toggle */}
             <ThemeToggle variant="minimal" />
@@ -446,8 +466,9 @@ export default function HomePage() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
                 className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
-                onClick={() => navigateTo("/builder")} >
-                Get Started
+                onClick={() => navigateTo(user ? "/dashboard" : "/builder")}
+              >
+                {user ? "Dashboard" : "Get Started"}
               </Button>
             </motion.div>
           </div>
@@ -502,7 +523,7 @@ export default function HomePage() {
           >
             Build, test, and deploy realistic API mocks in seconds. The most advanced API 
             mocking platform for modern development teams.
-          </motion.p>
+          </motion.p>          
           <motion.div 
             className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -511,11 +532,11 @@ export default function HomePage() {
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
-                onClick={() => navigateTo("/builder")}
+                onClick={() => navigateTo(user ? "/dashboard" : "/builder")}
                 size="lg" 
                 className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
               >
-                Start Building Free
+                {user ? "Go to Dashboard" : "Start Building Free"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
@@ -799,14 +820,14 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}            transition={{ duration: 0.8, delay: 0.3 }}
             viewport={{ once: true }}
-          >
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          >            
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
-                onClick={() => navigateTo("/builder")}
+                onClick={() => navigateTo(user ? "/dashboard" : "/builder")}
                 size="lg" 
                 className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
               >
-                Start Building Free
+                {user ? "Go to Dashboard" : "Start Building Free"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
