@@ -40,6 +40,7 @@ import { mockApi, type CreateMockRequest } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { SidebarLayout } from "@/components/layout/sidebar"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 // Dynamically import components to avoid SSR issues
 const MonacoJsonEditor = dynamic(() => import("@/components/editor/monaco-json-editor"), {
@@ -298,8 +299,10 @@ export default function BuilderPage() {
         return "w-full"
     }
   }
-  return (    <SidebarLayout>
-      <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>        <Header />
+  return (
+    <ProtectedRoute>
+      <SidebarLayout>
+        <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>        <Header />
         <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             {/* Enhanced Header with Premium Styling */}
@@ -681,9 +684,9 @@ export default function BuilderPage() {
                 </div>
               </motion.div>
             </div>
-          </div>
-        </main>
+          </div>        </main>
       </div>
     </SidebarLayout>
+    </ProtectedRoute>
   )
 }
