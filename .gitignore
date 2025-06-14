@@ -1,0 +1,413 @@
+# MockBox - Professional API Mocking Platform
+# Comprehensive .gitignore for Full-Stack Project
+
+# ==============================================================================
+# GENERAL
+# ==============================================================================
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.cache
+
+# ==============================================================================
+# FRONTEND (Next.js / React / TypeScript)
+# ==============================================================================
+
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Production builds
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+
+# Environment variables
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Cache and logs
+frontend/.next/cache/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# TypeScript
+frontend/*.tsbuildinfo
+frontend/.tscache/
+
+# Testing
+frontend/coverage/
+frontend/.nyc_output
+frontend/junit.xml
+
+# Storybook
+frontend/.storybook/
+frontend/storybook-static/
+
+# PWA
+frontend/public/sw.js
+frontend/public/workbox-*.js
+
+# Turbo
+frontend/.turbo/
+
+# Vercel
+frontend/.vercel
+
+# ==============================================================================
+# BACKEND (Python / FastAPI)
+# ==============================================================================
+
+# Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+backend/.Python
+backend/build/
+backend/develop-eggs/
+backend/dist/
+backend/downloads/
+backend/eggs/
+backend/.eggs/
+backend/lib/
+backend/lib64/
+backend/parts/
+backend/sdist/
+backend/var/
+backend/wheels/
+backend/share/python-wheels/
+backend/*.egg-info/
+backend/.installed.cfg
+backend/*.egg
+backend/MANIFEST
+
+# Virtual environments
+backend/venv/
+backend/env/
+backend/ENV/
+backend/env.bak/
+backend/venv.bak/
+backend/.venv/
+backend/.conda/
+
+# Environment variables
+backend/.env
+backend/.env.local
+backend/.env.development
+backend/.env.production
+backend/.env.test
+
+# Testing
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+backend/.tox/
+backend/.nox/
+backend/coverage.xml
+backend/*.cover
+backend/*.py,cover
+backend/.hypothesis/
+
+# MyPy
+backend/.mypy_cache/
+backend/.dmypy.json
+backend/dmypy.json
+
+# Pyre
+backend/.pyre/
+
+# Pytype
+backend/.pytype/
+
+# Celery
+backend/celerybeat-schedule
+backend/celerybeat.pid
+
+# SageMath
+backend/*.sage.py
+
+# IPython
+backend/.ipynb_checkpoints
+
+# PyCharm
+backend/.idea/
+
+# Rope
+backend/.ropeproject
+
+# Spyder
+backend/.spyderproject
+backend/.spyproject
+
+# Jupyter Notebook
+backend/*.ipynb
+
+# ==============================================================================
+# DATABASE
+# ==============================================================================
+
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# PostgreSQL
+*.dump
+
+# Database backups
+*.sql.gz
+*.backup
+
+# Migration files (if auto-generated)
+# backend/migrations/versions/
+
+# ==============================================================================
+# DOCKER
+# ==============================================================================
+
+# Docker volumes
+docker-data/
+postgres-data/
+redis-data/
+
+# Docker Compose override
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Docker build cache
+.dockerignore.local
+
+# ==============================================================================
+# CI/CD
+# ==============================================================================
+
+# GitHub Actions
+# (Keep .github/ directory but ignore local workflow runs)
+
+# Jenkins
+jenkins_home/
+
+# GitLab CI
+.gitlab-ci-local/
+
+# ==============================================================================
+# MONITORING & LOGGING
+# ==============================================================================
+
+# Log files
+*.log
+logs/
+log/
+
+# Monitoring data
+monitoring-data/
+grafana-data/
+prometheus-data/
+
+# ==============================================================================
+# SECURITY
+# ==============================================================================
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# API keys and secrets
+secrets/
+.secrets/
+*.secret
+
+# JWT secrets
+jwt-secret.txt
+
+# ==============================================================================
+# PACKAGE MANAGERS
+# ==============================================================================
+
+# npm
+package-lock.json.backup
+yarn.lock.backup
+
+# pnpm
+.pnpm-debug.log*
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Poetry
+poetry.lock.backup
+
+# ==============================================================================
+# DEPLOYMENT
+# ==============================================================================
+
+# Kubernetes
+k8s-secrets/
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# AWS
+.aws/
+
+# Azure
+.azure/
+
+# Google Cloud
+.gcloud/
+
+# Heroku
+.heroku/
+
+# ==============================================================================
+# DEVELOPMENT
+# ==============================================================================
+
+# Local development scripts
+dev-scripts/
+local-setup/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Profile data
+.prof
+
+# ==============================================================================
+# MISC
+# ==============================================================================
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+
+# Large files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Lock files (keep main ones, ignore backups)
+*.lock.backup
+
+# Local configuration overrides
+config.local.*
+settings.local.*
+
+# ==============================================================================
+# PROJECT SPECIFIC
+# ==============================================================================
+
+# MockBox specific
+mock-data/
+test-mocks/
+generated-mocks/
+
+# User uploads
+uploads/
+user-files/
+
+# Analytics data
+analytics-data/
+stats/
+
+# Email templates cache
+email-cache/
+
+# Redis dumps
+dump.rdb
+
+# Nginx logs
+access.log
+error.log
+
+# Let's Encrypt
+letsencrypt/
+
+# Pytest cache in root directory
+.pytest_cache/
+
+# ==============================================================================
+# KEEP THESE FILES
+# ==============================================================================
+
+# Configuration templates
+!**/*.example
+!**/*.template
+!**/*.sample
+
+# Documentation
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!LICENSE
+!COPYRIGHT
+
+# Docker configuration
+!Dockerfile
+!docker-compose.yml
+!.dockerignore
+
+# CI/CD configuration
+!.github/
+!.gitlab-ci.yml
+!Jenkinsfile
+
+# Package configurations
+!package.json
+!requirements.txt
+!pyproject.toml
+!poetry.lock
+!yarn.lock
+!pnpm-lock.yaml
+

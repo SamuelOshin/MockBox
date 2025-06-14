@@ -25,6 +25,7 @@ import {
   ChevronRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth-context"
 
 interface SidebarLayoutProps {
   children: ReactNode
@@ -103,6 +104,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
   const { actualTheme } = useTheme()
+  const { user, signOut, loading } = useAuth()
 
   // Theme-aware colors for sidebar
   const sidebarColors = {
@@ -318,52 +320,111 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               ))}
             </div>
           </div>
-        </ScrollbarContainer>
-
-        {/* User Profile */}
+        </ScrollbarContainer>        {/* User Profile */}
         <div className={cn(
           "border-t p-4 flex-shrink-0",
           sidebarColors.border
-        )}>          <motion.div
-            className={cn(
-              "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
-              sidebarColors.itemBg
-            )}
-            whileHover={{ x: isCollapsed ? 0 : 2 }}
-          >
-            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-xs">JD</span>
-            </div>
-            
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: "auto" }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >                  <div className={cn("text-sm font-medium whitespace-nowrap", sidebarColors.text)}>John Doe</div>
-                  <div className={cn("text-xs whitespace-nowrap", sidebarColors.textSecondary)}>john@example.com</div>
-                </motion.div>
+        )}>
+          {user ? (
+            <motion.div
+              className={cn(
+                "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
+                sidebarColors.itemBg
               )}
-            </AnimatePresence>
-
-            {/* Tooltip for collapsed state */}
-            {isCollapsed && (              <div className={cn(
-                "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
-                sidebarColors.tooltipBg,
-                sidebarColors.tooltipText,
-                sidebarColors.tooltipBorder.replace('border-', 'border-')
-              )}>
-                John Doe
-                <div className={cn(
-                  "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
-                  sidebarColors.tooltipBg.replace('bg-', 'border-r-')
-                )}></div>
+              whileHover={{ x: isCollapsed ? 0 : 2 }}
+              onClick={() => signOut()}
+            >
+              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold text-xs">
+                  {user.email?.charAt(0).toUpperCase() || "U"}
+                </span>
               </div>
-            )}
-          </motion.div>
+              
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className={cn("text-sm font-medium whitespace-nowrap", sidebarColors.text)}>
+                      {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                    </div>
+                    <div className={cn("text-xs whitespace-nowrap", sidebarColors.textSecondary)}>
+                      {user.email}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Tooltip for collapsed state */}
+              {isCollapsed && (
+                <div className={cn(
+                  "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
+                  sidebarColors.tooltipBg,
+                  sidebarColors.tooltipText,
+                  sidebarColors.tooltipBorder.replace('border-', 'border-')
+                )}>
+                  {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                  <div className={cn(
+                    "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
+                    sidebarColors.tooltipBg.replace('bg-', 'border-r-')
+                  )}></div>
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <Link href="/auth/login">
+              <motion.div
+                className={cn(
+                  "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
+                  sidebarColors.itemBg
+                )}
+                whileHover={{ x: isCollapsed ? 0 : 2 }}
+              >
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center flex-shrink-0">
+                  <User className="h-4 w-4 text-white" />
+                </div>
+                
+                <AnimatePresence>
+                  {!isCollapsed && (
+                    <motion.div
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className={cn("text-sm font-medium whitespace-nowrap", sidebarColors.text)}>
+                        Sign In
+                      </div>
+                      <div className={cn("text-xs whitespace-nowrap", sidebarColors.textSecondary)}>
+                        Click to login
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Tooltip for collapsed state */}
+                {isCollapsed && (
+                  <div className={cn(
+                    "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
+                    sidebarColors.tooltipBg,
+                    sidebarColors.tooltipText,
+                    sidebarColors.tooltipBorder.replace('border-', 'border-')
+                  )}>
+                    Sign In
+                    <div className={cn(
+                      "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
+                      sidebarColors.tooltipBg.replace('bg-', 'border-r-')
+                    )}></div>
+                  </div>
+                )}
+              </motion.div>
+            </Link>
+          )}
         </div>
       </motion.aside>
 
