@@ -22,40 +22,69 @@ export interface MockEndpoint {
   createdAt: Date
 }
 
+// Base API configuration
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-production-api.com' 
+  : 'http://localhost:8000';
+
+// API helper function
+async function apiRequest<T>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`API Error: ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
 // Mock API implementation
 export const mockApi = {
   async createMock(data: CreateMockRequest): Promise<MockEndpoint> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      ...data,
-      accessCount: 0,
-      lastAccessed: new Date(),
-      createdAt: new Date(),
-    }
+    return apiRequest<MockEndpoint>('/api/v1/mocks/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 
   async testMock(data: CreateMockRequest): Promise<void> {
-    // Simulate API test
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // For testing, we'll create a temporary mock and then simulate it
+    const tempMock = await this.createMock(data);
+    const response = await fetch(`${API_BASE_URL}/simulate/${tempMock.id}`);
+    
+    if (!response.ok) {
+      throw new Error(`Test failed: ${response.status}`);
+    }
   },
 
   async getAllMocks(): Promise<MockEndpoint[]> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    return []
+    return apiRequest<MockEndpoint[]>('/api/v1/mocks/');
   },
-
   async deleteMock(id: string): Promise<void> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
+    return apiRequest<void>(`/api/v1/mocks/${id}`, {
+      method: 'DELETE',
+    });
   },
 
   async deleteMocks(ids: string[]): Promise<void> {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Delete mocks one by one since bulk delete might not be implemented
+    const promises = ids.map(id => this.deleteMock(id));
+    await Promise.all(promises);
   }
 }
