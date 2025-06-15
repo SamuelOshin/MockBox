@@ -1,0 +1,10 @@
+# Development environment
+environment = "dev"
+domain_name = ""
+backend_api_url = "http://localhost:8000"
+
+# Note: Sensitive variables should be set via TF_VAR_ environment variables
+# TF_VAR_vercel_api_token
+# TF_VAR_github_token
+# TF_VAR_supabase_url
+# TF_VAR_supabase_anon_key

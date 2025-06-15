@@ -1,12 +1,25 @@
 {
   "name": "mockbox-app",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
+  "private": true,  "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "npx serve@latest out",
+    "start:dev": "next dev",
+    "start:server": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "build:analyze": "cross-env ANALYZE=true npm run build",
+    "build:staging": "cross-env NODE_ENV=production NEXT_PUBLIC_ENVIRONMENT=staging npm run build",
+    "build:prod": "cross-env NODE_ENV=production NEXT_PUBLIC_ENVIRONMENT=production npm run build",
+    "deploy:staging": "vercel --prod=false",
+    "deploy:prod": "vercel --prod",
+    "deploy": "node ../infrastructure/scripts/deploy.js",
+    "test": "echo \"No tests specified yet\"",
+    "test:ci": "npm run lint && npm run type-check",
+    "clean": "rimraf .next out",
+    "prebuild": "npm run clean"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -62,15 +75,16 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
     "zod": "^3.24.1"
-  },
-  "devDependencies": {
+  },  "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "eslint": "^9.17.0",
     "eslint-config-next": "^15.2.4",
     "postcss": "^8.5.1",
+    "rimraf": "^5.0.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
   }

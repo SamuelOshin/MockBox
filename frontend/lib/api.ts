@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 export interface CreateMockRequest {
   name: string
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
@@ -22,10 +24,33 @@ export interface MockEndpoint {
   createdAt: Date
 }
 
-// Base API configuration
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-production-api.com' 
-  : 'http://localhost:8000';
+// Base API configuration with environment-specific URLs
+const getApiBaseUrl = () => {
+  // Use environment variable if available
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // Fallback based on environment
+  if (process.env.NODE_ENV === 'production') {
+    // Determine production URL based on deployment
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    
+    if (hostname.includes('staging')) {
+      return 'https://api-staging.mockbox.dev';
+    } else if (hostname.includes('mockbox.app') || hostname.includes('mockbox.dev')) {
+      return 'https://api.mockbox.dev';
+    } else {
+      // Fallback for unknown production domains
+      return 'https://api.mockbox.dev';
+    }
+  }
+  
+  // Development fallback
+  return 'http://localhost:8000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // API helper function
 async function apiRequest<T>(
@@ -34,9 +59,17 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  const defaultHeaders = {
+  // Get the current session token from Supabase
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+
+  // Add authorization header if user is authenticated
+  if (session?.access_token) {
+    defaultHeaders['Authorization'] = `Bearer ${session.access_token}`;
+  }
 
   const response = await fetch(url, {
     ...options,

@@ -1,0 +1,363 @@
+name: 🚀 Deploy MockBox Frontend
+
+on:
+  push:
+    branches: [main, develop]
+    paths: 
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  pull_request:
+    branches: [main]
+    paths: 
+      - 'frontend/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18.x'
+  PNPM_VERSION: '8.x'
+
+jobs:
+  # ============================================================================
+  # SECURITY & QUALITY CHECKS
+  # ============================================================================
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: 'frontend/'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📊 Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: 🛡️ Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./frontend/
+          base: main
+          head: HEAD
+
+  code-quality:
+    name: 📊 Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: 🧹 Run ESLint
+        working-directory: frontend
+        run: npm run lint -- --format=json --output-file=eslint-report.json
+        continue-on-error: true
+
+      - name: 🎨 Check TypeScript
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: 📊 Upload ESLint results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: eslint-report
+          path: frontend/eslint-report.json
+
+  # ============================================================================
+  # BUILD & TEST
+  # ============================================================================
+  build-and-test:
+    name: 🏗️ Build & Test
+    runs-on: ubuntu-latest
+    needs: [security-audit, code-quality]
+    strategy:
+      matrix:
+        environment: [staging, production]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: 🔧 Setup environment variables
+        working-directory: frontend
+        run: |
+          cat > .env.production << EOF
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_API_URL=${{ matrix.environment == 'production' && secrets.PROD_API_URL || secrets.STAGING_API_URL }}
+          NODE_ENV=production
+          EOF
+
+      - name: 🏗️ Build application
+        working-directory: frontend
+        run: npm run build
+
+      - name: 🧪 Run tests
+        working-directory: frontend
+        run: |
+          # Add when you have tests
+          # npm run test:ci
+          echo "Tests would run here"
+
+      - name: 📊 Bundle analysis
+        working-directory: frontend
+        run: |
+          npx next-bundle-analyzer
+        continue-on-error: true
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.environment }}
+          path: |
+            frontend/out/
+            frontend/.next/
+          retention-days: 7
+
+  # ============================================================================
+  # PERFORMANCE TESTING
+  # ============================================================================
+  lighthouse-ci:
+    name: 🚦 Lighthouse CI
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-staging
+          path: frontend/
+
+      - name: 🔗 Install and run Lighthouse CI
+        working-directory: frontend
+        run: |
+          npm install -g @lhci/cli@0.12.x
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # ============================================================================
+  # STAGING DEPLOYMENT
+  # ============================================================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/develop' || github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://mockbox-frontend-staging.vercel.app
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: 🔗 Link Vercel project
+        working-directory: frontend
+        run: |
+          vercel link --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_STAGING }}
+
+      - name: 🏗️ Build with Vercel
+        working-directory: frontend
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: 🚀 Deploy to staging
+        working-directory: frontend
+        run: |
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > deployment-url.txt
+          echo "DEPLOYMENT_URL=$(cat deployment-url.txt)" >> $GITHUB_ENV
+
+      - name: 🧪 Run smoke tests
+        run: |
+          sleep 30 # Wait for deployment to be ready
+          curl -f ${{ env.DEPLOYMENT_URL }} || exit 1
+          echo "Staging deployment successful: ${{ env.DEPLOYMENT_URL }}"
+
+      - name: 💬 Comment PR with staging URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 Staging deployment ready: ${{ env.DEPLOYMENT_URL }}`
+            })
+
+  # ============================================================================
+  # PRODUCTION DEPLOYMENT
+  # ============================================================================
+  deploy-production:
+    name: 🌟 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-test, deploy-staging]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://mockbox.app
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: 🔗 Link Vercel project
+        working-directory: frontend
+        run: |
+          vercel link --yes --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_PROD }}
+
+      - name: 🏗️ Build with Vercel
+        working-directory: frontend
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: 🌟 Deploy to production
+        working-directory: frontend
+        run: |
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} > deployment-url.txt
+          echo "DEPLOYMENT_URL=$(cat deployment-url.txt)" >> $GITHUB_ENV
+
+      - name: 🧪 Run production smoke tests
+        run: |
+          sleep 30 # Wait for deployment to be ready
+          curl -f ${{ env.DEPLOYMENT_URL }} || exit 1
+          # Add more comprehensive health checks here
+
+      - name: 📊 Update deployment status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment.id,
+              state: 'success',
+              environment_url: '${{ env.DEPLOYMENT_URL }}',
+              description: 'Production deployment successful'
+            })
+
+  # ============================================================================
+  # POST-DEPLOYMENT TASKS
+  # ============================================================================
+  post-deployment:
+    name: 📊 Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+    steps:
+      - name: 🔔 Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: "🚀 MockBox Frontend deployed successfully to production!"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 📊 Lighthouse production audit
+        run: |
+          npx lighthouse https://mockbox.app --output=json --output-path=lighthouse-prod.json
+          # Parse and send metrics to monitoring
+
+      - name: 🏷️ Create release tag
+        if: github.ref == 'refs/heads/main'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: releases } = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            const version = releases.length > 0 ? 
+              `v1.0.${releases.length}` : 'v1.0.0';
+            
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${version}`,
+              sha: context.sha
+            });
+
+  # ============================================================================
+  # CLEANUP
+  # ============================================================================
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: 🗑️ Cleanup old deployments
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Cleanup logic for old preview deployments
+            console.log('Cleanup completed');

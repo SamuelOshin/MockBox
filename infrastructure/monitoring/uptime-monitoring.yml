@@ -1,0 +1,68 @@
+# infrastructure/monitoring/uptime-monitoring.yml
+# Uptime monitoring configuration for external services
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uptime-monitors
+data:
+  monitors.json: |
+    {
+      "monitors": [
+        {
+          "name": "MockBox Frontend Production",
+          "url": "https://mockbox.app",
+          "method": "GET",
+          "expected_status": 200,
+          "interval": 300,
+          "timeout": 30,
+          "retry_count": 3,
+          "alerts": {
+            "slack": true,
+            "email": true,
+            "pagerduty": true
+          }
+        },
+        {
+          "name": "MockBox Frontend Staging",
+          "url": "https://mockbox-frontend-staging.vercel.app",
+          "method": "GET",
+          "expected_status": 200,
+          "interval": 600,
+          "timeout": 30,
+          "retry_count": 2,
+          "alerts": {
+            "slack": true,
+            "email": false,
+            "pagerduty": false
+          }
+        },
+        {
+          "name": "MockBox API Health",
+          "url": "https://api.mockbox.dev/health",
+          "method": "GET",
+          "expected_status": 200,
+          "interval": 300,
+          "timeout": 15,
+          "retry_count": 3,
+          "alerts": {
+            "slack": true,
+            "email": true,
+            "pagerduty": true
+          }
+        }
+      ],
+      "alert_channels": {
+        "slack": {
+          "webhook_url": "${SLACK_WEBHOOK_URL}",
+          "channel": "#alerts"
+        },
+        "email": {
+          "recipients": ["devops@mockbox.dev", "oncall@mockbox.dev"],
+          "smtp_server": "${SMTP_SERVER}"
+        },
+        "pagerduty": {
+          "integration_key": "${PAGERDUTY_INTEGRATION_KEY}"
+        }
+      }
+    }
