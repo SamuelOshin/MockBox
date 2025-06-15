@@ -1,3 +1,5 @@
+import { supabase } from './supabase'
+
 export interface CreateMockRequest {
   name: string
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
@@ -34,9 +36,17 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  const defaultHeaders = {
+  // Get the current session token from Supabase
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+
+  // Add authorization header if user is authenticated
+  if (session?.access_token) {
+    defaultHeaders['Authorization'] = `Bearer ${session.access_token}`;
+  }
 
   const response = await fetch(url, {
     ...options,
