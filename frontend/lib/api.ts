@@ -2,32 +2,32 @@ import { supabase } from './supabase'
 
 export interface CreateMockRequest {
   name: string
+  description?: string
+  endpoint: string
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
-  path: string
-  statusCode: number
+  status_code: number
   response: any
-  delay: number
-  isPublic: boolean
+  delay_ms: number
+  is_public: boolean
 }
 
 export interface MockEndpoint {
   id: string
   name: string
+  description?: string
+  endpoint: string
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
-  path: string
-  statusCode: number
+  status_code: number
   response: any
-  delay: number
-  isPublic: boolean
+  delay_ms: number
+  is_public: boolean
   accessCount: number
   lastAccessed: Date
   createdAt: Date
 }
 
 // Base API configuration
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-production-api.com' 
-  : 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // API helper function
 async function apiRequest<T>(

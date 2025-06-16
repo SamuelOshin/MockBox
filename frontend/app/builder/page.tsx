@@ -161,18 +161,16 @@ export default function BuilderPage() {
         variant: "destructive",
       })
       return
-    }
-
-    setIsTesting(true)
+    }    setIsTesting(true)
     try {
       const mockData: CreateMockRequest = {
         name: mockName,
         method: method as any,
-        path,
-        statusCode: Number.parseInt(statusCode),
+        endpoint: path,
+        status_code: Number.parseInt(statusCode),
         response: JSON.parse(response),
-        delay: delay[0],
-        isPublic,
+        delay_ms: delay[0],
+        is_public: isPublic,
       }
 
       await mockApi.testMock(mockData)
@@ -200,18 +198,16 @@ export default function BuilderPage() {
         variant: "destructive",
       })
       return
-    }
-
-    setIsLoading(true)
+    }    setIsLoading(true)
     try {
       const mockData: CreateMockRequest = {
         name: mockName,
         method: method as any,
-        path,
-        statusCode: Number.parseInt(statusCode),
+        endpoint: path,
+        status_code: Number.parseInt(statusCode),
         response: JSON.parse(response),
-        delay: delay[0],
-        isPublic,
+        delay_ms: delay[0],
+        is_public: isPublic,
       }
 
       await mockApi.createMock(mockData)
@@ -240,18 +236,16 @@ export default function BuilderPage() {
         variant: "destructive",
       })
       return
-    }
-
-    setIsPublishing(true)
+    }    setIsPublishing(true)
     try {
       const mockData: CreateMockRequest = {
         name: mockName,
         method: method as any,
-        path,
-        statusCode: Number.parseInt(statusCode),
+        endpoint: path,
+        status_code: Number.parseInt(statusCode),
         response: JSON.parse(response),
-        delay: delay[0],
-        isPublic: true, // Force public when publishing
+        delay_ms: delay[0],
+        is_public: true, // Force public when publishing
       }
 
       await mockApi.createMock(mockData)
