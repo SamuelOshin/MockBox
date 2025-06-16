@@ -105,18 +105,17 @@ export default function DashboardPage() {
 
   // Calculate dashboard metrics
   const totalRequests = mocks.reduce((sum, mock) => sum + mock.accessCount, 0)
-  const publicMocks = mocks.filter((mock) => mock.isPublic).length
+  const publicMocks = mocks.filter((mock) => mock.is_public).length
   const recentMocks = mocks.filter((mock) => {
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
     return mock.createdAt > weekAgo
   }).length
-  const avgResponseTime = Math.round(mocks.reduce((sum, mock) => sum + mock.delay, 0) / mocks.length) || 0
+  const avgResponseTime = Math.round(mocks.reduce((sum, mock) => sum + mock.delay_ms, 0) / mocks.length) || 0
 
-  const filteredMocks = mocks.filter(
-    (mock) =>
+  const filteredMocks = mocks.filter(    (mock) =>
       mock.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mock.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mock.endpoint.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mock.method.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
@@ -423,11 +422,11 @@ export default function DashboardPage() {
                           <TableCell>
                             <div>
                               <div className={`font-medium ${themeColors.text}`}>{mock.name || "Unnamed Mock"}</div>
-                              <div className={`text-sm ${themeColors.textSecondary} font-mono`}>{mock.path}</div>
+                              <div className={`text-sm ${themeColors.textSecondary} font-mono`}>{mock.endpoint}</div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={mock.statusCode >= 400 ? "destructive" : "secondary"}>{mock.statusCode}</Badge>
+                            <Badge variant={mock.status_code >= 400 ? "destructive" : "secondary"}>{mock.status_code}</Badge>
                           </TableCell>
                           <TableCell>
                             <div className={`flex items-center gap-2 ${themeColors.text}`}>
@@ -436,9 +435,8 @@ export default function DashboardPage() {
                             </div>
                           </TableCell>
                           <TableCell className={themeColors.text}>{mock.lastAccessed.toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <Badge variant={mock.isPublic ? "default" : "secondary"}>
-                              {mock.isPublic ? "Public" : "Private"}
+                          <TableCell>                            <Badge variant={mock.is_public ? "default" : "secondary"}>
+                              {mock.is_public ? "Public" : "Private"}
                             </Badge>
                           </TableCell>
                           <TableCell>

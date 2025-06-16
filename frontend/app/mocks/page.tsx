@@ -91,11 +91,10 @@ export default function MocksPage() {
 
     fetchMocks()
   }, [toast])
-
   const filteredMocks = mocks.filter(
     (mock) =>
       mock.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mock.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mock.endpoint.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mock.method.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
@@ -199,16 +198,15 @@ export default function MocksPage() {
                   value: mocks.length,
                   icon: Database,
                   color: "text-blue-500"
-                },
-                {
+                },                {
                   title: "Active Mocks",
-                  value: mocks.filter((mock) => mock.isPublic).length,
+                  value: mocks.filter((mock) => mock.is_public).length,
                   icon: CheckCircle,
                   color: "text-green-500"
                 },
                 {
                   title: "Private Mocks",
-                  value: mocks.filter((mock) => !mock.isPublic).length,
+                  value: mocks.filter((mock) => !mock.is_public).length,
                   icon: AlertCircle,
                   color: "text-orange-500"
                 },
@@ -360,8 +358,7 @@ export default function MocksPage() {
                         </TableCell>
                         <TableCell className={`font-medium ${themeColors.text}`}>
                           <div className="flex items-center gap-2">
-                            <span>{mock.name}</span>
-                            {mock.isPublic ? (
+                            <span>{mock.name}</span>                            {mock.is_public ? (
                               <Globe className="h-3 w-3 text-green-500" />
                             ) : (
                               <Clock className="h-3 w-3 text-orange-500" />
@@ -372,13 +369,12 @@ export default function MocksPage() {
                           <Badge className={methodColors[mock.method]} variant="secondary">
                             {mock.method}
                           </Badge>
-                        </TableCell>
-                        <TableCell className={`font-mono text-sm ${themeColors.textSecondary}`}>
-                          {mock.path}
+                        </TableCell>                        <TableCell className={`font-mono text-sm ${themeColors.textSecondary}`}>
+                          {mock.endpoint}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={mock.statusCode === 200 ? "default" : "destructive"}>
-                            {mock.statusCode}
+                          <Badge variant={mock.status_code === 200 ? "default" : "destructive"}>
+                            {mock.status_code}
                           </Badge>
                         </TableCell>
                         <TableCell className={themeColors.textSecondary}>
