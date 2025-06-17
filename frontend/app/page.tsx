@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -156,48 +156,23 @@ const codeExample = `{
   }
 }`
 
-// Animated Grid Background Component
+// Optimized Animated Grid Background Component  
 const AnimatedGrid = ({ theme }: { theme: "light" | "dark" }) => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    <svg
+  <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
+    <div 
       className="absolute inset-0 w-full h-full"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <pattern
-          id="grid"
-          width="60"
-          height="60"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M 60 0 L 0 0 0 60"
-            fill="none"
-            stroke={theme === 'light' ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.08)"}
-            strokeWidth="1"
-          />
-        </pattern>
-        <pattern
-          id="grid-large"
-          width="120"
-          height="120"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M 120 0 L 0 0 0 120"
-            fill="none"
-            stroke={theme === 'light' ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.04)"}
-            strokeWidth="1.5"
-          />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-      <rect width="100%" height="100%" fill="url(#grid-large)" />
-    </svg>
+      style={{
+        backgroundImage: `
+          linear-gradient(${theme === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)'} 1px, transparent 1px),
+          linear-gradient(90deg, ${theme === 'light' ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)'} 1px, transparent 1px)
+        `,
+        backgroundSize: '60px 60px',
+      }}
+    />
   </div>
 )
 
-// Floating Particles Component
+// Optimized Floating Particles Component
 const FloatingParticles = () => {
   const [particles, setParticles] = useState<Array<{
     id: number
@@ -206,82 +181,48 @@ const FloatingParticles = () => {
     size: number
     opacity: number
     color: string
-    speedX: number
-    speedY: number
   }>>([])
 
   useEffect(() => {
-    const particleCount = window.innerWidth < 768 ? 15 : 25 // Responsive particle count
-    const colors = ['rgba(59, 130, 246, 0.6)', 'rgba(147, 51, 234, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(245, 101, 101, 0.6)']
+    // Reduced particle count for better performance
+    const particleCount = window.innerWidth < 768 ? 6 : 8
+    const colors = ['rgba(59, 130, 246, 0.4)', 'rgba(147, 51, 234, 0.4)', 'rgba(16, 185, 129, 0.4)']
     
     const newParticles = Array.from({ length: particleCount }, (_, i) => ({
       id: i,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      size: Math.random() * 4 + 2, // Size range: 2-6px
-      opacity: Math.random() * 0.6 + 0.2, // Opacity range: 0.2-0.8
+      x: Math.random() * 100, // Use percentage for responsive
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 2, // Smaller particles
+      opacity: Math.random() * 0.4 + 0.1, // Lower opacity
       color: colors[Math.floor(Math.random() * colors.length)],
-      speedX: (Math.random() - 0.5) * 0.5, // Gentle horizontal movement
-      speedY: (Math.random() - 0.5) * 0.3, // Gentle vertical movement
     }))
     
     setParticles(newParticles)
   }, [])
-
-  useEffect(() => {
-    if (particles.length === 0) return
-
-    const animateParticles = () => {
-      setParticles(prevParticles =>
-        prevParticles.map(particle => {
-          let newX = particle.x + particle.speedX
-          let newY = particle.y + particle.speedY
-
-          // Bounce off edges
-          if (newX <= 0 || newX >= window.innerWidth) {
-            particle.speedX *= -1
-            newX = Math.max(0, Math.min(window.innerWidth, newX))
-          }
-          if (newY <= 0 || newY >= window.innerHeight) {
-            particle.speedY *= -1
-            newY = Math.max(0, Math.min(window.innerHeight, newY))
-          }
-
-          return {
-            ...particle,
-            x: newX,
-            y: newY,
-          }
-        })
-      )
-    }
-
-    const interval = setInterval(animateParticles, 50) // 20 FPS for smooth performance
-    return () => clearInterval(interval)
-  }, [particles.length])
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0">
       {particles.map(particle => (
         <motion.div
           key={particle.id}
-          className="absolute rounded-full blur-sm"
+          className="absolute rounded-full will-change-transform"
           style={{
-            left: particle.x,
-            top: particle.y,
+            left: `${particle.x}%`,
+            top: `${particle.y}%`,
             width: particle.size,
             height: particle.size,
             backgroundColor: particle.color,
-            opacity: particle.opacity,
           }}
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [particle.opacity, particle.opacity * 0.7, particle.opacity],
+            x: [0, 20, -20, 0],
+            y: [0, -30, 10, 0],
+            scale: [1, 1.1, 0.9, 1],
           }}
           transition={{
-            duration: 3 + Math.random() * 2, // Random duration between 3-5 seconds
+            duration: 20 + Math.random() * 10, // Much slower, longer duration
             repeat: Infinity,
-            ease: "easeInOut",
+            ease: "linear",
+            delay: particle.id * 2,
           }}
         />
       ))}
@@ -330,10 +271,7 @@ export default function HomePage() {
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
   const { user, loading } = useAuth()
-  
-  // Optimized scroll with reduced calculations
-  const { scrollYProgress } = useScroll()
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"])
+    // Remove heavy scroll transform for better performance
   useEffect(() => {
     setMounted(true)
     
@@ -366,44 +304,47 @@ export default function HomePage() {
     border: actualTheme === 'light' ? 'border-slate-200' : 'border-white/10',
     cardBg: actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20',
     cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'  }    
-    return (
-    <div 
-      className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200 zoom-90`}
+    return (    <div 
+      className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200`}
+      style={{
+        zoom: 0.9,
+      }}
     >
+      {/* CSS Keyframes for background animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.05); }
+        }
+        
+        .will-change-transform {
+          will-change: transform;
+        }
+        
+        .will-change-opacity {
+          will-change: opacity;
+        }
+      `}</style>
         {/* Animated Grid Background */}
       <AnimatedGrid theme={actualTheme} />
       
       {/* Floating Particles */}
-      <FloatingParticles />
-
-      {/* Optimized Background Elements - Reduced complexity */}
+      <FloatingParticles />      {/* Optimized Background Elements - Reduced complexity */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-10">
-        <motion.div 
-          className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-purple-600/20 rounded-full blur-3xl opacity-30"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.2, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
+        <div 
+          className="absolute top-20 left-20 w-96 h-96 bg-gradient-to-r from-blue-500/10 to-purple-600/10 rounded-full blur-3xl will-change-transform"
+          style={{
+            animation: 'float 20s ease-in-out infinite',
           }}
         />
-        <motion.div 
-          className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-green-500/20 to-teal-600/20 rounded-full blur-3xl opacity-30"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.15, 0.3],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
+        <div 
+          className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-green-500/10 to-teal-600/10 rounded-full blur-3xl will-change-transform"
+          style={{
+            animation: 'float 25s ease-in-out infinite reverse',
+            animationDelay: '5s',
           }}
         />
-      </div>      {/* Header */}
+      </div>{/* Header */}
       <header className={`relative z-50 border-b ${themeColors.border} ${actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20'} backdrop-blur-xl`}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
@@ -476,11 +417,9 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden z-20">
-        <motion.div 
+      <section className="relative py-20 px-4 overflow-hidden z-20">        <div 
           className="container mx-auto text-center max-w-6xl"
-          style={{ y: backgroundY }}
-        >         
+        >
          {/* New Feature Badge */}          
         <motion.div
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 ${
@@ -584,11 +523,10 @@ export default function HomePage() {
                     animate={{ opacity: [1, 0] }}
                     transition={{ duration: 0.8, repeat: Infinity }}
                   />
-                </pre>
-              </CardContent>
+                </pre>              </CardContent>
             </Card>
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Simplified Floating Elements */}
         <div className="absolute top-1/4 left-10 w-20 h-20 bg-gradient-to-r from-blue-500/30 to-purple-600/30 rounded-full blur-xl opacity-50" />
@@ -613,24 +551,22 @@ export default function HomePage() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
+            {features.map((feature, index) => (              <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                viewport={{ once: true, margin: "-50px" }}
                 whileHover={{ 
-                  scale: 1.02,
-                  y: -5,
+                  y: -3,
                 }}
-                className="group"
+                className="group will-change-transform"
               >
-                <Card className={`h-full ${actualTheme === 'light' ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'} backdrop-blur-xl transition-all duration-300 overflow-hidden relative`}>
+                <Card className={`h-full ${actualTheme === 'light' ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'} backdrop-blur-xl transition-all duration-200 overflow-hidden relative will-change-transform`}>
                   <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/50 to-transparent' : 'bg-gradient-to-br from-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   
                   <CardHeader className="relative z-10">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-200 will-change-transform`}>
                       <feature.icon className="h-8 w-8 text-white" />
                     </div>
                     <CardTitle className={`text-xl ${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} group-hover:${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} transition-colors`}>
@@ -701,38 +637,26 @@ export default function HomePage() {
             {testimonials.map((testimonial, index) => {
               const theme = cardThemes[testimonial.cardTheme as keyof typeof cardThemes]
               
-              return (
-                <motion.div
+              return (                <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.2 }}
-                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true, margin: "-100px" }}
                   whileHover={{ 
-                    scale: 1.02,
-                    y: -8
+                    y: -4
                   }}
-                  className="group"
+                  className="group will-change-transform"
                 >
-                  <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-500 relative overflow-hidden shadow-2xl`}>
-                    {/* Gradient overlay for depth */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${theme.overlay} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform`}>                    {/* Optimized gradient overlay */}
+                    <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
                     
                     {/* Subtle border glow effect */}
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/10 via-transparent to-white/10 opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
                     
                     <CardHeader className="relative z-10 pb-4">
-                      <div className="flex items-center gap-2 mb-4">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ scale: 0, rotate: -180 }}
-                            whileInView={{ scale: 1, rotate: 0 }}
-                            transition={{ delay: index * 0.2 + i * 0.1, type: "spring" }}
-                            viewport={{ once: true }}
-                          >
-                            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-                          </motion.div>
+                      <div className="flex items-center gap-2 mb-4">                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                         ))}
                       </div>
                       <CardDescription className={`text-base ${theme.textSecondary} leading-relaxed font-medium`}>
