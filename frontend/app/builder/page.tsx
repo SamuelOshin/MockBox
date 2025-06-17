@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { motion } from "framer-motion"
 import { Header } from "@/components/layout/header"
@@ -42,6 +42,7 @@ import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { BuilderPageSkeleton } from "@/components/ui/builder-skeleton"
 
 // Dynamically import components to avoid SSR issues
 const MonacoJsonEditor = dynamic(() => import("@/components/editor/monaco-json-editor"), {
@@ -88,6 +89,7 @@ export default function BuilderPage() {
   const [response, setResponse] = useState(JSON.stringify(responseTemplates.userList, null, 2))
   const [mockName, setMockName] = useState("User List API")
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [isTesting, setIsTesting] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
@@ -96,6 +98,15 @@ export default function BuilderPage() {
   const { toast } = useToast()
 
   const generatedUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/mock${path}`
+
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false)
+    }, 1500) // Show skeleton for 1.5 seconds on initial load
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   // Theme-aware colors
   const themeColors = {
@@ -290,14 +301,18 @@ export default function BuilderPage() {
         return "max-w-sm mx-auto"
       case "tablet":
         return "max-w-2xl mx-auto"
-      default:
-        return "w-full"
+      default:        return "w-full"
     }
   }
+  
   return (
     <ProtectedRoute>
       <SidebarLayout>
-        <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>        <Header />
+        {isInitialLoading ? (
+          <BuilderPageSkeleton theme={actualTheme} />
+        ) : (
+          <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>
+            <Header />
         <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
           <div className="max-w-6xl mx-auto">
             {/* Enhanced Header with Premium Styling */}
@@ -678,10 +693,11 @@ export default function BuilderPage() {
                   </div>
                 </div>
               </motion.div>
-            </div>
-          </div>        </main>
-      </div>
-    </SidebarLayout>
+            </div>          </div>
+        </main>
+          </div>
+        )}
+      </SidebarLayout>
     </ProtectedRoute>
   )
 }
