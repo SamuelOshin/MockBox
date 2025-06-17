@@ -81,43 +81,107 @@ export default function DashboardPage() {
     cardHover: actualTheme === 'light' ? 'hover:bg-slate-50' : 'hover:bg-[#1F1F1F]',
     buttonBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300 hover:bg-slate-200' : 'bg-[#2D2D2D] border-gray-700 hover:bg-[#3A3A3A]',
     accent: actualTheme === 'light' ? 'bg-blue-50' : 'bg-blue-950/30',
-    accentBorder: actualTheme === 'light' ? 'border-blue-200' : 'border-blue-800',
-    tableBg: actualTheme === 'light' ? 'border-slate-200 hover:bg-slate-50' : 'border-gray-800 hover:bg-[#2D2D2D]',
+    accentBorder: actualTheme === 'light' ? 'border-blue-200' : 'border-blue-800',    tableBg: actualTheme === 'light' ? 'border-slate-200 hover:bg-slate-50' : 'border-gray-800 hover:bg-[#2D2D2D]',
     menuBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#2D2D2D] border-gray-700',
     menuItemHover: actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'
   }
-
   useEffect(() => {
     const fetchMocks = async () => {
       try {
+        console.log('=== Dashboard: Starting mock fetch ===');
+        console.log('Environment API URL:', process.env.NEXT_PUBLIC_API_URL);
+        
         const data = await mockApi.getAllMocks()
+        console.log('Successfully fetched mocks:', data);
+        console.log('Data type:', typeof data);
+        console.log('Is array:', Array.isArray(data));
+        console.log('Data length:', data?.length);
+        
+        // Validate each mock object
+        if (Array.isArray(data)) {
+          data.forEach((mock, index) => {
+            console.log(`Mock ${index}:`, {
+              id: mock.id,
+              name: mock.name,
+              hasRequiredFields: !!(mock.id && mock.name && mock.endpoint && mock.method),
+              fieldTypes: {
+                access_count: typeof mock.access_count,
+                last_accessed: typeof mock.last_accessed,
+                created_at: typeof mock.created_at,
+                is_public: typeof mock.is_public
+              }
+            });
+          });
+        }
+        
         setMocks(data)
       } catch (error) {
+        console.error('Failed to fetch mocks from API:', error);
+        
+        // Log detailed error information
+        if (error instanceof Error) {
+          console.error('Error message:', error.message);
+          console.error('Error stack:', error.stack);
+        }
+        
         // Use sample data for demo
+        console.log('Using sample data instead');
         setMocks(sampleMocks)
+        
+        // Only show toast if it's not a network/auth issue
+        if (error instanceof Error && !error.message.includes('403') && !error.message.includes('401')) {
+          toast({
+            title: "API Error",
+            description: "Failed to load mocks from server. Using sample data.",
+            variant: "destructive",
+          })
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchMocks()
-  }, [])
-
-  // Calculate dashboard metrics
-  const totalRequests = mocks.reduce((sum, mock) => sum + mock.accessCount, 0)
-  const publicMocks = mocks.filter((mock) => mock.is_public).length
+  }, [])  // Calculate dashboard metrics with safety checks
+  const totalRequests = mocks.reduce((sum, mock) => {
+    const count = mock.access_count || 0;
+    return sum + (typeof count === 'number' ? count : 0);
+  }, 0);
+  
+  const publicMocks = mocks.filter((mock) => mock.is_public === true).length;
+  
   const recentMocks = mocks.filter((mock) => {
-    const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    return mock.createdAt > weekAgo
-  }).length
-  const avgResponseTime = Math.round(mocks.reduce((sum, mock) => sum + mock.delay_ms, 0) / mocks.length) || 0
-
-  const filteredMocks = mocks.filter(    (mock) =>
-      mock.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mock.endpoint.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mock.method.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+    try {
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+      const createdDate = mock.created_at ? new Date(mock.created_at) : new Date(0);
+      return createdDate > weekAgo
+    } catch (error) {
+      console.warn('Error parsing created_at date for mock:', mock.id, error);
+      return false;
+    }
+  }).length;
+  
+  const avgResponseTime = mocks.length > 0 
+    ? Math.round(mocks.reduce((sum, mock) => {
+        const delay = mock.delay_ms || 0;
+        return sum + (typeof delay === 'number' ? delay : 0);
+      }, 0) / mocks.length) 
+    : 0;
+  const filteredMocks = mocks.filter((mock) => {
+    if (!mock || typeof mock !== 'object') return false;
+    
+    const searchLower = searchQuery.toLowerCase();
+    const name = mock.name || '';
+    const endpoint = mock.endpoint || '';
+    const method = mock.method || '';
+    
+    return (
+      name.toLowerCase().includes(searchLower) ||
+      endpoint.toLowerCase().includes(searchLower) ||
+      method.toLowerCase().includes(searchLower)
+    );
+  })
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -246,11 +310,10 @@ export default function DashboardPage() {
                   icon: Activity,
                   gradient: "from-green-500 to-teal-600",
                   color: "text-green-500"
-                },
-                {
+                },                {
                   title: "Public Mocks",
                   value: publicMocks,
-                  change: `${Math.round((publicMocks / mocks.length) * 100)}% of total`,
+                  change: mocks.length > 0 ? `${Math.round((publicMocks / mocks.length) * 100)}% of total` : "0% of total",
                   icon: Globe,
                   gradient: "from-orange-500 to-red-600",
                   color: "text-orange-500"
@@ -431,10 +494,12 @@ export default function DashboardPage() {
                           <TableCell>
                             <div className={`flex items-center gap-2 ${themeColors.text}`}>
                               <Activity className={`h-4 w-4 ${themeColors.textSecondary}`} />
-                              {mock.accessCount}
+                              {mock.access_count}
                             </div>
                           </TableCell>
-                          <TableCell className={themeColors.text}>{mock.lastAccessed.toLocaleDateString()}</TableCell>
+                          <TableCell className={themeColors.text}>
+                            {mock.last_accessed ? new Date(mock.last_accessed).toLocaleDateString() : 'Never'}
+                          </TableCell>
                           <TableCell>                            <Badge variant={mock.is_public ? "default" : "secondary"}>
                               {mock.is_public ? "Public" : "Private"}
                             </Badge>

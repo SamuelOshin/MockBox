@@ -72,31 +72,51 @@ export default function MocksPage() {
     menuBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#2D2D2D] border-gray-700',
     menuItemHover: actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'
   }
-
   useEffect(() => {
     const fetchMocks = async () => {
       try {
+        console.log('=== Mocks Page: Starting mock fetch ===');
         const data = await mockApi.getAllMocks()
-        setMocks(data)
+        console.log('Mocks page successfully fetched:', data);
+        console.log('Data type:', typeof data);
+        console.log('Is array:', Array.isArray(data));
+        
+        if (Array.isArray(data)) {
+          setMocks(data)
+        } else {
+          console.error('API returned non-array data:', data);
+          throw new Error('Invalid data format returned from API');
+        }
       } catch (error) {
+        console.error('Mocks page fetch error:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch mocks",
+          description: "Failed to fetch mocks. Using sample data.",
           variant: "destructive",
         })
+        setMocks(sampleMocks)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchMocks()
-  }, [toast])
-  const filteredMocks = mocks.filter(
-    (mock) =>
-      mock.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mock.endpoint.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mock.method.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+    fetchMocks()  }, [toast])
+  
+  
+    const filteredMocks = mocks.filter((mock) => {
+    if (!mock || typeof mock !== 'object') return false;
+    
+    const searchLower = searchQuery.toLowerCase();
+    const name = mock.name || '';
+    const endpoint = mock.endpoint || '';
+    const method = mock.method || '';
+    
+    return (
+      name.toLowerCase().includes(searchLower) ||
+      endpoint.toLowerCase().includes(searchLower) ||
+      method.toLowerCase().includes(searchLower)
+    );
+  })
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -191,8 +211,7 @@ export default function MocksPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              {[
+            >              {[
                 {
                   title: "Total Mocks",
                   value: mocks.length,
@@ -200,19 +219,22 @@ export default function MocksPage() {
                   color: "text-blue-500"
                 },                {
                   title: "Active Mocks",
-                  value: mocks.filter((mock) => mock.is_public).length,
+                  value: mocks.filter((mock) => mock && mock.is_public === true).length,
                   icon: CheckCircle,
                   color: "text-green-500"
                 },
                 {
                   title: "Private Mocks",
-                  value: mocks.filter((mock) => !mock.is_public).length,
+                  value: mocks.filter((mock) => mock && mock.is_public === false).length,
                   icon: AlertCircle,
                   color: "text-orange-500"
                 },
                 {
                   title: "Total Requests",
-                  value: mocks.reduce((sum, mock) => sum + mock.accessCount, 0),
+                  value: mocks.reduce((sum, mock) => {
+                    const count = mock && typeof mock.access_count === 'number' ? mock.access_count : 0;
+                    return sum + count;
+                  }, 0),
                   icon: Activity,
                   color: "text-purple-500"
                 }
@@ -378,10 +400,10 @@ export default function MocksPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className={themeColors.textSecondary}>
-                          {mock.accessCount}
+                          {mock.access_count}
                         </TableCell>
                         <TableCell className={`text-sm ${themeColors.textSecondary}`}>
-                          {mock.lastAccessed.toLocaleDateString()}
+                          {mock.last_accessed ? new Date(mock.last_accessed).toLocaleDateString() : 'Never'}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>

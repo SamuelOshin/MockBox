@@ -46,9 +46,15 @@ export const sampleMocks = [
     response: responseTemplates.userList,
     delay_ms: 100,
     is_public: true,
-    accessCount: 42,
-    lastAccessed: new Date("2024-01-20"),
-    createdAt: new Date("2024-01-15")
+    access_count: 42,
+    last_accessed: "2024-01-20T10:30:00Z",
+    created_at: "2024-01-15T09:00:00Z",
+    updated_at: null,
+    user_id: "f5027369-23af-4440-9cb4-7ba889e48dfc",
+    status: "ACTIVE",
+    headers: {},
+    tags: ["users", "api"],
+    description: "Mock API for user list"
   },
   {
     id: "mock_2", 
@@ -59,8 +65,14 @@ export const sampleMocks = [
     response: responseTemplates.productList,
     delay_ms: 200,
     is_public: false,
-    accessCount: 18,
-    lastAccessed: new Date("2024-01-19"),
-    createdAt: new Date("2024-01-10")
+    access_count: 18,
+    last_accessed: "2024-01-19T14:20:00Z",
+    created_at: "2024-01-10T11:00:00Z",
+    updated_at: null,
+    user_id: "f5027369-23af-4440-9cb4-7ba889e48dfc",
+    status: "ACTIVE",
+    headers: {},
+    tags: ["products", "api"],
+    description: "Mock API for product creation"
   }
 ]
