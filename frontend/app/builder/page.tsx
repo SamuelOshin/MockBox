@@ -36,7 +36,8 @@ import {
   Zap
 } from "lucide-react"
 import { responseTemplates } from "@/lib/mock-data"
-import { mockApi, type CreateMockRequest } from "@/lib/api"
+import { mockApi } from "@/lib/api"
+import type { CreateMockRequest } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 import { SidebarLayout } from "@/components/layout/sidebar"
