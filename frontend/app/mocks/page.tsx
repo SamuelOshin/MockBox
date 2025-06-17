@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { useTheme } from "@/components/ui/theme-provider"
 import { ProtectedRoute } from "@/components/auth/protected-route"
+import { MocksPageSkeleton } from "@/components/ui/mocks-skeleton"
 import Link from "next/link"
 
 const methodColors = {
@@ -172,14 +173,16 @@ export default function MocksPage() {
       setIsDeleting(false)
     }
   }
-
   return (
     <ProtectedRoute>
       <SidebarLayout>
-        <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-          <Header />
+        {isLoading ? (
+          <MocksPageSkeleton theme={actualTheme} />
+        ) : (
+          <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+            <Header />
 
-          <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+            <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
             {/* Header Section */}
             <motion.div 
               className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
@@ -332,20 +335,8 @@ export default function MocksPage() {
                   Delete Selected
                 </Button>
               </motion.div>
-            )}
-
-            {/* Mocks Table */}
-            {isLoading ? (
-              <motion.div 
-                className={`${themeColors.cardBg} rounded-lg border p-12 text-center`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
-                <p className={themeColors.textSecondary}>Loading your mocks...</p>
-              </motion.div>
-            ) : (
-              <motion.div 
+            )}            {/* Mocks Table */}
+            <motion.div
                 className={`${themeColors.cardBg} rounded-lg border overflow-hidden`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -441,12 +432,10 @@ export default function MocksPage() {
                         </TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
-                </Table>
+                  </TableBody>                </Table>
               </motion.div>
-            )}
 
-            {filteredMocks.length === 0 && !isLoading && (
+            {filteredMocks.length === 0 && (
               <motion.div 
                 className={`${themeColors.cardBg} rounded-lg border p-12 text-center`}
                 initial={{ opacity: 0 }}
@@ -462,9 +451,9 @@ export default function MocksPage() {
                   Create New Mock
                 </Button>
               </motion.div>
-            )}
-          </main>
-        </div>
+            )}            </main>
+          </div>
+        )}
       </SidebarLayout>
     </ProtectedRoute>
   )

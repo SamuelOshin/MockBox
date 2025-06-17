@@ -51,6 +51,7 @@ import { useToast } from "@/hooks/use-toast"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { useTheme } from "@/components/ui/theme-provider"
+import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton"
 
 // Method colors for badges
 const methodColors = {
@@ -237,14 +238,16 @@ export default function DashboardPage() {
       setIsDeleting(false)
     }
   }
-
   return (
     <ProtectedRoute>
       <SidebarLayout>
-        <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-          <Header />
+        {isLoading ? (
+          <DashboardSkeleton theme={actualTheme} />
+        ) : (
+          <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+            <Header />
 
-          <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+            <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
             {/* Welcome Section */}
             <motion.div 
               className="mb-8"
@@ -426,19 +429,9 @@ export default function DashboardPage() {
                   Duplicate
                 </Button>
               </motion.div>
-            )}
-
-            {/* Mocks Table */}
+            )}            {/* Mocks Table */}
             {isLoading ? (
-              <motion.div 
-                className="flex items-center justify-center py-12"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Loader2 className={`h-8 w-8 animate-spin ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
-                <span className={`ml-2 ${themeColors.text}`}>Loading mocks...</span>
-              </motion.div>
+              <DashboardSkeleton theme={actualTheme} />
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -596,9 +589,9 @@ export default function DashboardPage() {
                   </div>
                 </Card>
               </motion.div>
-            )}
-          </main>
-        </div>
+            )}            </main>
+          </div>
+        )}
       </SidebarLayout>
     </ProtectedRoute>
   )
