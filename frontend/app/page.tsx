@@ -113,6 +113,33 @@ const testimonials = [
     rating: 5,
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=64&h=64&fit=crop&crop=face",
     cardTheme: "indigo" // Creative indigo theme
+  },
+  {
+    name: "Marcus Thompson",
+    role: "Full Stack Developer",
+    company: "GitHub",
+    content: "The team collaboration features are outstanding. We can share mocks instantly across our global team.",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=face",
+    cardTheme: "slate" // Professional slate theme
+  },
+  {
+    name: "Lisa Park",
+    role: "DevOps Engineer",
+    company: "Shopify",
+    content: "MockBox integrates seamlessly with our CI/CD pipeline. It's a game-changer for testing.",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=64&h=64&fit=crop&crop=face",
+    cardTheme: "emerald" // Success-oriented emerald theme
+  },
+  {
+    name: "David Kim",
+    role: "Mobile Developer",
+    company: "Discord",
+    content: "Creating realistic API responses for our mobile app has never been easier. Brilliant tool!",
+    rating: 5,
+    avatar: "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=64&h=64&fit=crop&crop=face",
+    cardTheme: "indigo" // Creative indigo theme
   }
 ]
 
@@ -281,6 +308,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [typedCode, setTypedCode] = useState("")
   const [showScrollTop, setShowScrollTop] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
   const { user, loading, signOut } = useAuth()
@@ -359,9 +387,21 @@ export default function HomePage() {
         .will-change-transform {
           will-change: transform;
         }
-        
-        .will-change-opacity {
+          .will-change-opacity {
           will-change: opacity;
+        }
+        
+        @keyframes scroll-testimonials {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        
+        .testimonials-scroll {
+          animation: scroll-testimonials 30s linear infinite;
+        }
+        
+        .testimonials-scroll.paused {
+          animation-play-state: paused;
         }
       `}</style>
         {/* Animated Grid Background */}
@@ -750,68 +790,127 @@ export default function HomePage() {
                 <span>10M+ API Calls</span>
               </div>
             </motion.div>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => {
-              const theme = cardThemes[testimonial.cardTheme as keyof typeof cardThemes]
-              
-              return (                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  whileHover={{ 
-                    y: -4
-                  }}
-                  className="group will-change-transform"
-                >
-                  <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform`}>                    {/* Optimized gradient overlay */}
-                    <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
-                    
-                    {/* Subtle border glow effect */}
-                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
-                    
-                    <CardHeader className="relative z-10 pb-4">
-                      <div className="flex items-center gap-2 mb-4">                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-                        ))}
-                      </div>
-                      <CardDescription className={`text-base ${theme.textSecondary} leading-relaxed font-medium`}>
-                        "{testimonial.content}"
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="relative z-10 pt-0">
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 shadow-lg">
-                            <img 
-                              src={testimonial.avatar} 
-                              alt={testimonial.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          {/* Online indicator */}
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-current shadow-sm"></div>
+          </motion.div>          {/* Auto-scrolling testimonials container */}
+          <div className="relative overflow-hidden">
+            <div 
+              className={`flex gap-6 testimonials-scroll ${isPaused ? 'paused' : ''}`}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              style={{
+                width: 'max-content', // Let content determine width
+              }}
+            >              {/* First set of testimonials */}
+              {testimonials.map((testimonial, index) => {
+                const theme = cardThemes[testimonial.cardTheme as keyof typeof cardThemes]
+                
+                return (
+                  <motion.div
+                    key={`first-${index}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    className="group will-change-transform flex-shrink-0"
+                    style={{ width: '320px', height: '180px' }} // Fixed width and height for consistent cards
+                  >
+                    <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform flex flex-col`}>
+                      {/* Optimized gradient overlay */}
+                      <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+                      
+                      {/* Subtle border glow effect */}
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
+                      
+                      <CardHeader className="relative z-10 pb-2 px-4 pt-4 flex-1">
+                        <div className="flex items-center gap-1 mb-2">
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                          ))}
                         </div>
-                        <div>
-                          <div className={`font-semibold ${theme.textPrimary} text-base`}>
-                            {testimonial.name}
+                        <CardDescription className={`text-sm ${theme.textSecondary} leading-snug font-medium overflow-hidden`} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                          "{testimonial.content}"
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="relative z-10 pt-0 pb-4 px-4 flex-shrink-0">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative">
+                            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/20 shadow-lg">
+                              <img 
+                                src={testimonial.avatar} 
+                                alt={testimonial.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            {/* Online indicator */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-current shadow-sm"></div>
                           </div>
-                          <div className={`text-sm ${theme.accent} font-medium`}>
-                            {testimonial.role}
-                          </div>
-                          <div className={`text-xs ${theme.accent} opacity-80`}>
-                            {testimonial.company}
+                          <div className="min-w-0 flex-1">
+                            <div className={`font-semibold ${theme.textPrimary} text-sm truncate`}>
+                              {testimonial.name}
+                            </div>
+                            <div className={`text-xs ${theme.accent} font-medium truncate`}>
+                              {testimonial.role} • {testimonial.company}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )
-            })}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}              {/* Duplicate set for seamless loop */}
+              {testimonials.map((testimonial, index) => {
+                const theme = cardThemes[testimonial.cardTheme as keyof typeof cardThemes]
+                
+                return (
+                  <motion.div
+                    key={`second-${index}`}
+                    className="group will-change-transform flex-shrink-0"
+                    style={{ width: '320px', height: '180px' }} // Fixed width and height for consistent cards
+                  >
+                    <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform flex flex-col`}>
+                      {/* Optimized gradient overlay */}
+                      <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+                      
+                      {/* Subtle border glow effect */}
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
+                      
+                      <CardHeader className="relative z-10 pb-2 px-4 pt-4 flex-1">
+                        <div className="flex items-center gap-1 mb-2">
+                          {[...Array(testimonial.rating)].map((_, i) => (
+                            <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                          ))}
+                        </div>
+                        <CardDescription className={`text-sm ${theme.textSecondary} leading-snug font-medium overflow-hidden`} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                          "{testimonial.content}"
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="relative z-10 pt-0 pb-4 px-4 flex-shrink-0">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative">
+                            <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/20 shadow-lg">
+                              <img 
+                                src={testimonial.avatar} 
+                                alt={testimonial.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            {/* Online indicator */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-current shadow-sm"></div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className={`font-semibold ${theme.textPrimary} text-sm truncate`}>
+                              {testimonial.name}
+                            </div>
+                            <div className={`text-xs ${theme.accent} font-medium truncate`}>
+                              {testimonial.role} • {testimonial.company}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </div>
           </div>
           
           {/* Trust indicators */}
