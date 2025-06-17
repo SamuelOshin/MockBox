@@ -26,8 +26,20 @@ import {
   Boxes,
   Shield,
   Clock,
-  User
+  User,
+  Settings,
+  LogOut,
+  ChevronDown,
+  ArrowUp
 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const features = [
   {
@@ -268,10 +280,12 @@ const WorldMapSVG = () => (
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const [typedCode, setTypedCode] = useState("")
+  const [showScrollTop, setShowScrollTop] = useState(false)
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
-  const { user, loading } = useAuth()
-    // Remove heavy scroll transform for better performance
+  const { user, loading, signOut } = useAuth()
+
+  // Remove heavy scroll transform for better performance
   useEffect(() => {
     setMounted(true)
     
@@ -288,8 +302,33 @@ export default function HomePage() {
       }
     }, 10)
 
-    return () => clearInterval(timer)
+    // Scroll to top button visibility
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      clearInterval(timer)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      // Optionally navigate to home or show a success message
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
 
   if (!mounted) return null
 
@@ -361,7 +400,7 @@ export default function HomePage() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-8">
-            {["Features", "Pricing", "Docs", "Dashboard"].map((item) => (
+            {["Features", "Pricing", "Docs"].map((item) => (
               <motion.a
                 key={item}
                 href="#"
@@ -377,19 +416,97 @@ export default function HomePage() {
                 />
               </motion.a>
             ))}
-          </nav>          <div className="flex items-center gap-4">
+          </nav>
+
+          {/* Theme Toggle */}
+          <ThemeToggle variant="minimal" />  
+
+          <div className="flex items-center gap-4">
             {loading ? (
               <div className="h-8 w-8 rounded-full animate-pulse bg-gray-300" />
             ) : user ? (
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">
-                    {user.email?.charAt(0).toUpperCase() || "U"}
-                  </span>
-                </div>
-                <span className={`text-sm font-medium ${themeColors.text}`}>
-                  {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
-                </span>
+                {/* User Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <motion.button
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
+                        actualTheme === 'light' 
+                          ? 'hover:bg-slate-100 text-slate-700' 
+                          : 'hover:bg-white/10 text-gray-200'
+                      } transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                        <span className="text-white font-bold text-sm">
+                          {user.email?.charAt(0).toUpperCase() || "U"}
+                        </span>
+                      </div>
+                      <div className="hidden sm:block text-left">
+                        <div className={`text-sm font-medium ${themeColors.text}`}>
+                          {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                        </div>
+                        <div className={`text-xs ${themeColors.textMuted}`}>
+                          {user.email}
+                        </div>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 ${themeColors.textMuted} transition-transform group-data-[state=open]:rotate-180`} />
+                    </motion.button>
+                  </DropdownMenuTrigger>
+                  
+                  <DropdownMenuContent 
+                    align="end" 
+                    className={`w-56 ${
+                      actualTheme === 'light' 
+                        ? 'bg-white border-slate-200 shadow-lg' 
+                        : 'bg-gray-900 border-gray-700 shadow-2xl'
+                    } backdrop-blur-xl`}
+                  >
+                    <DropdownMenuLabel className={actualTheme === 'light' ? 'text-slate-900' : 'text-gray-100'}>
+                      My Account
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className={actualTheme === 'light' ? 'bg-slate-200' : 'bg-gray-700'} />
+                    
+                    <DropdownMenuItem 
+                      onClick={() => navigateTo("/dashboard")}
+                      className={`flex items-center gap-3 cursor-pointer ${
+                        actualTheme === 'light' 
+                          ? 'text-slate-700 hover:bg-slate-50 focus:bg-slate-50' 
+                          : 'text-gray-200 hover:bg-gray-800 focus:bg-gray-800'
+                      }`}
+                    >
+                      <Activity className="h-4 w-4" />
+                      <span>Dashboard</span>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem 
+                      onClick={() => navigateTo("/settings")}
+                      className={`flex items-center gap-3 cursor-pointer ${
+                        actualTheme === 'light' 
+                          ? 'text-slate-700 hover:bg-slate-50 focus:bg-slate-50' 
+                          : 'text-gray-200 hover:bg-gray-800 focus:bg-gray-800'
+                      }`}
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator className={actualTheme === 'light' ? 'bg-slate-200' : 'bg-gray-700'} />
+                    
+                    <DropdownMenuItem 
+                      onClick={handleSignOut}
+                      className={`flex items-center gap-3 cursor-pointer ${
+                        actualTheme === 'light' 
+                          ? 'text-red-600 hover:bg-red-50 focus:bg-red-50' 
+                          : 'text-red-400 hover:bg-red-900/20 focus:bg-red-900/20'
+                      }`}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sign Out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <Button 
@@ -401,23 +518,25 @@ export default function HomePage() {
               </Button>
             )}
             
-            {/* Theme Toggle */}
-            <ThemeToggle variant="minimal" />
             
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button 
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
-                onClick={() => navigateTo(user ? "/dashboard" : "/builder")}
-              >
-                {user ? "Dashboard" : "Get Started"}
-              </Button>
-            </motion.div>
+            {/* Get Started Button - Only show when not authenticated */}
+            {!user && (
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
+                  onClick={() => navigateTo("/builder")}
+                >
+                  Get Started
+                </Button>
+              </motion.div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden z-20">        <div 
+      <section className="relative py-20 px-4 overflow-hidden z-20">        
+        <div 
           className="container mx-auto text-center max-w-6xl"
         >
          {/* New Feature Badge */}          
@@ -834,10 +953,41 @@ export default function HomePage() {
           </div>
 
           <div className={`border-t ${themeColors.border} mt-12 pt-8 text-center ${themeColors.textSecondary}`}>
-            <p>&copy; 2024 MockBox. Built with ❤️ for developers worldwide.</p>
-          </div>
+            <p>&copy; 2024 MockBox. Built with ❤️ for developers worldwide.</p>          </div>
         </div>
       </footer>
+
+      {/* Scroll to Top Button */}
+      <motion.button
+        onClick={scrollToTop}
+        className={`fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${
+          actualTheme === 'light'
+            ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+            : 'bg-gray-900 border border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600'
+        } backdrop-blur-xl flex items-center justify-center hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+        initial={{ opacity: 0, scale: 0.8, y: 100 }}
+        animate={{ 
+          opacity: showScrollTop ? 1 : 0, 
+          scale: showScrollTop ? 1 : 0.8,
+          y: showScrollTop ? 0 : 100
+        }}
+        transition={{ 
+          duration: 0.3,
+          ease: "easeInOut"
+        }}
+        whileHover={{ 
+          scale: 1.1,
+          boxShadow: actualTheme === 'light' 
+            ? '0 8px 25px rgba(0, 0, 0, 0.15)' 
+            : '0 8px 25px rgba(0, 0, 0, 0.5)'
+        }}
+        whileTap={{ scale: 0.95 }}
+        style={{
+          pointerEvents: showScrollTop ? 'auto' : 'none'
+        }}
+      >
+        <ArrowUp className="h-5 w-5" />
+      </motion.button>
     </div>
   )
 }
