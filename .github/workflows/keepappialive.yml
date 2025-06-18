@@ -1,0 +1,15 @@
+name: Keep Backend API Alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" 
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping API to Keep Alive  
+        run: |
+          echo "Pinging the backend API to keep it alive..."
+          curl -s -o /dev/null -w "%{http_code}" "${{ secrets.BACKEND_API_URL }}" || echo "Failed to ping the API"
