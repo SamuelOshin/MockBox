@@ -22,17 +22,38 @@ router = APIRouter(prefix="/mocks", tags=["mocks"])
 @router.post("/", response_model=MockResponse, status_code=status.HTTP_201_CREATED)
 async def create_mock(
     mock_data: MockCreate,
+    request: Request,
     current_user: dict = Depends(get_current_user),
     db: DatabaseManager = Depends(get_database)
 ):
     """Create a new mock endpoint"""
-    service = MockService(db)
-    mock = await service.create_mock(UUID(current_user["id"]), mock_data)
+    # Extract user ID
+    user_id = current_user.get("sub") or current_user.get("id")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token: missing user ID"
+        )
+    
+    # Extract JWT token from request headers
+    auth_header = request.headers.get("authorization", "")
+    user_token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else None
+    
+    if not user_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No authentication token provided"
+        )    
+    # Create service with user's JWT token for RLS
+    service = MockService(db, user_token=user_token)
+    
+    mock = await service.create_mock(UUID(user_id), mock_data)
     return MockResponse(**mock.dict())
 
 
 @router.get("/", response_model=MockListResponse)
 async def list_mocks(
+    request: Request,
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Items per page"),
     status_filter: Optional[MockStatus] = Query(None, description="Filter by status"),
@@ -42,11 +63,16 @@ async def list_mocks(
     db: DatabaseManager = Depends(get_database)
 ):
     """List user's mocks with filtering and pagination"""
-    service = MockService(db)
+    # Extract JWT token from request headers for authenticated access
+    auth_header = request.headers.get("authorization", "")
+    user_token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else None
+    
+    service = MockService(db, user_token=user_token)
     pagination = PaginationParams(page=page, limit=limit)
     
+    user_id = current_user.get("sub") or current_user.get("id")
     mocks, total = await service.list_mocks(
-        UUID(current_user["id"]),
+        UUID(user_id),
         pagination,
         status_filter,
         search,
@@ -72,7 +98,8 @@ async def get_mock(
 ):
     """Get mock by ID"""
     service = MockService(db)
-    mock = await service.get_mock(mock_id, UUID(current_user["id"]))
+    user_id = current_user.get("sub") or current_user.get("id")
+    mock = await service.get_mock(mock_id, UUID(user_id))
     
     if not mock:
         raise HTTPException(
@@ -92,7 +119,8 @@ async def update_mock(
 ):
     """Update mock by ID"""
     service = MockService(db)
-    mock = await service.update_mock(mock_id, UUID(current_user["id"]), update_data)
+    user_id = current_user.get("sub") or current_user.get("id")
+    mock = await service.update_mock(mock_id, UUID(user_id), update_data)
     return MockResponse(**mock.dict())
 
 
@@ -104,7 +132,8 @@ async def delete_mock(
 ):
     """Delete mock by ID"""
     service = MockService(db)
-    success = await service.delete_mock(mock_id, UUID(current_user["id"]))
+    user_id = current_user.get("sub") or current_user.get("id")
+    success = await service.delete_mock(mock_id, UUID(user_id))
     
     if not success:
         raise HTTPException(
@@ -126,11 +155,15 @@ async def simulate_mock(
     service = MockService(db)
     
     # Prepare request data for logging
+    user_id = None
+    if current_user:
+        user_id = current_user.get("sub") or current_user.get("id")
+    
     request_data = {
         "ip": request.client.host if request.client else "unknown",
         "user_agent": request.headers.get("user-agent"),
         "method": request.method,
-        "user_id": current_user["id"] if current_user else None
+        "user_id": user_id
     }
     
     result = await service.simulate_mock(mock_id, request_data)
@@ -152,8 +185,9 @@ async def toggle_mock_status(
     """Toggle mock status between active and inactive"""
     service = MockService(db)
     
+    user_id = current_user.get("sub") or current_user.get("id")
     # Get current mock
-    mock = await service.get_mock(mock_id, UUID(current_user["id"]))
+    mock = await service.get_mock(mock_id, UUID(user_id))
     if not mock:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -164,7 +198,7 @@ async def toggle_mock_status(
     new_status = MockStatus.INACTIVE if mock.status == MockStatus.ACTIVE else MockStatus.ACTIVE
     update_data = MockUpdate(status=new_status)
     
-    updated_mock = await service.update_mock(mock_id, UUID(current_user["id"]), update_data)
+    updated_mock = await service.update_mock(mock_id, UUID(user_id), update_data)
     return MockResponse(**updated_mock.dict())
 
 
@@ -177,8 +211,9 @@ async def duplicate_mock(
     """Duplicate an existing mock"""
     service = MockService(db)
     
+    user_id = current_user.get("sub") or current_user.get("id")
     # Get original mock
-    original_mock = await service.get_mock(mock_id, UUID(current_user["id"]))
+    original_mock = await service.get_mock(mock_id, UUID(user_id))
     if not original_mock:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -199,7 +234,7 @@ async def duplicate_mock(
         tags=original_mock.tags
     )
     
-    duplicate_mock = await service.create_mock(UUID(current_user["id"]), duplicate_data)
+    duplicate_mock = await service.create_mock(UUID(user_id), duplicate_data)
     return MockResponse(**duplicate_mock.dict())
 
 

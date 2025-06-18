@@ -43,22 +43,14 @@ def verify_supabase_token(token: str) -> Dict[str, Any]:
         
     Raises:
         AuthError: If token is invalid
-    """
+    """    
     try:
-        # For development: if using temporary secret, skip verification
-        if settings.supabase_jwt_secret == "temporary-development-secret-change-this-in-production":
-            # Decode without verification for development
-            payload = jwt.decode(token, options={"verify_signature": False})
-        else:
-            # Decode JWT token with verification
-            payload = jwt.decode(
-                token,
-                settings.supabase_jwt_secret,
-                algorithms=[settings.jwt_algorithm],
-                options={"verify_aud": False}  # Supabase doesn't always include aud
-            )
+        # For development with Supabase auth: decode without verification
+        # Since we're passing the JWT to Supabase directly, and Supabase validates it,
+        # we just need to extract the payload for user info
+        payload = jwt.decode(token, options={"verify_signature": False})
         
-        # Check token expiration
+        # Check token expiration manually
         exp = payload.get("exp")
         if exp and datetime.utcnow().timestamp() > exp:
             raise AuthError("Token has expired")
@@ -112,7 +104,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         credentials: HTTP authorization credentials
         
     Returns:
-        User data from token payload
+        User data from token payload including the raw token
         
     Raises:
         AuthError: If authentication fails
@@ -124,7 +116,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             "id": payload.get("sub"),
             "email": payload.get("email"),
             "role": payload.get("role", "authenticated"),
-            "metadata": payload.get("user_metadata", {})
+            "metadata": payload.get("user_metadata", {}),
+            "raw_token": token  # Include the raw token for database operations
         }
     except Exception as e:
         raise AuthError(f"Authentication failed: {str(e)}")

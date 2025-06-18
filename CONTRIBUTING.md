@@ -43,7 +43,7 @@ Before contributing, ensure you have:
 
 1. **Fork the repository**
 ```bash
-git clone https://github.com/yourusername/mockbox.git
+git clone https://github.com/SamuelOshin/MockBox.git
 cd mockbox
 ```
 
@@ -122,7 +122,7 @@ Before starting work, create an issue or comment on an existing one to discuss:
 
 ```bash
 # Fork the repository on GitHub
-git clone https://github.com/yourusername/mockbox.git
+git clone https://github.com/SamuelOshin/MockBox.git
 cd mockbox
 
 # Create a feature branch
@@ -742,8 +742,8 @@ We appreciate all contributions and recognize them in several ways:
 For questions about contributing:
 
 - **Email:** contribute@mockbox.dev
-- **Discord:** [MockBox Community](https://discord.gg/mockbox)
-- **GitHub:** [@mockbox](https://github.com/mockbox)
+- **Discord:** [MockBox Community](https://discord.gg/MockBox)
+- **GitHub:** [@mockbox](https://github.com/MockBox)
 
 ---
 

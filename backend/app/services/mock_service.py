@@ -17,8 +17,14 @@ from app.schemas.schemas import MockCreate, MockUpdate, PaginationParams
 class MockService:
     """Service for mock operations"""
     
-    def __init__(self, db: DatabaseManager):
+    def __init__(self, db: DatabaseManager, user_token: Optional[str] = None):
         self.db = db
+        self.user_token = user_token
+        # Use authenticated client if token is provided
+        if user_token:
+            self.client = db.get_client_with_auth(user_token)
+        else:
+            self.client = db.supabase.client
     
     async def create_mock(self, user_id: UUID, mock_data: MockCreate) -> Mock:
         """Create a new mock"""
@@ -33,8 +39,7 @@ class MockService:
             
             # Create mock record
             mock_id = uuid4()
-            now = datetime.utcnow()
-            
+            now = datetime.utcnow()            
             mock_dict = {
                 "id": str(mock_id),
                 "user_id": str(user_id),
@@ -43,7 +48,7 @@ class MockService:
                 "endpoint": mock_data.endpoint,
                 "method": mock_data.method.value,
                 "response": mock_data.response,
-                "headers": mock_data.headers,
+                "headers": mock_data.headers if mock_data.headers else {},
                 "status_code": mock_data.status_code,
                 "delay_ms": mock_data.delay_ms,
                 "status": MockStatus.ACTIVE.value,
@@ -52,11 +57,24 @@ class MockService:
                 "access_count": 0,
                 "last_accessed": None,
                 "created_at": now.isoformat(),
-                "updated_at": None
-            }
-            
-            # Insert into database
-            result = self.db.supabase.client.table("mocks").insert(mock_dict).execute()
+                "updated_at": None            }
+              # Insert into database using authenticated client            
+            try:
+                # Insert the mock into the database
+                result = self.client.table("mocks").insert(mock_dict).execute()
+            except Exception as e:
+                # Handle database insertion errors
+                error_message = str(e)
+                if "mocks_user_id_fkey" in error_message or "violates foreign key constraint" in error_message:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="User not found in authentication system. Please ensure you're properly authenticated through Supabase."
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Failed to create mock: {error_message}"
+                    )
             
             if not result.data:
                 raise HTTPException(
@@ -80,7 +98,7 @@ class MockService:
     async def get_mock(self, mock_id: UUID, user_id: Optional[UUID] = None) -> Optional[Mock]:
         """Get mock by ID"""
         try:
-            query = self.db.supabase.client.table("mocks").select("*").eq("id", str(mock_id))
+            query = self.client.table("mocks").select("*").eq("id", str(mock_id))
             
             # If user_id provided, ensure user owns mock or it's public
             if user_id:
@@ -110,10 +128,10 @@ class MockService:
         search: Optional[str] = None,
         tags: Optional[List[str]] = None
     ) -> Tuple[List[Mock], int]:
-        """List user's mocks with filtering and pagination"""
+        """List user's mocks with filtering and pagination"""        
         try:
             # Build query
-            query = self.db.supabase.client.table("mocks").select("*", count="exact")
+            query = self.client.table("mocks").select("*", count="exact")
             query = query.eq("user_id", str(user_id))
             
             # Apply filters
@@ -174,9 +192,8 @@ class MockService:
             
             if update_dict:
                 update_dict["updated_at"] = datetime.utcnow().isoformat()
-            
-            # Update in database
-            result = self.db.supabase.client.table("mocks").update(update_dict).eq("id", str(mock_id)).execute()
+              # Update in database
+            result = self.client.table("mocks").update(update_dict).eq("id", str(mock_id)).execute()
             
             if not result.data:
                 raise HTTPException(
@@ -204,12 +221,11 @@ class MockService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Mock not found or access denied"
                 )
-            
-            # Delete mock stats first (foreign key constraint)
-            self.db.supabase.client.table("mock_stats").delete().eq("mock_id", str(mock_id)).execute()
+              # Delete mock stats first (foreign key constraint)
+            self.client.table("mock_stats").delete().eq("mock_id", str(mock_id)).execute()
             
             # Delete mock
-            result = self.db.supabase.client.table("mocks").delete().eq("id", str(mock_id)).execute()
+            result = self.client.table("mocks").delete().eq("id", str(mock_id)).execute()
             
             return len(result.data) > 0
             
@@ -269,9 +285,9 @@ class MockService:
             )
     
     async def get_mock_by_endpoint(self, endpoint: str, method: HTTPMethod) -> Optional[Mock]:
-        """Get mock by endpoint and method (public access)"""
+        """Get mock by endpoint and method (public access)"""        
         try:
-            result = self.db.supabase.client.table("mocks").select("*").eq("endpoint", endpoint).eq("method", method.value).eq("status", MockStatus.ACTIVE.value).eq("is_public", True).execute()
+            result = self.client.table("mocks").select("*").eq("endpoint", endpoint).eq("method", method.value).eq("status", MockStatus.ACTIVE.value).eq("is_public", True).execute()
             
             if not result.data:
                 return None
@@ -285,9 +301,9 @@ class MockService:
             )
     
     async def _get_mock_by_endpoint(self, user_id: UUID, endpoint: str, method: HTTPMethod) -> Optional[Mock]:
-        """Get mock by endpoint and method for specific user"""
+        """Get mock by endpoint and method for specific user"""       
         try:
-            result = self.db.supabase.client.table("mocks").select("*").eq("user_id", str(user_id)).eq("endpoint", endpoint).eq("method", method.value).execute()
+            result = self.client.table("mocks").select("*").eq("user_id", str(user_id)).eq("endpoint", endpoint).eq("method", method.value).execute()
             
             if not result.data:
                 return None
@@ -312,10 +328,9 @@ class MockService:
                 "error_count": 0,
                 "last_error": None,
                 "created_at": datetime.utcnow().isoformat(),
-                "updated_at": None
-            }
+                "updated_at": None            }
             
-            self.db.supabase.client.table("mock_stats").insert(stats_dict).execute()
+            self.client.table("mock_stats").insert(stats_dict).execute()
             
         except Exception:
             # Non-critical, log but don't fail
@@ -325,9 +340,8 @@ class MockService:
         """Log mock access for analytics"""
         try:
             now = datetime.utcnow()
-            
-            # Update mock access count and last accessed
-            self.db.supabase.client.table("mocks").update({
+              # Update mock access count and last accessed
+            self.client.table("mocks").update({
                 "access_count": "access_count + 1",
                 "last_accessed": now.isoformat()
             }).eq("id", str(mock_id)).execute()
@@ -356,7 +370,7 @@ class MockService:
         """List public mocks (no authentication required)"""
         try:
             # Build query for public mocks only
-            query = self.db.supabase.client.table("mocks").select("*", count="exact")
+            query = self.client.table("mocks").select("*", count="exact")
             query = query.eq("is_public", True)
             query = query.eq("status", MockStatus.ACTIVE.value)
             
