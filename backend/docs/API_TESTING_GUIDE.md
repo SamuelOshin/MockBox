@@ -27,16 +27,17 @@ Your MockBox backend is now running on **http://localhost:8000** with the follow
 3. Click "Try it out" button
 4. Fill in the parameters/body
 5. Click "Execute" to test
-
+#### Generate Test Token
+`python generate_tokens.py`
 #### Method 2: Create a Test Mock
 Use this JSON to create a test mock via the docs interface:
 
 ```json
 {
   "name": "Sample User API",
-  "method": "GET", 
-  "path": "/api/users/123",
-  "statusCode": 200,
+  "method": "GET",
+  "endpoint": "/api/users/123",
+  "status_code": 200,
   "response": {
     "id": "usr_123",
     "name": "John Doe",
@@ -45,8 +46,8 @@ Use this JSON to create a test mock via the docs interface:
     "avatar": "https://api.mockbox.dev/avatars/123",
     "createdAt": "2024-01-15T10:30:00Z"
   },
-  "delay": 100,
-  "isPublic": true
+  "delay_ms": 100,
+  "is_public": true
 }
 ```
 

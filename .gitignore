@@ -131,7 +131,7 @@ backend/.env.test
 # Tokens and credentials
 backend/test_tokens.json
 backend/*tokens*.json
-
+backend/real_test_token.json
 # Testing
 backend/.pytest_cache/
 backend/.coverage

@@ -50,9 +50,41 @@ class SupabaseClient:
 
 class DatabaseManager:
     """Database operations manager"""
-    
-    def __init__(self):
+    def __init__(self, user_token: Optional[str] = None):
         self.supabase = SupabaseClient()
+        self.user_token = user_token        
+    def get_client_with_auth(self, user_token: Optional[str] = None) -> Client:
+        """Get Supabase client with user authentication"""
+        token = user_token or self.user_token
+        if token:
+            # Create a new client instance for user-authenticated requests
+            client = create_client(
+                settings.supabase_url, 
+                settings.supabase_key
+            )            # Create authenticated client with user JWT token
+            
+            # Set authentication headers directly on the client components
+            # This is the most reliable way to ensure JWT is used for RLS
+            auth_headers = {
+                "Authorization": f"Bearer {token}",
+                "apikey": settings.supabase_key,
+                # Add these headers to ensure proper JWT processing
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+            
+            # Update headers on PostgREST client (used for database operations)
+            if hasattr(client, 'postgrest') and hasattr(client.postgrest, 'headers'):
+                client.postgrest.headers.update(auth_headers)
+            # Update headers on REST session (used for API calls)
+            if hasattr(client, 'rest') and hasattr(client.rest, 'session') and hasattr(client.rest.session, 'headers'):
+                client.rest.session.headers.update(auth_headers)
+            
+            # Authentication headers configured successfully
+            return client
+        else:
+            # Fall back to default client (anon key)
+            return self.supabase.client
     
     async def health_check(self) -> bool:
         """Check database connectivity"""
@@ -77,8 +109,7 @@ class DatabaseManager:
     async def close(self):
         """Close database connections"""
         await self.supabase.close()
-
-
+        
 # Global database manager instance
 db_manager = DatabaseManager()
 
@@ -86,6 +117,10 @@ db_manager = DatabaseManager()
 async def get_database() -> DatabaseManager:
     """Dependency for getting database manager"""
     return db_manager
+
+async def get_database_with_auth(user_token: str) -> DatabaseManager:
+    """Dependency for getting database manager with user authentication"""
+    return DatabaseManager(user_token=user_token)
 
 
 async def init_database():
