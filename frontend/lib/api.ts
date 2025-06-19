@@ -68,7 +68,7 @@ async function apiRequest<T>(
 // Mock API implementation
 export const mockApi = {
   async createMock(data: CreateMockRequest): Promise<MockEndpoint> {
-    return apiRequest<MockEndpoint>('api/v1/mocks/', {
+    return apiRequest<MockEndpoint>('/api/v1/mocks/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
