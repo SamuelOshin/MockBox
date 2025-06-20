@@ -76,11 +76,7 @@ export default function MocksPage() {
   useEffect(() => {
     const fetchMocks = async () => {
       try {
-        console.log('=== Mocks Page: Starting mock fetch ===');
         const data = await mockApi.getAllMocks()
-        console.log('Mocks page successfully fetched:', data);
-        console.log('Data type:', typeof data);
-        console.log('Is array:', Array.isArray(data));
         
         if (Array.isArray(data)) {
           setMocks(data)

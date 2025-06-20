@@ -71,17 +71,7 @@ const JsonSnippets = dynamic(() => import("@/components/editor/json-snippets"), 
 })
 
 // Dynamically import AI components
-const AIEnhancedGenerator = dynamic(() => import("@/components/editor/ai-enhanced-generator").then(m => ({ default: m.AIEnhancedGenerator })), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg flex items-center justify-center border border-purple-200">
-      <div className="flex items-center gap-2 text-purple-600">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
-        Loading AI Generator...
-      </div>
-    </div>
-  ),
-})
+import { AIGeneratorModal } from "@/components/editor/ai-generator-modal"
 
 const AISnippetWizard = dynamic(() => import("@/components/editor/ai-snippet-wizard").then(m => ({ default: m.AISnippetWizard })), {
   ssr: false,
@@ -125,8 +115,7 @@ export default function BuilderPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [jsonError, setJsonError] = useState<string | null>(null)
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop")
-  const [showAIGenerator, setShowAIGenerator] = useState(false)
-  const [isAIGeneratorMinimized, setIsAIGeneratorMinimized] = useState(false)
+  const [showAIModal, setShowAIModal] = useState(false)
   const { toast } = useToast()
 
   const generatedUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/mock${path}`
@@ -377,19 +366,14 @@ export default function BuilderPage() {
   const handleAIResponseGenerated = (generatedResponse: string) => {
     setResponse(generatedResponse)
     setJsonError(null)
-  }
-
+  }  
   const handleAIFloatingActionGenerate = (type: string) => {
     // Quick AI generation based on type
-    console.log('🎨 handleAIFloatingActionGenerate called with type:', type)
-    setShowAIGenerator(true)
-    setIsAIGeneratorMinimized(false)
+    setShowAIModal(true)
   }
-
+  
   const handleAIFloatingActionOpenFull = () => {
-    console.log('🔧 handleAIFloatingActionOpenFull called')
-    setShowAIGenerator(true)
-    setIsAIGeneratorMinimized(false)
+    setShowAIModal(true)
   }
     return (
     <ProtectedRoute>
@@ -626,28 +610,7 @@ export default function BuilderPage() {
                         </div>
                       </AccordionContent>
                     </AccordionItem>
-                  </Accordion>
-
-                  {/* AI Enhanced Generator */}
-                  {showAIGenerator && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <AIEnhancedGenerator
-                        onMockGenerated={handleAIMockGenerated}
-                        onMockSaved={handleAIMockSaved}
-                        onResponseGenerated={handleAIResponseGenerated}
-                        initialEndpoint={path}
-                        initialMethod={method}
-                        isMinimized={isAIGeneratorMinimized}
-                        onToggleMinimize={() => setIsAIGeneratorMinimized(!isAIGeneratorMinimized)}
-                        onClose={() => setShowAIGenerator(false)}
-                      />
-                    </motion.div>
-                  )}
+                  </Accordion>                  {/* AI Enhanced Generator - Now Modal Triggered */}
                 </motion.div>              
                 {/* Right Panel - Response Editor & Preview */}
                 <motion.div 
@@ -767,18 +730,21 @@ export default function BuilderPage() {
                                   Copy
                                 </Button>
                               </div>
-                            </TabsContent>                          <TabsContent value="javascript" className="mt-3">
+                            </TabsContent>                          
+                            <TabsContent value="javascript" className="mt-3">
                               <div>
                                 <Label className={`${themeColors.text} text-xs`}>JavaScript Fetch</Label>
                                 <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
-                                  <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`fetch('${generatedUrl}', {
+                                    <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`fetch('${generatedUrl}', {
                                       method: '${method}',
                                       headers: {
-                                        'Content-Type': 'application/json'
+                                      'Content-Type': 'application/json'
                                       }
                                     })
                                     .then(response => response.json())
-                                    .then(data => console.log(data));`}
+                                    .then(data => {
+                                      // Handle response data here
+                                    });`}
                                   </pre>
                                 </div>
                                 <Button
@@ -806,6 +772,17 @@ export default function BuilderPage() {
               <AIFloatingActionButton
                 onQuickGenerate={handleAIFloatingActionGenerate}
                 onOpenFullGenerator={handleAIFloatingActionOpenFull}
+              />
+
+              {/* AI Generator Modal */}
+              <AIGeneratorModal
+                isOpen={showAIModal}
+                onClose={() => setShowAIModal(false)}
+                onMockGenerated={handleAIMockGenerated}
+                onMockSaved={handleAIMockSaved}
+                onResponseGenerated={handleAIResponseGenerated}
+                initialEndpoint={path}
+                initialMethod={method}
               />
             </div>
           </main>

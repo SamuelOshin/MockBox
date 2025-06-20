@@ -205,9 +205,8 @@ class AIService:
         
         try:
             prompt = self._build_anthropic_prompt(request)
-            
             payload = {
-                "model": "claude-3-haiku-20240307",
+                "model": "claude-3-5-haiku-20241022",
                 "max_tokens": 1500,
                 "temperature": 0.7,
                 "messages": [
@@ -254,8 +253,8 @@ class AIService:
             return {
                 "data": generated_data.get("data", {}),
                 "headers": generated_data.get("headers", self._default_headers(request)),
-                "explanation": generated_data.get("explanation", "Generated with Claude"),
-                "model": "claude-3-haiku",
+                "explanation": generated_data.get("explanation", "Generated with Claude 3.5 Haiku"),
+                "model": "claude-3-5-haiku",
                 "tokens_used": result.get("usage", {}).get("input_tokens", 0) + result.get("usage", {}).get("output_tokens", 0)
             }
             
