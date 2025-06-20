@@ -396,3 +396,117 @@
     }
   }
 }
+
+/* AI Generator Modal Dialog Background Override - High Specificity */
+@layer components {
+  /* Target the Radix Dialog Content specifically */
+  [data-radix-dialog-content] {
+    background: inherit !important;
+  }
+  
+  /* More specific targeting for our modal */
+  .ai-modal-override[data-radix-dialog-content] {
+    background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
+    background-color: #030712 !important;
+  }
+  
+  .light .ai-modal-override[data-radix-dialog-content] {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
+    background-color: #f8fafc !important;
+  }
+  
+  /* Force theme backgrounds with higher specificity */
+  html.dark [data-radix-dialog-content].ai-modal-override,
+  .dark [data-radix-dialog-content].ai-modal-override {
+    background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
+    background-color: #030712 !important;
+  }
+  
+  html.light [data-radix-dialog-content].ai-modal-override,
+  .light [data-radix-dialog-content].ai-modal-override {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
+    background-color: #f8fafc !important;
+  }
+}
+
+/* Super specific override for AI Modal */
+@layer utilities {
+  /* Only target the modal container, not all child elements */
+  html.dark .ai-modal-override {
+    background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
+    background-color: #030712 !important;
+  }
+  
+  html.light .ai-modal-override {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
+    background-color: #f8fafc !important;
+  }
+  
+  /* Let cards and other UI elements use their proper theme colors */
+  html.dark .ai-modal-override .bg-card {
+    background-color: hsl(var(--card)) !important;
+  }
+  
+  html.light .ai-modal-override .bg-card {
+    background-color: hsl(var(--card)) !important;
+  }
+}
+
+/* Ensure proper contrast for UI elements in AI modal */
+@layer components {
+  .ai-modal-override {
+    /* Let the modal content use proper theme colors */
+    color-scheme: inherit;
+  }
+  
+  /* Ensure cards are visible with proper theme colors */
+  .ai-modal-override .bg-card,
+  .ai-modal-override [class*="bg-card"] {
+    background-color: hsl(var(--card)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+  
+  /* Ensure buttons use proper theme colors */
+  .ai-modal-override .bg-primary {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  
+  .ai-modal-override .bg-secondary {
+    background-color: hsl(var(--secondary)) !important;
+    color: hsl(var(--secondary-foreground)) !important;
+  }
+  
+  /* Ensure inputs use proper theme colors */
+  .ai-modal-override .bg-background {
+    background-color: hsl(var(--background)) !important;
+  }
+  
+  /* Ensure muted backgrounds use proper theme colors */
+  .ai-modal-override .bg-muted {
+    background-color: hsl(var(--muted)) !important;
+    color: hsl(var(--muted-foreground)) !important;
+  }
+}
+
+/* Force portal content to inherit theme */
+@layer base {
+  /* Target Radix portals specifically */
+  [data-radix-popper-content-wrapper],
+  [data-radix-dialog-portal] {
+    color-scheme: inherit;
+  }
+  
+  /* Ensure portal content inherits theme from html */
+  html.dark [data-radix-dialog-portal] [data-radix-dialog-content] {
+    background: linear-gradient(135deg, #030712 0%, #111827 50%, #051440 100%) !important;
+    background-color: #030712 !important;
+    color: hsl(var(--foreground));
+  }
+  
+  html.light [data-radix-dialog-portal] [data-radix-dialog-content] {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
+    background-color: #f8fafc !important;
+    color: hsl(var(--foreground));
+  }
+}

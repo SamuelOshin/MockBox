@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
             break
           case 'TOKEN_REFRESHED':
-            console.log("Token refreshed successfully")
+
             break
           case 'USER_UPDATED':
             toast({

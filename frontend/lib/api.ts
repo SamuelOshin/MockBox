@@ -16,7 +16,6 @@ async function apiRequest<T>(
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError) {
-      console.error('Session error:', sessionError)
       throw new Error(`Session error: ${sessionError.message}`)
     }
     
@@ -27,9 +26,6 @@ async function apiRequest<T>(
     // Add authorization header if user is authenticated
     if (session?.access_token) {
       defaultHeaders['Authorization'] = `Bearer ${session.access_token}`
-      console.log('Making authenticated request to:', url)
-    } else {
-      console.log('Making unauthenticated request to:', url)
     }
 
     const response = await fetch(url, {
@@ -40,27 +36,21 @@ async function apiRequest<T>(
       },
     })
 
-    console.log(`API Response: ${response.status} ${response.statusText}`)
-
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}`
       try {
         const errorData = await response.json()
         errorMessage = errorData.message || errorData.detail || errorMessage
-        console.error('API Error Response:', errorData)
       } catch (e) {
         const errorText = await response.text()
         errorMessage = errorText || errorMessage
-        console.error('API Error Text:', errorText)
       }
       throw new Error(`API Error: ${response.status} - ${errorMessage}`)
     }
 
     const responseData = await response.json()
-    console.log('API Response Data:', responseData)
     return responseData
   } catch (error) {
-    console.error('API Request failed:', error)
     throw error
   }
 }

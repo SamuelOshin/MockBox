@@ -22,7 +22,8 @@ import {
   Database,
   Brain,
   Target,
-  Shuffle
+  Shuffle,
+  Wand
 } from 'lucide-react'
 import { useAIGeneration } from '@/hooks/use-ai-generation'
 import { cn } from '@/lib/utils'
@@ -78,21 +79,42 @@ export function AIFloatingActionButton({
   disabled = false
 }: AIFloatingActionButtonProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   const { usage, isGenerating } = useAIGeneration()
-    const handleToggle = () => {
-    if (disabled) return
+  // Icon rendering function with fallback
+  const renderMainIcon = () => {
+    if (isGenerating) {
+      return <RefreshCw className="h-7 w-7 text-white animate-spin" />
+    }
     
-    setIsExpanded(!isExpanded)
+    if (isExpanded) {
+      return <X className="h-7 w-7 text-white" />
+    }
     
-    // Also trigger the full generator callback if provided
-    if (!isExpanded && onOpenFullGenerator) {
-      onOpenFullGenerator()
+    // Use Wand2 as the primary icon
+    return <Wand2 className="h-7 w-7 text-white" />
+  }
+  
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    
+    if (disabled || isGenerating) return
+    
+    if (isExpanded) {
+      // If expanded, just close it
+      setIsExpanded(false)
+    } else {
+      // If not expanded, open full generator directly
+      if (onOpenFullGenerator) {
+        onOpenFullGenerator()
+      }
     }
   }
-
-  const handleQuickAction = (action: typeof quickActions[0]) => {
+  const handleQuickAction = (action: typeof quickActions[0], e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     if (disabled || isGenerating) return
+    
     onQuickGenerate?.(action.id)
     setIsExpanded(false)
   }
@@ -125,11 +147,14 @@ export function AIFloatingActionButton({
                         {getRemainingGenerations()} generations left today
                       </div>
                     </div>
-                  </div>
-                  <Button
+                  </div>                  <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsExpanded(false)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsExpanded(false)
+                    }}
                     className="h-6 w-6 p-0"
                   >
                     <X className="h-3 w-3" />
@@ -150,32 +175,25 @@ export function AIFloatingActionButton({
 
                 <Separator />
 
-                {/* Quick Actions */}
-                <div className="space-y-2">
+                {/* Quick Actions */}                <div className="space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">Quick Generate</div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2">                    
                     {quickActions.map((action) => (
                       <motion.button
                         key={action.id}
-                        onClick={() => handleQuickAction(action)}
+                        onClick={(e) => handleQuickAction(action, e)}
                         disabled={disabled || isGenerating || getRemainingGenerations() === 0}
                         className={cn(
                           "p-3 rounded-lg border text-left transition-all group",
                           "hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed",
-                          `hover:border-${action.color}-300 hover:bg-${action.color}-50 dark:hover:bg-${action.color}-900/20`
+                          "hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                         )}
                         whileHover={{ scale: disabled ? 1 : 1.02 }}
                         whileTap={{ scale: disabled ? 1 : 0.98 }}
                       >
                         <div className="flex items-start gap-2">
-                          <div className={cn(
-                            "p-1.5 rounded-md",
-                            `bg-${action.color}-100 dark:bg-${action.color}-900/30`
-                          )}>
-                            <action.icon className={cn(
-                              "h-3 w-3",
-                              `text-${action.color}-600 dark:text-${action.color}-400`
-                            )} />
+                          <div className="p-1.5 rounded-md bg-purple-100 dark:bg-purple-900/30">
+                            <action.icon className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-xs">{action.label}</div>
@@ -189,62 +207,53 @@ export function AIFloatingActionButton({
                   </div>
                 </div>
 
-                <Separator />
-
-                {/* Advanced Actions */}
+                <Separator />                {/* Advanced Actions */}
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={onOpenFullGenerator}
                     disabled={disabled}
-                    className="flex-1 text-xs"
+                    className="flex-1 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200"
                   >
-                    <Settings className="h-3 w-3 mr-1" />
-                    Advanced
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onGenerateRequest}
-                    disabled={disabled}
-                    className="flex-1 text-xs"
-                  >
-                    <Code2 className="h-3 w-3 mr-1" />
-                    Custom
+                    <Wand2 className="h-3 w-3 mr-1" />
+                    Open AI Studio
                   </Button>
                 </div>
               </CardContent>            </Card>
           </motion.div>
         )}
-      </AnimatePresence>
-      
-      {/* Main FAB */}
-      <div className="relative">
-        <Button
-          onClick={handleToggle}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          disabled={disabled}
-          size="lg"
-          className={cn(
-            "w-14 h-14 rounded-full shadow-2xl transition-all duration-300",
-            "bg-gradient-to-r from-purple-500 to-blue-600",
-            "hover:from-purple-600 hover:to-blue-700",
-            "disabled:from-gray-400 disabled:to-gray-500",
-            isExpanded && "rotate-45",
-            disabled && "cursor-not-allowed opacity-50"
-          )}
-        >
-          {isGenerating ? (
-            <RefreshCw className="h-6 w-6 text-white animate-spin" />
-          ) : isExpanded ? (
-            <X className="h-6 w-6 text-white" />
-          ) : (
-            <Wand2 className="h-6 w-6 text-white" />
-          )}
-        </Button>
-
+      </AnimatePresence>        {/* Main FAB */}
+      <motion.div 
+        className="relative"
+        whileHover={{ scale: disabled ? 1 : 1.05 }}
+        whileTap={{ scale: disabled ? 1 : 0.95 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      >
+        <Tooltip>
+          <TooltipTrigger asChild>            
+            <Button
+              onClick={handleToggle}
+              disabled={disabled}
+              className={cn(
+                "w-16 h-16 rounded-full shadow-2xl transition-all duration-200 border-2 border-white/20",
+                "bg-gradient-to-r from-purple-500 via-blue-600 to-indigo-700",
+                "hover:from-purple-600 hover:via-blue-700 hover:to-indigo-800",
+                "disabled:from-gray-400 disabled:to-gray-500",
+                "hover:shadow-3xl active:scale-95",
+                "flex items-center justify-center p-0",
+                disabled && "cursor-not-allowed opacity-50"
+              )}
+            >              
+            {renderMainIcon()}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left" className="bg-gray-900 text-white border-gray-700">
+            <p className="font-medium">AI Mock Generator</p>
+            <p className="text-xs text-gray-300">Generate intelligent mock data</p>
+          </TooltipContent>
+        </Tooltip>        
+        
         {/* Usage Badge */}
         {!isExpanded && usage && (
           <Badge 
@@ -254,17 +263,7 @@ export function AIFloatingActionButton({
             {getRemainingGenerations()}
           </Badge>
         )}
-
-        {/* Pulse Effect for New Feature */}
-        {!disabled && isHovered && (
-          <div
-            className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-blue-600 opacity-30"
-            style={{
-              animation: 'pulse 2s infinite ease-in-out'
-            }}
-          />
-        )}
-      </div>
+      </motion.div>
     </div>
   )
 }
