@@ -2,6 +2,7 @@
 Main FastAPI application
 """
 import time
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,24 +15,55 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import init_database, close_database
 from app.api.v1.api import router as api_v1_router
+from app.middleware.rate_limit_middleware import RateLimitMiddleware, SecurityHeadersMiddleware
+from app.middleware.security_middleware import AuthenticationMiddleware, SecurityValidationMiddleware
+from app.core.rate_limiting import rate_limiter, RATE_LIMITS
+from app.services.monitoring import cleanup_monitoring_data
 
 
-# Rate limiter
+# Rate limiter (legacy - for health check)
 limiter = Limiter(key_func=get_remote_address)
+
+# Background task for monitoring cleanup
+cleanup_task = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
+    global cleanup_task
+    
     # Startup
     print("🚀 Starting MockBox Backend...")
     await init_database()
+    
+    # Initialize rate limiter with Redis if configured
+    if settings.redis_url:
+        from app.core.rate_limiting import rate_limiter as rl
+        rl.__init__(settings.redis_url)
+        print(f"✅ Rate limiting initialized with Redis: {settings.redis_url}")
+    else:
+        print("⚠️  Rate limiting using memory cache (Redis not configured)")
+    
+    # Start background monitoring cleanup task
+    cleanup_task = asyncio.create_task(cleanup_monitoring_data())
+    print("✅ Monitoring cleanup task started")
+    
     print("✅ Backend startup complete")
     
     yield
     
     # Shutdown
     print("🔄 Shutting down MockBox Backend...")
+    
+    # Cancel background task
+    if cleanup_task:
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
+    
     await close_database()
     print("✅ Backend shutdown complete")
 
@@ -46,11 +78,31 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add rate limiter
+# Add rate limiter (legacy for health check)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Add middleware
+# Add security validation middleware (only if enabled)
+if settings.enable_security_validation:
+    app.add_middleware(SecurityValidationMiddleware)
+    print("✅ Security validation middleware enabled")
+
+# Add authentication middleware (only if enabled)
+if settings.enable_authentication_middleware:
+    app.add_middleware(AuthenticationMiddleware)
+    print("✅ Authentication middleware enabled")
+
+# Add advanced rate limiting middleware (only if enabled)
+if settings.enable_rate_limiting:
+    app.add_middleware(RateLimitMiddleware)
+    print("✅ Advanced rate limiting middleware enabled")
+
+# Add security headers middleware (only if enabled)
+if settings.enable_security_headers:
+    app.add_middleware(SecurityHeadersMiddleware)
+    print("✅ Security headers middleware enabled")
+
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
