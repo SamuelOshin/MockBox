@@ -526,9 +526,10 @@ export default function CloneMockPage() {
                   </Button>
                 </motion.div>
               </div>
-            </main>
-          </div>
-        </SidebarLayout>
-      </ProtectedRoute>
-    )
+            </div>
+          </main>
+        </div>
+      </SidebarLayout>
+    </ProtectedRoute>
+  )
 }
