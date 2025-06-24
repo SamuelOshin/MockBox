@@ -69,10 +69,10 @@ export function useNavigation() {
   return context
 }
 
-export function LineLoader({ 
-  color = "bg-gradient-to-r from-blue-500 to-purple-600", 
+export function LineLoader({
+  color = "bg-gradient-to-r from-blue-500 to-purple-600",
   height = "h-1",
-  duration = 800 
+  duration = 800
 }: LineLoaderProps) {
   const { isNavigating } = useNavigation()
 
@@ -84,7 +84,7 @@ export function LineLoader({
           initial={{ scaleX: 0, transformOrigin: "left" }}
           animate={{ scaleX: 1 }}
           exit={{ scaleX: 1, transformOrigin: "right" }}
-          transition={{ 
+          transition={{
             duration: duration / 1000,
             ease: [0.25, 0.1, 0.25, 1]
           }}
@@ -98,10 +98,10 @@ export function LineLoader({
 export function useLineLoader() {
   const { isNavigating, startNavigation, completeNavigation, navigateTo } = useNavigation()
 
-  return { 
-    isLoading: isNavigating, 
-    startLoading: startNavigation, 
+  return {
+    isLoading: isNavigating,
+    startLoading: startNavigation,
     stopLoading: completeNavigation,
-    navigateTo 
+    navigateTo
   }
 }

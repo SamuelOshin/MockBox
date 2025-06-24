@@ -56,7 +56,7 @@ import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton"
 // Method colors for badges
 const methodColors = {
   GET: "bg-green-100 text-green-800 hover:bg-green-200",
-  POST: "bg-blue-100 text-blue-800 hover:bg-blue-200", 
+  POST: "bg-blue-100 text-blue-800 hover:bg-blue-200",
   PUT: "bg-orange-100 text-orange-800 hover:bg-orange-200",
   DELETE: "bg-red-100 text-red-800 hover:bg-red-200",
   PATCH: "bg-purple-100 text-purple-800 hover:bg-purple-200"
@@ -95,7 +95,7 @@ export default function DashboardPage() {
       } catch (error) {
         // Use sample data for demo
         setMocks(sampleMocks)
-        
+
         // Only show toast if it's not a network/auth issue
         if (error instanceof Error && !error.message.includes('403') && !error.message.includes('401')) {
           toast({
@@ -117,9 +117,9 @@ export default function DashboardPage() {
     const count = mock.access_count || 0;
     return sum + (typeof count === 'number' ? count : 0);
   }, 0);
-  
+
   const publicMocks = mocks.filter((mock) => mock.is_public === true).length;
-  
+
   const recentMocks = mocks.filter((mock) => {
     try {
       const weekAgo = new Date()
@@ -130,22 +130,22 @@ export default function DashboardPage() {
       return false;
     }
   }).length;
-  
-  const avgResponseTime = mocks.length > 0 
+
+  const avgResponseTime = mocks.length > 0
     ? Math.round(mocks.reduce((sum, mock) => {
         const delay = mock.delay_ms || 0;
         return sum + (typeof delay === 'number' ? delay : 0);
-      }, 0) / mocks.length) 
+      }, 0) / mocks.length)
     : 0;
 
   const filteredMocks = mocks.filter((mock) => {
     if (!mock || typeof mock !== 'object') return false;
-    
+
     const searchLower = searchQuery.toLowerCase();
     const name = mock.name || '';
     const endpoint = mock.endpoint || '';
     const method = mock.method || '';
-    
+
     return (
       name.toLowerCase().includes(searchLower) ||
       endpoint.toLowerCase().includes(searchLower) ||
@@ -219,7 +219,7 @@ export default function DashboardPage() {
 
             <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
             {/* Welcome Section */}
-            <motion.div 
+            <motion.div
               className="mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -231,7 +231,7 @@ export default function DashboardPage() {
               <p className={`${themeColors.textSecondary} text-lg mb-6`}>
                 Here's what's happening with your API mocks today.
               </p>
-              
+
               {/* Quick Actions */}
               <div className="flex flex-wrap gap-3">
                 <Button
@@ -261,7 +261,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Key Metrics */}
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -331,7 +331,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Enhanced Header with Search and Actions */}
-            <motion.div 
+            <motion.div
               className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
-                <Button 
+                <Button
                   onClick={() => navigateTo("/builder")}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg"
                 >
@@ -360,7 +360,7 @@ export default function DashboardPage() {
             </motion.div>
 
             {/* Search and Filters */}
-            <motion.div 
+            <motion.div
               className="flex flex-col sm:flex-row gap-4 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -383,7 +383,7 @@ export default function DashboardPage() {
 
             {/* Bulk Actions */}
             {selectedMocks.length > 0 && (
-              <motion.div 
+              <motion.div
                 className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-500/20 rounded-lg"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -508,7 +508,7 @@ export default function DashboardPage() {
 
             {/* Empty State */}
             {filteredMocks.length === 0 && !isLoading && (
-              <motion.div 
+              <motion.div
                 className="text-center py-12"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -517,7 +517,7 @@ export default function DashboardPage() {
                 <div className={`${themeColors.textSecondary} mb-4`}>
                   {searchQuery ? "No mocks found matching your search." : "No mocks created yet."}
                 </div>
-                <Button 
+                <Button
                   onClick={() => navigateTo("/builder")}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
                 >

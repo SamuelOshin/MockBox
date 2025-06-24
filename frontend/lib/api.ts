@@ -6,19 +6,19 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // API helper function
 async function apiRequest<T>(
-  endpoint: string, 
+  endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
-  
+
   try {
     // Get the current session token from Supabase
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
+
     if (sessionError) {
       throw new Error(`Session error: ${sessionError.message}`)
     }
-    
+
     const defaultHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
     }
@@ -70,7 +70,7 @@ export const apiClient = {  async get<T>(endpoint: string, config?: { params?: R
         }
       })
     }
-    
+
     const data = await apiRequest<T>(url.pathname + url.search)
     return { data, status: 200 }
   },
@@ -125,17 +125,17 @@ export const mockApi = {
     // For testing, we'll create a temporary mock and then simulate it
     const tempMock = await this.createMock(data)
     const response = await fetch(`${API_BASE_URL}/simulate/${tempMock.id}`)
-    
+
     if (!response.ok) {
       throw new Error(`Test failed: ${response.status}`)
     }
   },
-  
+
   async getAllMocks(): Promise<MockEndpoint[]> {
     const response = await apiRequest<PaginatedResponse<MockEndpoint>>('/api/v1/mocks/')
     return response.data
   },
-  
+
   async deleteMock(id: string): Promise<void> {
     return apiRequest<void>(`/api/v1/mocks/${id}`, {
       method: 'DELETE',

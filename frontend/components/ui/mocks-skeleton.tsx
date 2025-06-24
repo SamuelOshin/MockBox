@@ -16,7 +16,7 @@ export function MocksPageSkeleton({ theme }: MocksPageSkeletonProps) {
     <div className={`flex-1 ${themeColors.background} transition-colors duration-200`}>
       <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
         {/* Header Section Skeleton */}
-        <motion.div 
+        <motion.div
           className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -29,7 +29,7 @@ export function MocksPageSkeleton({ theme }: MocksPageSkeletonProps) {
             </div>
             <Skeleton className="h-5 w-64 bg-gradient-to-r from-slate-200 to-slate-100" />
           </div>
-          
+
           <div className="flex items-center gap-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -42,7 +42,7 @@ export function MocksPageSkeleton({ theme }: MocksPageSkeletonProps) {
         </motion.div>
 
         {/* Quick Stats Skeleton */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -85,7 +85,7 @@ export function MocksPageSkeleton({ theme }: MocksPageSkeletonProps) {
         </motion.div>
 
         {/* Search and Filters Skeleton */}
-        <motion.div 
+        <motion.div
           className="flex flex-col sm:flex-row gap-4 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -97,14 +97,14 @@ export function MocksPageSkeleton({ theme }: MocksPageSkeletonProps) {
               <Skeleton className="h-4 w-4 rounded-full bg-slate-300" />
             </div>
           </div>
-          
+
           <div className="flex gap-3">
             <Skeleton className="h-10 w-28 bg-gradient-to-r from-violet-100 to-purple-100" />
           </div>
         </motion.div>
 
         {/* Mocks Table Skeleton */}
-        <motion.div 
+        <motion.div
           className={`${themeColors.cardBg} rounded-lg border overflow-hidden`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

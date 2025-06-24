@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -21,8 +21,8 @@ interface ThemeToggleProps {
   align?: "start" | "center" | "end"
 }
 
-export function ThemeToggle({ 
-  variant = "default", 
+export function ThemeToggle({
+  variant = "default",
   size = "default",
   className,
   showLabel = false,
@@ -37,21 +37,21 @@ export function ThemeToggle({
     setMounted(true)
   }, [])
   const themeOptions = [
-    { 
-      value: "light", 
-      label: "Light", 
+    {
+      value: "light",
+      label: "Light",
       icon: Sun,
       description: "Light mode"
     },
-    { 
-      value: "dark", 
-      label: "Dark", 
+    {
+      value: "dark",
+      label: "Dark",
       icon: Moon,
       description: "Dark mode"
     },
-    { 
-      value: "system", 
-      label: "System", 
+    {
+      value: "system",
+      label: "System",
       icon: Monitor,
       description: "System preference"
     }
@@ -94,10 +94,10 @@ export function ThemeToggle({
   }
   // Button variants with enhanced styling - theme-aware
   const buttonVariants = {
-    default: actualTheme === 'light' 
+    default: actualTheme === 'light'
       ? "bg-slate-100/80 backdrop-blur-md border border-slate-300 text-slate-700 hover:bg-slate-200 hover:border-slate-400 shadow-lg hover:shadow-xl transition-all duration-200"
       : "bg-white/5 backdrop-blur-md border border-white/20 text-white hover:bg-white/10 hover:border-white/30 shadow-lg hover:shadow-xl transition-all duration-200",
-    minimal: actualTheme === 'light' 
+    minimal: actualTheme === 'light'
       ? "text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
       : "text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200",
     button: actualTheme === 'light'
@@ -125,13 +125,13 @@ export function ThemeToggle({
           >            <motion.div
               key={`${actualTheme}-${theme}`}
               initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
-              animate={{ 
-                rotate: 0, 
-                opacity: 1, 
+              animate={{
+                rotate: 0,
+                opacity: 1,
                 scale: 1
               }}
               exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
-              transition={{ 
+              transition={{
                 duration: 0.2,
                 type: "spring",
                 stiffness: 300,
@@ -143,7 +143,7 @@ export function ThemeToggle({
             >
               <CurrentIcon className="h-4 w-4 drop-shadow-sm" />
             </motion.div>
-            
+
             {/* Subtle glow effect on hover */}
             <motion.div
               className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 -z-10"
@@ -153,12 +153,12 @@ export function ThemeToggle({
             />
           </Button>
         </DropdownMenuTrigger>
-          <DropdownMenuContent 
-          align={align} 
+          <DropdownMenuContent
+          align={align}
           className={cn(
             "w-48 border shadow-lg",
-            actualTheme === 'light' 
-              ? 'bg-white border-gray-200' 
+            actualTheme === 'light'
+              ? 'bg-white border-gray-200'
               : 'bg-gray-900 border-gray-700'
           )}
           sideOffset={8}
@@ -167,7 +167,7 @@ export function ThemeToggle({
             {themeOptions.map((option) => {
               const Icon = option.icon
               const isSelected = theme === option.value
-              
+
               return (
                 <DropdownMenuItem
                   key={option.value}
@@ -175,8 +175,8 @@ export function ThemeToggle({
                   className={cn(
                     "flex items-center justify-between px-3 py-2.5 cursor-pointer rounded-md mx-1 my-0.5",
                     "transition-all duration-150",
-                    actualTheme === 'light' 
-                      ? 'text-gray-700 hover:bg-gray-100' 
+                    actualTheme === 'light'
+                      ? 'text-gray-700 hover:bg-gray-100'
                       : 'text-gray-300 hover:bg-gray-800',
                     isSelected && (actualTheme === 'light' ? 'bg-gray-100' : 'bg-gray-800')
                   )}
@@ -185,7 +185,7 @@ export function ThemeToggle({
                     <Icon className="h-4 w-4" />
                     <span className="font-medium">{option.label}</span>
                   </div>
-                  
+
                   {isSelected && (
                     <motion.div
                       initial={{ scale: 0 }}
@@ -223,13 +223,13 @@ export function ThemeToggle({
             <motion.div
             key={`${actualTheme}-${theme}`}
             initial={{ rotate: -90, opacity: 0, scale: 0.8 }}
-            animate={{ 
-              rotate: 0, 
-              opacity: 1, 
+            animate={{
+              rotate: 0,
+              opacity: 1,
               scale: 1
             }}
             exit={{ rotate: 90, opacity: 0, scale: 0.8 }}
-            transition={{ 
+            transition={{
               duration: 0.2,
               type: "spring",
               stiffness: 300,
@@ -241,7 +241,7 @@ export function ThemeToggle({
           >
             <CurrentIcon className="h-4 w-4 drop-shadow-sm" />
             {showLabel && (
-              <motion.span 
+              <motion.span
                 className="text-sm font-medium"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -251,7 +251,7 @@ export function ThemeToggle({
               </motion.span>
             )}
           </motion.div>
-          
+
           <motion.div
             animate={{ rotate: isOpen ? 180 : 0 }}
             transition={{ duration: 0.2, type: "spring", stiffness: 300 }}
@@ -261,12 +261,12 @@ export function ThemeToggle({
           </motion.div>
         </Button>
       </DropdownMenuTrigger>
-        <DropdownMenuContent 
-        align={align} 
+        <DropdownMenuContent
+        align={align}
         className={cn(
           "w-48 border shadow-lg",
-          actualTheme === 'light' 
-            ? 'bg-white border-gray-200' 
+          actualTheme === 'light'
+            ? 'bg-white border-gray-200'
             : 'bg-gray-900 border-gray-700'
         )}
         sideOffset={8}
@@ -275,7 +275,7 @@ export function ThemeToggle({
           {themeOptions.map((option) => {
             const Icon = option.icon
             const isSelected = theme === option.value
-            
+
             return (
               <DropdownMenuItem
                 key={option.value}
@@ -283,8 +283,8 @@ export function ThemeToggle({
                 className={cn(
                   "flex items-center justify-between px-3 py-2.5 cursor-pointer rounded-md mx-1 my-0.5",
                   "transition-all duration-150",
-                  actualTheme === 'light' 
-                    ? 'text-gray-700 hover:bg-gray-100' 
+                  actualTheme === 'light'
+                    ? 'text-gray-700 hover:bg-gray-100'
                     : 'text-gray-300 hover:bg-gray-800',
                   isSelected && (actualTheme === 'light' ? 'bg-gray-100' : 'bg-gray-800')
                 )}
@@ -293,7 +293,7 @@ export function ThemeToggle({
                   <Icon className="h-4 w-4" />
                   <span className="font-medium">{option.label}</span>
                 </div>
-                
+
                 {isSelected && (
                   <motion.div
                     initial={{ scale: 0 }}

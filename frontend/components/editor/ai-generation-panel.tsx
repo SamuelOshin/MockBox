@@ -12,13 +12,13 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Sparkles, 
-  Loader2, 
-  Copy, 
-  Save, 
-  Info, 
-  CheckCircle, 
+import {
+  Sparkles,
+  Loader2,
+  Copy,
+  Save,
+  Info,
+  CheckCircle,
   AlertCircle,
   Brain,
   Zap,
@@ -63,13 +63,13 @@ export function AIGenerationPanel({
   const [generatedData, setGeneratedData] = useState<any>(null)
   const [showSaveOptions, setShowSaveOptions] = useState(false)
 
-  const { 
-    generateMockData, 
-    generateAndSaveMock, 
-    isGenerating, 
-    error, 
-    usage, 
-    fetchUsage 
+  const {
+    generateMockData,
+    generateAndSaveMock,
+    isGenerating,
+    error,
+    usage,
+    fetchUsage
   } = useAIGeneration()
 
   useEffect(() => {
@@ -203,8 +203,8 @@ export function AIGenerationPanel({
                 <div className="font-medium">{usage.tokensUsedToday.toLocaleString()}</div>
               </div>
             </div>
-            <Progress 
-              value={(usage.requestsToday / 10) * 100} 
+            <Progress
+              value={(usage.requestsToday / 10) * 100}
               className="h-2"
             />
             {usage.rateLimitRemaining <= 2 && (
@@ -231,8 +231,8 @@ export function AIGenerationPanel({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="method">HTTP Method</Label>
-              <Select 
-                value={formData.method} 
+              <Select
+                value={formData.method}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, method: value }))}
               >
                 <SelectTrigger>
@@ -255,9 +255,9 @@ export function AIGenerationPanel({
                 min="100"
                 max="599"
                 value={formData.statusCode}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  statusCode: parseInt(e.target.value) || 200 
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  statusCode: parseInt(e.target.value) || 200
                 }))}
               />
             </div>
@@ -287,8 +287,8 @@ export function AIGenerationPanel({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="format">Response Format</Label>
-              <Select 
-                value={formData.responseFormat} 
+              <Select
+                value={formData.responseFormat}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, responseFormat: value }))}
               >
                 <SelectTrigger>
@@ -304,8 +304,8 @@ export function AIGenerationPanel({
             </div>
             <div className="space-y-2">
               <Label htmlFor="complexity">Complexity</Label>
-              <Select 
-                value={formData.complexity} 
+              <Select
+                value={formData.complexity}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, complexity: value }))}
               >
                 <SelectTrigger>
@@ -370,7 +370,7 @@ export function AIGenerationPanel({
       )}
 
       {/* Generate Button */}
-      <Button 
+      <Button
         onClick={handleGenerate}
         disabled={!isFormValid || isGenerating || (usage?.rateLimitRemaining === 0)}
         className="w-full"
@@ -499,8 +499,8 @@ export function AIGenerationPanel({
                 <Save className="mr-2 h-4 w-4" />
                 Save Mock
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowSaveOptions(false)}
               >
                 Cancel

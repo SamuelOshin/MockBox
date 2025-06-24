@@ -1,6 +1,7 @@
 """
 Pydantic schemas for AI-powered features
 """
+
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from uuid import UUID
@@ -13,6 +14,7 @@ from app.models.models import HTTPMethod
 
 class AIProvider(str, Enum):
     """AI provider options"""
+
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     LOCAL = "local"
@@ -20,6 +22,7 @@ class AIProvider(str, Enum):
 
 class ResponseFormat(str, Enum):
     """Response format options"""
+
     JSON = "json"
     XML = "xml"
     TEXT = "text"
@@ -28,17 +31,34 @@ class ResponseFormat(str, Enum):
 
 class MockGenerationRequest(BaseModel):
     """Request schema for AI mock generation"""
+
     method: HTTPMethod = Field(..., description="HTTP method (GET, POST, etc.)")
     endpoint: str = Field(..., description="API endpoint path")
-    description: Optional[str] = Field(None, description="Description of what the API should do")
-    response_format: ResponseFormat = Field(ResponseFormat.JSON, description="Expected response format")
-    schema_hint: Optional[str] = Field(None, description="Expected response schema or structure")
-    examples: Optional[List[Dict[str, Any]]] = Field(None, description="Example responses for reference")
-    complexity: str = Field("medium", description="Complexity level: simple, medium, complex")
-    status_code: int = Field(200, description="Expected HTTP status code", ge=100, le=599)
-    include_headers: bool = Field(True, description="Whether to generate response headers")
-    realistic_data: bool = Field(True, description="Generate realistic vs placeholder data")
-    
+    description: Optional[str] = Field(
+        None, description="Description of what the API should do"
+    )
+    response_format: ResponseFormat = Field(
+        ResponseFormat.JSON, description="Expected response format"
+    )
+    schema_hint: Optional[str] = Field(
+        None, description="Expected response schema or structure"
+    )
+    examples: Optional[List[Dict[str, Any]]] = Field(
+        None, description="Example responses for reference"
+    )
+    complexity: str = Field(
+        "medium", description="Complexity level: simple, medium, complex"
+    )
+    status_code: int = Field(
+        200, description="Expected HTTP status code", ge=100, le=599
+    )
+    include_headers: bool = Field(
+        True, description="Whether to generate response headers"
+    )
+    realistic_data: bool = Field(
+        True, description="Generate realistic vs placeholder data"
+    )
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -50,22 +70,29 @@ class MockGenerationRequest(BaseModel):
                 "complexity": "medium",
                 "status_code": 200,
                 "include_headers": True,
-                "realistic_data": True
+                "realistic_data": True,
             }
         }
 
 
 class MockGenerationResponse(BaseModel):
     """Response schema for AI mock generation"""
-    response_data: Dict[str, Any] = Field(..., description="Generated mock response data")
+
+    response_data: Dict[str, Any] = Field(
+        ..., description="Generated mock response data"
+    )
     status_code: int = Field(200, description="HTTP status code")
-    headers: Dict[str, str] = Field(default_factory=dict, description="Response headers")
+    headers: Dict[str, str] = Field(
+        default_factory=dict, description="Response headers"
+    )
     explanation: str = Field(..., description="Explanation of the generated data")
     provider: AIProvider = Field(..., description="AI provider used")
     model: str = Field(..., description="AI model used")
-    generation_time: float = Field(..., description="Time taken for generation in seconds")
+    generation_time: float = Field(
+        ..., description="Time taken for generation in seconds"
+    )
     tokens_used: Optional[int] = Field(None, description="Number of tokens used")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -78,26 +105,27 @@ class MockGenerationResponse(BaseModel):
                     "preferences": {
                         "theme": "dark",
                         "notifications": True,
-                        "language": "en"
-                    }
+                        "language": "en",
+                    },
                 },
                 "status_code": 200,
                 "headers": {
                     "Content-Type": "application/json",
                     "Cache-Control": "no-cache",
-                    "X-API-Version": "1.0"
+                    "X-API-Version": "1.0",
                 },
                 "explanation": "Generated a realistic user profile with common user attributes and preferences",
                 "provider": "openai",
                 "model": "gpt-4o-mini",
                 "generation_time": 1.25,
-                "tokens_used": 156
+                "tokens_used": 156,
             }
         }
 
 
 class AIUsageStats(BaseModel):
     """AI usage statistics"""
+
     user_id: UUID
     requests_today: int = 0
     requests_this_month: int = 0
@@ -109,8 +137,13 @@ class AIUsageStats(BaseModel):
 
 class AIErrorResponse(BaseModel):
     """AI error response schema"""
+
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Human-readable error message")
-    details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
-    retry_after: Optional[int] = Field(None, description="Seconds to wait before retrying")
+    details: Optional[Dict[str, Any]] = Field(
+        None, description="Additional error details"
+    )
+    retry_after: Optional[int] = Field(
+        None, description="Seconds to wait before retrying"
+    )
     provider: Optional[str] = Field(None, description="AI provider that failed")

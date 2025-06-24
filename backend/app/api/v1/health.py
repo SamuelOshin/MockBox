@@ -1,6 +1,7 @@
 """
 Health check and system status endpoints
 """
+
 import time
 from datetime import datetime
 from fastapi import APIRouter, Depends
@@ -22,16 +23,16 @@ async def health_check(db: DatabaseManager = Depends(get_database)):
     """
     # Check database connectivity
     db_healthy = await db.health_check()
-    
+
     # Calculate uptime
     uptime = time.time() - start_time
-    
+
     return HealthResponse(
         status="healthy" if db_healthy else "unhealthy",
         version=settings.app_version,
         timestamp=datetime.utcnow(),
         database=db_healthy,
-        uptime_seconds=round(uptime, 2)
+        uptime_seconds=round(uptime, 2),
     )
 
 
@@ -41,14 +42,14 @@ async def readiness_check(db: DatabaseManager = Depends(get_database)):
     Readiness check for Kubernetes/Docker health checks
     """
     db_healthy = await db.health_check()
-    
+
     if db_healthy:
         return {"status": "ready"}
     else:
         from fastapi import HTTPException, status
+
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database not ready"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database not ready"
         )
 
 

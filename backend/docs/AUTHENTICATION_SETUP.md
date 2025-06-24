@@ -32,13 +32,13 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
    - Go to Authentication → Providers
    - Configure Email provider (enabled by default)
    - Optionally configure Google and GitHub OAuth:
-     
+
      **For Google OAuth:**
      - Go to [Google Cloud Console](https://console.cloud.google.com)
      - Create OAuth 2.0 credentials
      - Add authorized redirect URIs: `https://your-project.supabase.co/auth/v1/callback`
      - Copy Client ID and Client Secret to Supabase
-     
+
      **For GitHub OAuth:**
      - Go to GitHub Settings → Developer settings → OAuth Apps
      - Create new OAuth App

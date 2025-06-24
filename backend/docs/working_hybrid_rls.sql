@@ -42,7 +42,7 @@ CREATE POLICY "Authenticated update with app validation" ON mocks
     USING (user_id IS NOT NULL)
     WITH CHECK (user_id IS NOT NULL);
 
--- DELETE: Allow deletes (application will validate ownership)  
+-- DELETE: Allow deletes (application will validate ownership)
 CREATE POLICY "Authenticated delete with app validation" ON mocks
     FOR DELETE
     USING (user_id IS NOT NULL);

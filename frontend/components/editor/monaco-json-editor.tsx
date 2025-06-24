@@ -4,13 +4,13 @@ import { useState, useEffect } from "react"
 import { Editor } from "@monaco-editor/react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/ui/theme-provider"
-import { 
-  Copy, 
-  Check, 
-  Code, 
-  Maximize2, 
-  Download, 
-  Upload, 
+import {
+  Copy,
+  Check,
+  Code,
+  Maximize2,
+  Download,
+  Upload,
   RotateCcw,
   Settings,
   Minimize2
@@ -82,7 +82,7 @@ export default function MonacoJsonEditor({
   const handleEditorChange = (newValue: string | undefined) => {
     const val = newValue || ""
     onChange(val)
-    
+
     // Validate JSON
     try {
       if (val.trim()) {
@@ -128,7 +128,7 @@ export default function MonacoJsonEditor({
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      
+
       toast({
         title: "Download started",
         description: "JSON file is being downloaded",
@@ -202,7 +202,7 @@ export default function MonacoJsonEditor({
   }
 
   return (
-    <motion.div 
+    <motion.div
       className={cn(
         "rounded-lg border overflow-hidden",
         themeColors.editorBg,
@@ -223,9 +223,9 @@ export default function MonacoJsonEditor({
               <Code className="h-3 w-3 text-blue-400" />
               <span className={cn("text-xs font-medium", themeColors.text)}>JSON Response Editor</span>
             </div>
-            
+
             {showValidation && (
-              <motion.div 
+              <motion.div
                 className="flex items-center gap-1"
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
@@ -260,7 +260,7 @@ export default function MonacoJsonEditor({
                 <Code className="h-3 w-3" />
               )}
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"

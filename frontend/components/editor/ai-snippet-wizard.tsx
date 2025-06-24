@@ -10,12 +10,12 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { 
-  Sparkles, 
-  Loader2, 
-  Copy, 
-  Code2, 
-  Zap, 
+import {
+  Sparkles,
+  Loader2,
+  Copy,
+  Code2,
+  Zap,
   Lightbulb,
   Wand2,
   ArrowRight,
@@ -195,16 +195,16 @@ const quickSnippets = [
   }
 ]
 
-export function AISnippetWizard({ 
-  onSnippetGenerated, 
+export function AISnippetWizard({
+  onSnippetGenerated,
   onSnippetSelect,
-  className 
+  className
 }: AISnippetWizardProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [customPrompt, setCustomPrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
-  
+
   const { generateMockData } = useAIGeneration()
 
   const handleQuickSnippet = (snippet: string) => {
@@ -214,7 +214,7 @@ export function AISnippetWizard({
 
   const handleTemplateGenerate = useCallback(async (prompt: string, categoryName: string) => {
     setIsGenerating(true)
-    
+
     try {
       const result = await generateMockData({
         method: 'GET',
@@ -241,9 +241,9 @@ export function AISnippetWizard({
 
   const handleCustomGenerate = useCallback(async () => {
     if (!customPrompt.trim()) return
-    
+
     setIsGenerating(true)
-    
+
     try {
       const result = await generateMockData({
         method: 'GET',
@@ -284,7 +284,7 @@ export function AISnippetWizard({
               </CardDescription>
             </div>
           </div>
-          
+
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">

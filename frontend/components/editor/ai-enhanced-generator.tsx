@@ -14,13 +14,13 @@ import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { 
-  Sparkles, 
-  Loader2, 
-  Copy, 
-  Save, 
-  Info, 
-  CheckCircle, 
+import {
+  Sparkles,
+  Loader2,
+  Copy,
+  Save,
+  Info,
+  CheckCircle,
   AlertCircle,
   Brain,
   Zap,
@@ -59,23 +59,23 @@ interface AIEnhancedGeneratorProps {
 }
 
 const complexityLevels = [
-  { 
-    value: 'simple', 
-    label: 'Simple', 
+  {
+    value: 'simple',
+    label: 'Simple',
     description: 'Basic structure with minimal fields',
     icon: '🚀',
     color: 'green'
   },
-  { 
-    value: 'medium', 
-    label: 'Medium', 
+  {
+    value: 'medium',
+    label: 'Medium',
     description: 'Balanced complexity with realistic data',
     icon: '⚡',
     color: 'blue'
   },
-  { 
-    value: 'complex', 
-    label: 'Complex', 
+  {
+    value: 'complex',
+    label: 'Complex',
     description: 'Rich structure with nested objects',
     icon: '🧠',
     color: 'purple'
@@ -145,13 +145,13 @@ export function AIEnhancedGenerator({
   const [isExpanded, setIsExpanded] = useState(!isMinimized)
   const promptRef = useRef<HTMLTextAreaElement>(null)
 
-  const { 
-    generateMockData, 
-    generateAndSaveMock, 
-    isGenerating, 
-    error, 
-    usage, 
-    fetchUsage 
+  const {
+    generateMockData,
+    generateAndSaveMock,
+    isGenerating,
+    error,
+    usage,
+    fetchUsage
   } = useAIGeneration()
 
   useEffect(() => {
@@ -188,7 +188,7 @@ export function AIEnhancedGenerator({
 
   const handleGenerateOnly = async () => {
     setActiveStep(2)
-    
+
     const result = await generateMockData({
       method: formData.method,
       endpoint: formData.endpoint,
@@ -213,7 +213,7 @@ export function AIEnhancedGenerator({
 
   const handleGenerateAndSave = async () => {
     setActiveStep(2)
-    
+
     const result = await generateAndSaveMock({
       method: formData.method,
       endpoint: formData.endpoint,
@@ -336,7 +336,7 @@ export function AIEnhancedGenerator({
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <motion.div 
+                <motion.div
                   className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-blue-600 shadow-lg"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -450,8 +450,8 @@ export function AIEnhancedGenerator({
                     <span>Daily Limit</span>
                     <span>{usage.requestsToday}/10</span>
                   </div>
-                  <Progress 
-                    value={(usage.requestsToday / 10) * 100} 
+                  <Progress
+                    value={(usage.requestsToday / 10) * 100}
                     className="h-2"
                   />
                 </div>
@@ -547,8 +547,8 @@ export function AIEnhancedGenerator({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="method" className="text-xs font-medium">HTTP Method</Label>
-                  <Select 
-                    value={formData.method} 
+                  <Select
+                    value={formData.method}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, method: value }))}
                   >
                     <SelectTrigger className="h-9">
@@ -591,9 +591,9 @@ export function AIEnhancedGenerator({
                     min="100"
                     max="599"
                     value={formData.statusCode}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      statusCode: parseInt(e.target.value) || 200 
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      statusCode: parseInt(e.target.value) || 200
                     }))}
                     className="h-9"
                   />
@@ -673,8 +673,8 @@ export function AIEnhancedGenerator({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="format" className="text-xs font-medium">Response Format</Label>
-                        <Select 
-                          value={formData.responseFormat} 
+                        <Select
+                          value={formData.responseFormat}
                           onValueChange={(value) => setFormData(prev => ({ ...prev, responseFormat: value }))}
                         >
                           <SelectTrigger className="h-9">
@@ -769,7 +769,7 @@ export function AIEnhancedGenerator({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Button 
+          <Button
             onClick={handleGenerate}
             disabled={!isFormValid || isGenerating || (usage?.rateLimitRemaining === 0)}
             className="w-full h-12 text-base bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
@@ -781,7 +781,7 @@ export function AIEnhancedGenerator({
                 <span>Generating Magic...</span>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -951,16 +951,16 @@ export function AIEnhancedGenerator({
                   </div>
 
                   <div className="flex gap-2">
-                    <Button 
-                      onClick={handleSaveGenerated} 
+                    <Button
+                      onClick={handleSaveGenerated}
                       disabled={isGenerating}
                       className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       Save Mock
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowSaveOptions(false)}
                       className="flex-1"
                     >

@@ -17,7 +17,7 @@ export function BuilderPageSkeleton({ theme }: BuilderPageSkeletonProps) {
       <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* Header Skeleton */}
-          <motion.div 
+          <motion.div
             className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2.5 mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -30,7 +30,7 @@ export function BuilderPageSkeleton({ theme }: BuilderPageSkeletonProps) {
                 <Skeleton className="h-3 w-48 bg-gradient-to-r from-slate-200 to-slate-100" />
               </div>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 w-full lg:w-auto">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -53,7 +53,7 @@ export function BuilderPageSkeleton({ theme }: BuilderPageSkeletonProps) {
           {/* Enhanced Responsive Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             {/* Left Panel - Configuration Skeleton */}
-            <motion.div 
+            <motion.div
               className="space-y-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -172,7 +172,7 @@ export function BuilderPageSkeleton({ theme }: BuilderPageSkeletonProps) {
             </motion.div>
 
             {/* Right Panel - Response Editor & Preview Skeleton */}
-            <motion.div 
+            <motion.div
               className="space-y-2.5"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}

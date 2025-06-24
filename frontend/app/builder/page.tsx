@@ -125,14 +125,14 @@ export default function BuilderPage() {
     const timer = setTimeout(() => {
       setIsInitialLoading(false)
     }, 1500) // Show skeleton for 1.5 seconds on initial load
-    
+
     return () => clearTimeout(timer)
   }, [])
 
   // Theme-aware colors
   const themeColors = {
-    background: actualTheme === 'light' 
-      ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100' 
+    background: actualTheme === 'light'
+      ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100'
       : 'bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A]',
     text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
     cardBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#1A1A1A] border-gray-800',
@@ -332,19 +332,19 @@ export default function BuilderPage() {
       default:        return "w-full"
     }
   }
-  
+
   // AI Handler Functions
   const handleAIMockGenerated = (mockData: any) => {
     if (mockData.response_data) {
       const formattedResponse = JSON.stringify(mockData.response_data, null, 2)
       setResponse(formattedResponse)
       setJsonError(null)
-      
+
       // Update other fields if provided
       if (mockData.status_code) {
         setStatusCode(mockData.status_code.toString())
       }
-      
+
       toast({
         title: "🤖 AI Generated Successfully",
         description: "Mock response has been generated and applied",
@@ -366,12 +366,12 @@ export default function BuilderPage() {
   const handleAIResponseGenerated = (generatedResponse: string) => {
     setResponse(generatedResponse)
     setJsonError(null)
-  }  
+  }
   const handleAIFloatingActionGenerate = (type: string) => {
     // Quick AI generation based on type
     setShowAIModal(true)
   }
-  
+
   const handleAIFloatingActionOpenFull = () => {
     setShowAIModal(true)
   }
@@ -387,7 +387,7 @@ export default function BuilderPage() {
           <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
             <div className="max-w-6xl mx-auto">
               {/* Enhanced Header with Premium Styling */}
-              <motion.div 
+              <motion.div
                 className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2.5 mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -402,7 +402,7 @@ export default function BuilderPage() {
                     </h1>                </div>
                   <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-0.5 text-xs`}>Create and configure your API mock endpoint</p>
                   {lastSaved && (
-                    <motion.div 
+                    <motion.div
                       className={`flex items-center gap-2 mt-2 text-xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -469,11 +469,11 @@ export default function BuilderPage() {
                     </AlertDescription>
                   </Alert>
                 </motion.div>
-              )}            
+              )}
               {/* Enhanced Responsive Grid Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {/* Left Panel - Configuration */}
-                <motion.div 
+                <motion.div
                   className="space-y-4"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -483,7 +483,7 @@ export default function BuilderPage() {
                   <div>                  <div className="flex items-center gap-1.5 mb-1.5">
                       <div className="p-1 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
                         <Settings className="h-3 w-3 text-white" />
-                      </div>                    
+                      </div>
                       <h2 className={`text-sm font-semibold ${themeColors.text}`}>Configure Endpoint</h2>
                     </div>
 
@@ -495,7 +495,7 @@ export default function BuilderPage() {
                         <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-2xs`}>Set up the fundamental properties of your mock endpoint</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-3">
-                        
+
                         <div>
                           <Label htmlFor="mock-name" className={`${themeColors.text} text-xs`}>Mock Name</Label>
                           <Input
@@ -585,9 +585,9 @@ export default function BuilderPage() {
                     </Card>
                   </div>                {/* AI-Enhanced JSON Snippets */}
                   <div>
-                    <AISnippetWizard 
+                    <AISnippetWizard
                       onSnippetGenerated={handleAIResponseGenerated}
-                      onSnippetSelect={handleSnippetSelect} 
+                      onSnippetSelect={handleSnippetSelect}
                     />
                   </div>{/* Advanced Options */}
                   <Accordion type="single" collapsible>
@@ -611,9 +611,9 @@ export default function BuilderPage() {
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>                  {/* AI Enhanced Generator - Now Modal Triggered */}
-                </motion.div>              
+                </motion.div>
                 {/* Right Panel - Response Editor & Preview */}
-                <motion.div 
+                <motion.div
                   className="space-y-2.5"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -673,7 +673,7 @@ export default function BuilderPage() {
                           <Smartphone className="h-3 w-3" />
                         </Button>
                       </div>
-                    </div>                  
+                    </div>
                     <div className={getDevicePreviewClass()}>
                       <Card className={themeColors.cardBg}>
                         <CardHeader className="pb-3">
@@ -730,7 +730,7 @@ export default function BuilderPage() {
                                   Copy
                                 </Button>
                               </div>
-                            </TabsContent>                          
+                            </TabsContent>
                             <TabsContent value="javascript" className="mt-3">
                               <div>
                                 <Label className={`${themeColors.text} text-xs`}>JavaScript Fetch</Label>
@@ -767,7 +767,7 @@ export default function BuilderPage() {
                       </Card>
                     </div>
                   </div>
-                </motion.div>           
+                </motion.div>
                  </div>              {/* AI Floating Action Button */}
               <AIFloatingActionButton
                 onQuickGenerate={handleAIFloatingActionGenerate}

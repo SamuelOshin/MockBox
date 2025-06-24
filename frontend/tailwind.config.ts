@@ -80,11 +80,11 @@ const config: Config = {
           "50%": { transform: "translateY(-20px)" },
         },
         "pulse-glow": {
-          "0%, 100%": { 
+          "0%, 100%": {
             opacity: "1",
             boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)"
           },
-          "50%": { 
+          "50%": {
             opacity: "0.5",
             boxShadow: "0 0 40px rgba(59, 130, 246, 0.8)"
           },

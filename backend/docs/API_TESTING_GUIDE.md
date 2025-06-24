@@ -1,6 +1,6 @@
 # MockBox Backend - API Testing Guide
 
-## ✅ Backend Status: RUNNING SUCCESSFULLY! 
+## ✅ Backend Status: RUNNING SUCCESSFULLY!
 
 Your MockBox backend is now running on **http://localhost:8000** with the following features:
 
@@ -14,7 +14,7 @@ Your MockBox backend is now running on **http://localhost:8000** with the follow
 
 #### Protected Endpoints (Requires Authentication)
 - **POST** `/api/v1/mocks/` - Create new mock
-- **GET** `/api/v1/mocks/` - List all mocks 
+- **GET** `/api/v1/mocks/` - List all mocks
 - **GET** `/api/v1/mocks/{mock_id}` - Get specific mock
 - **PUT** `/api/v1/mocks/{mock_id}` - Update mock
 - **DELETE** `/api/v1/mocks/{mock_id}` - Delete mock
@@ -59,11 +59,11 @@ Use this JSON to create a test mock via the docs interface:
 
 ### 🔧 Configuration Status
 
-✅ **Database**: Connected to Supabase PostgreSQL  
-✅ **Migrations**: Applied successfully  
-✅ **Authentication**: Development mode (JWT verification relaxed)  
-✅ **CORS**: Configured for frontend (localhost:3000)  
-✅ **Rate Limiting**: Enabled (100 requests/minute)  
+✅ **Database**: Connected to Supabase PostgreSQL
+✅ **Migrations**: Applied successfully
+✅ **Authentication**: Development mode (JWT verification relaxed)
+✅ **CORS**: Configured for frontend (localhost:3000)
+✅ **Rate Limiting**: Enabled (100 requests/minute)
 
 ### 🚀 Next Steps
 

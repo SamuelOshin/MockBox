@@ -48,37 +48,37 @@ class CustomRateLimiter:
         else:
             # Use in-memory storage for development
             self.storage = {}
-    
+
     async def get_rate_limit_key(self, request: Request, endpoint_type: str = "default"):
         """Generate rate limit key based on user context"""
         # Check for authenticated user
         user_id = getattr(request.state, 'user_id', None)
         if user_id:
             return f"rate_limit:{endpoint_type}:user:{user_id}"
-        
+
         # Fall back to IP-based limiting
         ip = get_remote_address(request)
         return f"rate_limit:{endpoint_type}:ip:{ip}"
-    
+
     async def check_rate_limit(self, key: str, limit: int, window: int) -> bool:
         """Check if request is within rate limit"""
         current_time = int(time.time())
         window_start = current_time - window
-        
+
         if isinstance(self.storage, dict):
             # In-memory implementation
             if key not in self.storage:
                 self.storage[key] = []
-            
+
             # Clean old entries
             self.storage[key] = [
-                timestamp for timestamp in self.storage[key] 
+                timestamp for timestamp in self.storage[key]
                 if timestamp > window_start
             ]
-            
+
             if len(self.storage[key]) >= limit:
                 return False
-            
+
             self.storage[key].append(current_time)
             return True
         else:
@@ -90,7 +90,7 @@ class CustomRateLimiter:
                 await pipe.zadd(key, {str(current_time): current_time})
                 await pipe.expire(key, window)
                 results = await pipe.execute()
-                
+
                 return results[1] < limit
 
 # Global rate limiter instance
@@ -143,7 +143,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Check if endpoint has rate limiting
         endpoint = request.url.path
-        
+
         # AI endpoints rate limiting
         if "/ai/" in endpoint or "/generate" in endpoint:
             key = await rate_limiter.get_rate_limit_key(request, "ai")
@@ -156,7 +156,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         "retry_after": 60
                     }
                 )
-        
+
         # Public API rate limiting
         elif "/api/v1/simulate/" in endpoint or "/api/v1/mocks/public" in endpoint:
             key = await rate_limiter.get_rate_limit_key(request, "public_api")
@@ -169,17 +169,17 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         "retry_after": 60
                     }
                 )
-        
+
         # Process request
         start_time = time.time()
         response = await call_next(request)
         process_time = time.time() - start_time
-        
+
         # Add rate limiting headers
         response.headers["X-RateLimit-Remaining"] = "99"  # Calculate actual remaining
         response.headers["X-RateLimit-Reset"] = str(int(time.time()) + 60)
         response.headers["X-Process-Time"] = str(process_time)
-        
+
         return response
 ```
 
@@ -208,17 +208,17 @@ class RateLimitMonitor:
         """Log rate limit violations for analysis"""
         try:
             db = await get_database()
-            
+
             # Log to database
             await db.execute(
                 """
-                INSERT INTO rate_limit_violations 
+                INSERT INTO rate_limit_violations
                 (endpoint, user_id, ip_address, violation_type, timestamp)
                 VALUES ($1, $2, $3, $4, $5)
                 """,
                 endpoint, user_id, ip_address, violation_type, datetime.utcnow()
             )
-            
+
             # Log to application logs
             logger.warning(
                 f"Rate limit violation: {violation_type} on {endpoint}",
@@ -229,7 +229,7 @@ class RateLimitMonitor:
                     "violation_type": violation_type
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Failed to log rate limit violation: {e}")
 
@@ -237,18 +237,18 @@ class RateLimitMonitor:
     async def get_rate_limit_stats(timeframe: str = "24h") -> Dict[str, Any]:
         """Get rate limiting statistics"""
         db = await get_database()
-        
+
         query = """
-        SELECT 
+        SELECT
             violation_type,
             COUNT(*) as count,
             DATE_TRUNC('hour', timestamp) as hour
-        FROM rate_limit_violations 
+        FROM rate_limit_violations
         WHERE timestamp > NOW() - INTERVAL %s
         GROUP BY violation_type, hour
         ORDER BY hour DESC
         """
-        
+
         results = await db.fetch(query, timeframe)
         return {
             "violations_by_type": results,
@@ -277,7 +277,7 @@ class RateLimitMonitor:
 # Add AI configuration
 class Settings(BaseSettings):
     # ... existing settings ...
-    
+
     # AI Configuration
     openai_api_key: str = Field(default="", env="OPENAI_API_KEY")
     claude_api_key: str = Field(default="", env="CLAUDE_API_KEY")
@@ -310,30 +310,30 @@ class AIService:
     def __init__(self):
         self.openai_client = None
         self.claude_client = None
-        
+
         if settings.openai_api_key and settings.ai_provider in ["openai", "auto"]:
             self.openai_client = AsyncOpenAI(api_key=settings.openai_api_key)
-        
+
         if settings.claude_api_key and settings.ai_provider in ["claude", "auto"]:
             self.claude_client = AsyncAnthropic(api_key=settings.claude_api_key)
-    
+
     async def generate_mock_data(
-        self, 
+        self,
         request: MockGenerationRequest
     ) -> MockGenerationResponse:
         """Generate mock data using AI"""
         try:
             prompt = self._build_prompt(request)
-            
+
             if settings.ai_provider == "openai" and self.openai_client:
                 response = await self._generate_with_openai(prompt)
             elif settings.ai_provider == "claude" and self.claude_client:
                 response = await self._generate_with_claude(prompt)
             else:
                 raise ValueError(f"AI provider {settings.ai_provider} not available")
-            
+
             return self._parse_ai_response(response, request)
-            
+
         except Exception as e:
             logger.error(f"AI generation failed: {e}")
             raise
@@ -342,11 +342,11 @@ class AIService:
         """Build prompt for AI mock generation"""
         base_prompt = f"""
         Generate a realistic mock API response for the following specification:
-        
+
         Endpoint: {request.method} {request.endpoint}
         Description: {request.description or "No description provided"}
         Response Format: {request.response_format or "JSON"}
-        
+
         Requirements:
         1. Generate realistic, varied data
         2. Follow REST API best practices
@@ -354,15 +354,15 @@ class AIService:
         4. Add relevant headers if specified
         5. Ensure data types match expected schema
         """
-        
+
         if request.schema_hint:
             base_prompt += f"\nExpected Schema: {request.schema_hint}"
-        
+
         if request.examples:
             base_prompt += f"\nExamples: {json.dumps(request.examples, indent=2)}"
-        
+
         base_prompt += """
-        
+
         Return a JSON object with this structure:
         {
             "response_data": <generated_mock_response>,
@@ -371,7 +371,7 @@ class AIService:
             "explanation": <brief_explanation_of_generated_data>
         }
         """
-        
+
         return base_prompt
 
     async def _generate_with_openai(self, prompt: str) -> str:
@@ -386,7 +386,7 @@ class AIService:
             temperature=settings.ai_temperature,
             response_format={"type": "json_object"}
         )
-        
+
         return response.choices[0].message.content
 
     async def _generate_with_claude(self, prompt: str) -> str:
@@ -399,18 +399,18 @@ class AIService:
                 {"role": "user", "content": prompt}
             ]
         )
-        
+
         return response.content[0].text
 
     def _parse_ai_response(
-        self, 
-        ai_response: str, 
+        self,
+        ai_response: str,
         request: MockGenerationRequest
     ) -> MockGenerationResponse:
         """Parse AI response into structured format"""
         try:
             parsed = json.loads(ai_response)
-            
+
             return MockGenerationResponse(
                 response_data=parsed.get("response_data", {}),
                 status_code=parsed.get("status_code", 200),
@@ -422,7 +422,7 @@ class AIService:
                     "request_id": request.request_id
                 }
             )
-            
+
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse AI response: {e}")
             # Fallback to basic response
@@ -465,10 +465,10 @@ async def generate_mock_with_ai(
     try:
         # Add request ID for tracking
         request.request_id = str(uuid.uuid4())
-        
+
         # Generate mock data
         result = await ai_service.generate_mock_data(request)
-        
+
         # Log usage in background
         background_tasks.add_task(
             log_ai_usage,
@@ -476,9 +476,9 @@ async def generate_mock_with_ai(
             request_type="mock_generation",
             tokens_used=result.metadata.get("tokens_used", 0)
         )
-        
+
         return result
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -533,7 +533,7 @@ class MockGenerationRequest(BaseModel):
     examples: Optional[List[Dict[str, Any]]] = Field(None, description="Example responses for reference")
     complexity: str = Field("medium", description="Complexity level: simple, medium, complex")
     request_id: Optional[str] = Field(None, description="Unique request identifier")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -552,7 +552,7 @@ class MockGenerationResponse(BaseModel):
     headers: Dict[str, str] = Field(default_factory=dict, description="Response headers")
     explanation: str = Field(..., description="Explanation of the generated data")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Generation metadata")
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -610,19 +610,19 @@ export const useAIGeneration = () => {
 
   const generateMock = async (request: AIGenerationRequest): Promise<AIGenerationResponse | null> => {
     setIsGenerating(true);
-    
+
     try {
       const response = await apiClient.post<AIGenerationResponse>('/ai/generate', request);
-      
+
       setLastGeneration(response.data);
       toast.success('Mock data generated successfully!');
-      
+
       return response.data;
     } catch (error: any) {
-      const errorMessage = error.response?.status === 429 
+      const errorMessage = error.response?.status === 429
         ? 'AI generation rate limit exceeded. Please try again in a minute.'
         : 'Failed to generate mock data. Please try again.';
-      
+
       toast.error(errorMessage);
       return null;
     } finally {
@@ -632,13 +632,13 @@ export const useAIGeneration = () => {
 
   const improveMock = async (mockId: string, improvementRequest: string) => {
     setIsGenerating(true);
-    
+
     try {
       const response = await apiClient.post(`/ai/improve`, {
         mock_id: mockId,
         improvement_request: improvementRequest
       });
-      
+
       toast.success('Mock improved successfully!');
       return response.data;
     } catch (error) {
@@ -940,10 +940,10 @@ export const MockEditorEnhanced: React.FC<MockEditorEnhancedProps> = ({
             </Badge>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
           {aiEnabled && (
-            <AIGenerationDialog 
+            <AIGenerationDialog
               onGenerated={handleAIGenerated}
             />
           )}
@@ -1107,7 +1107,7 @@ async function handleRequest(request) {
 
   // Check cache first
   let response = await cache.match(cacheKey);
-  
+
   if (response) {
     // Add cache status header
     response = new Response(response.body, response);
@@ -1117,7 +1117,7 @@ async function handleRequest(request) {
 
   // Forward to origin
   response = await fetch(request);
-  
+
   // Determine cache TTL based on path
   let ttl = 0;
   if (url.pathname.includes('/simulate/')) {
@@ -1133,7 +1133,7 @@ async function handleRequest(request) {
     const cacheResponse = response.clone();
     cacheResponse.headers.set('Cache-Control', `s-maxage=${ttl}`);
     cacheResponse.headers.set('X-Cache-Status', 'MISS');
-    
+
     // Store in cache
     event.waitUntil(cache.put(cacheKey, cacheResponse));
   }
@@ -1141,7 +1141,7 @@ async function handleRequest(request) {
   // Add location header
   response.headers.set('X-Edge-Location', getEdgeLocation());
   response.headers.set('X-Cache-Status', 'MISS');
-  
+
   return response;
 }
 
@@ -1176,7 +1176,7 @@ class CacheService:
     def __init__(self):
         self.redis_client = None
         self.memory_cache = {}  # Fallback in-memory cache
-        
+
         if settings.redis_url:
             try:
                 self.redis_client = redis.from_url(
@@ -1201,19 +1201,19 @@ class CacheService:
                     return cache_item['value']
         except Exception as e:
             logger.error(f"Cache get error: {e}")
-        
+
         return None
 
     async def set(
-        self, 
-        key: str, 
-        value: Any, 
+        self,
+        key: str,
+        value: Any,
         ttl: int = 300
     ) -> bool:
         """Set value in cache with TTL"""
         try:
             serialized_value = json.dumps(value, default=str)
-            
+
             if self.redis_client:
                 await self.redis_client.setex(key, ttl, serialized_value)
             else:
@@ -1222,7 +1222,7 @@ class CacheService:
                     'value': value,
                     'expires': datetime.utcnow() + timedelta(seconds=ttl)
                 }
-            
+
             return True
         except Exception as e:
             logger.error(f"Cache set error: {e}")
@@ -1235,7 +1235,7 @@ class CacheService:
                 await self.redis_client.delete(key)
             else:
                 self.memory_cache.pop(key, None)
-            
+
             return True
         except Exception as e:
             logger.error(f"Cache delete error: {e}")
@@ -1251,7 +1251,7 @@ class CacheService:
             else:
                 # Memory cache pattern matching
                 keys_to_delete = [
-                    key for key in self.memory_cache.keys() 
+                    key for key in self.memory_cache.keys()
                     if self._match_pattern(key, pattern)
                 ]
                 for key in keys_to_delete:
@@ -1259,7 +1259,7 @@ class CacheService:
                 return len(keys_to_delete)
         except Exception as e:
             logger.error(f"Cache invalidation error: {e}")
-        
+
         return 0
 
     def _match_pattern(self, key: str, pattern: str) -> bool:
@@ -1272,10 +1272,10 @@ class CacheService:
         # Sort kwargs for consistent key generation
         sorted_params = sorted(kwargs.items())
         params_str = "&".join([f"{k}={v}" for k, v in sorted_params])
-        
+
         # Create hash of parameters
         params_hash = hashlib.md5(params_str.encode()).hexdigest()[:8]
-        
+
         return f"{prefix}:{params_hash}"
 
 # Global cache service instance
@@ -1292,20 +1292,20 @@ def cache_response(ttl: int = 300, key_prefix: str = "response"):
                 args=str(args),
                 kwargs=str(kwargs)
             )
-            
+
             # Try to get from cache
             cached_result = await cache_service.get(cache_key)
             if cached_result is not None:
                 logger.debug(f"Cache hit for key: {cache_key}")
                 return cached_result
-            
+
             # Execute function and cache result
             result = await func(*args, **kwargs)
             await cache_service.set(cache_key, result, ttl)
             logger.debug(f"Cached result for key: {cache_key}")
-            
+
             return result
-        
+
         return wrapper
     return decorator
 ```
@@ -1332,21 +1332,21 @@ class CacheMiddleware(BaseHTTPMiddleware):
         # Only cache GET requests
         if request.method != "GET":
             return await call_next(request)
-        
+
         # Skip caching for authenticated endpoints (except public ones)
         if self._should_skip_cache(request):
             return await call_next(request)
-        
+
         # Generate cache key
         cache_key = self._generate_cache_key(request)
-        
+
         # Try to get cached response
         cached_response = await cache_service.get(cache_key)
         if cached_response:
             response_data = cached_response['response_data']
             headers = cached_response.get('headers', {})
             status_code = cached_response.get('status_code', 200)
-            
+
             response = Response(
                 content=response_data,
                 status_code=status_code,
@@ -1355,18 +1355,18 @@ class CacheMiddleware(BaseHTTPMiddleware):
             response.headers["X-Cache-Status"] = "HIT"
             response.headers["X-Cache-Key"] = cache_key
             return response
-        
+
         # Process request
         start_time = time.time()
         response = await call_next(request)
         process_time = time.time() - start_time
-        
+
         # Cache successful responses
         if response.status_code == 200 and self._should_cache_response(request):
             response_data = b""
             async for chunk in response.body_iterator:
                 response_data += chunk
-            
+
             # Store in cache
             await cache_service.set(
                 cache_key,
@@ -1377,58 +1377,58 @@ class CacheMiddleware(BaseHTTPMiddleware):
                 },
                 self._get_cache_ttl(request)
             )
-            
+
             # Recreate response
             response = Response(
                 content=response_data,
                 status_code=response.status_code,
                 headers=response.headers
             )
-        
+
         # Add cache headers
         response.headers["X-Cache-Status"] = "MISS"
         response.headers["X-Process-Time"] = str(process_time)
         response.headers["Cache-Control"] = f"public, max-age={self._get_cache_ttl(request)}"
-        
+
         return response
 
     def _should_skip_cache(self, request: Request) -> bool:
         """Determine if request should skip caching"""
         path = request.url.path
-        
+
         # Skip authenticated endpoints except public ones
         if "/api/v1/" in path and "/public" not in path and "/simulate" not in path:
             return True
-        
+
         # Skip admin endpoints
         if "/admin/" in path:
             return True
-        
+
         return False
 
     def _should_cache_response(self, request: Request) -> bool:
         """Determine if response should be cached"""
         path = request.url.path
-        
+
         # Cache simulation endpoints
         if "/simulate/" in path:
             return True
-        
+
         # Cache public endpoints
         if "/public" in path:
             return True
-        
+
         return False
 
     def _get_cache_ttl(self, request: Request) -> int:
         """Get cache TTL based on endpoint"""
         path = request.url.path
-        
+
         if "/simulate/" in path:
             return 60  # 1 minute for simulations
         elif "/public" in path:
             return 300  # 5 minutes for public lists
-        
+
         return self.cache_ttl
 
     def _generate_cache_key(self, request: Request) -> str:
@@ -1542,19 +1542,19 @@ CREATE TABLE IF NOT EXISTS edge_deployments (
 );
 
 -- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_rate_limit_violations_user_timestamp 
+CREATE INDEX IF NOT EXISTS idx_rate_limit_violations_user_timestamp
 ON rate_limit_violations(user_id, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_rate_limit_violations_ip_timestamp 
+CREATE INDEX IF NOT EXISTS idx_rate_limit_violations_ip_timestamp
 ON rate_limit_violations(ip_address, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_ai_usage_user_timestamp 
+CREATE INDEX IF NOT EXISTS idx_ai_usage_user_timestamp
 ON ai_usage(user_id, timestamp);
 
-CREATE INDEX IF NOT EXISTS idx_cache_stats_key 
+CREATE INDEX IF NOT EXISTS idx_cache_stats_key
 ON cache_stats(cache_key);
 
-CREATE INDEX IF NOT EXISTS idx_edge_deployments_region_status 
+CREATE INDEX IF NOT EXISTS idx_edge_deployments_region_status
 ON edge_deployments(region, status);
 ```
 
@@ -1584,7 +1584,7 @@ class TestRateLimiting:
                 "description": "Test endpoint"
             })
             assert response.status_code in [200, 401]  # 401 if no auth
-        
+
         # 11th request should be rate limited
         response = client.post("/api/v1/ai/generate", json={
             "method": "GET",
@@ -1599,7 +1599,7 @@ class TestRateLimiting:
         for i in range(100):
             response = client.get(f"/api/v1/simulate/test_{i}")
             assert response.status_code in [200, 404]
-        
+
         # 101st request should be rate limited
         response = client.get("/api/v1/simulate/test_101")
         assert response.status_code == 429
@@ -1609,13 +1609,13 @@ class TestAIGeneration:
     async def test_ai_mock_generation(self):
         """Test AI mock generation"""
         from app.schemas.ai_schemas import MockGenerationRequest
-        
+
         request = MockGenerationRequest(
             method="GET",
             endpoint="/api/users/123",
             description="Get user profile"
         )
-        
+
         # This would need API key to actually work
         try:
             response = await ai_service.generate_mock_data(request)
@@ -1631,12 +1631,12 @@ class TestCaching:
         """Test cache service operations"""
         key = "test_key"
         value = {"test": "data"}
-        
+
         # Test set and get
         await cache_service.set(key, value, ttl=60)
         cached_value = await cache_service.get(key)
         assert cached_value == value
-        
+
         # Test delete
         await cache_service.delete(key)
         cached_value = await cache_service.get(key)
@@ -1647,7 +1647,7 @@ class TestCaching:
         # First request should be uncached
         response1 = client.get("/api/v1/mocks/public")
         assert response1.headers.get("X-Cache-Status") == "MISS"
-        
+
         # Second request should be cached (if implemented)
         response2 = client.get("/api/v1/mocks/public")
         # This depends on cache middleware being active
@@ -1693,19 +1693,19 @@ router = APIRouter(prefix="/admin/monitoring", tags=["Monitoring"])
 @router.get("/enterprise-metrics")
 async def get_enterprise_metrics(admin_user = Depends(get_current_admin_user)):
     """Get enterprise features metrics"""
-    
+
     # Get rate limiting stats
     rate_limit_stats = await RateLimitMonitor.get_rate_limit_stats("24h")
-    
+
     # Get AI usage stats
     ai_stats = await get_ai_usage_stats("24h")
-    
+
     # Get cache performance
     cache_stats = await get_cache_performance_stats("24h")
-    
+
     # Get edge deployment status
     edge_status = await get_edge_deployment_status()
-    
+
     return {
         "rate_limiting": rate_limit_stats,
         "ai_usage": ai_stats,
@@ -1759,7 +1759,7 @@ async def get_edge_deployment_status():
 
 - [ ] **Environment Variables**: All AI, caching, and edge configuration set
 - [ ] **Database Migrations**: Enterprise features tables created
-- [ ] **Redis Setup**: Cache and rate limiting storage configured  
+- [ ] **Redis Setup**: Cache and rate limiting storage configured
 - [ ] **API Keys**: OpenAI/Claude keys configured for AI features
 - [ ] **Edge Infrastructure**: CDN and edge deployment configured
 - [ ] **Monitoring**: Dashboards and alerting configured
@@ -1784,7 +1784,7 @@ async def get_edge_deployment_status():
 - Rate limiting information
 - Edge deployment benefits
 
-### Developer Documentation  
+### Developer Documentation
 - API endpoints for enterprise features
 - Configuration options
 - Monitoring and alerting setup

@@ -6,18 +6,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
-import { 
-  Search, 
-  Bell, 
-  Moon, 
-  Sun, 
+import {
+  Search,
+  Bell,
+  Moon,
+  Sun,
   User,
   Settings,
   HelpCircle,
@@ -86,7 +86,7 @@ export function Header() {
             style={{ backgroundColor: headerColors.searchBg }}
           />
         </div>
-      </div>      
+      </div>
       {/* Right side - Actions */}
       <div className="flex items-center gap-3">
         <Button
@@ -95,7 +95,7 @@ export function Header() {
           className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 w-9 p-0 transition-colors duration-200`}
         >
           <HelpCircle className="h-4 w-4" />
-        </Button>        
+        </Button>
         {/* Enhanced Theme Toggle Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -195,8 +195,8 @@ export function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>        ) : (
-          <Button 
-            variant="default" 
+          <Button
+            variant="default"
             size="sm"
             onClick={() => {
               const currentPath = window.location.pathname

@@ -175,7 +175,7 @@ interface MockEndpoint {
 // Use functional components with hooks
 const MockBuilder: React.FC = () => {
   const [mock, setMock] = useState<MockEndpoint | null>(null);
-  
+
   return (
     <div className="flex flex-col space-y-4">
       {/* Component JSX */}
@@ -208,12 +208,12 @@ interface ComponentProps {
 const Component: React.FC<ComponentProps> = ({ title, onSubmit }) => {
   // 4. Hooks
   const router = useRouter();
-  
+
   // 5. Functions
   const handleClick = () => {
     // Implementation
   };
-  
+
   // 6. Render
   return (
     <div>
@@ -282,10 +282,10 @@ API_PREFIX = "/api/v1"
 # 5. Classes and functions
 class ServiceClass:
     """Class docstring"""
-    
+
     def __init__(self):
         pass
-    
+
     async def method(self) -> str:
         """Method docstring"""
         return "result"
@@ -344,7 +344,7 @@ import { MockBuilder } from '@/components/MockBuilder';
 describe('MockBuilder', () => {
   it('renders form elements correctly', () => {
     render(<MockBuilder />);
-    
+
     expect(screen.getByLabelText(/mock name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/endpoint/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create mock/i })).toBeInTheDocument();
@@ -353,13 +353,13 @@ describe('MockBuilder', () => {
   it('submits form with valid data', async () => {
     const mockSubmit = jest.fn();
     render(<MockBuilder onSubmit={mockSubmit} />);
-    
+
     fireEvent.change(screen.getByLabelText(/mock name/i), {
       target: { value: 'Test Mock' }
     });
-    
+
     fireEvent.click(screen.getByRole('button', { name: /create mock/i }));
-    
+
     expect(mockSubmit).toHaveBeenCalledWith({
       name: 'Test Mock',
       // ... other fields
@@ -374,23 +374,23 @@ import { test, expect } from '@playwright/test';
 
 test('user can create a mock', async ({ page }) => {
   await page.goto('/login');
-  
+
   // Login
   await page.fill('[data-testid=email]', 'test@example.com');
   await page.fill('[data-testid=password]', 'password');
   await page.click('[data-testid=submit]');
-  
+
   // Navigate to builder
   await page.click('[data-testid=create-mock]');
-  
+
   // Fill form
   await page.fill('[data-testid=mock-name]', 'Test API');
   await page.fill('[data-testid=endpoint]', '/test');
   await page.selectOption('[data-testid=method]', 'GET');
-  
+
   // Submit
   await page.click('[data-testid=create]');
-  
+
   // Verify success
   await expect(page.locator('[data-testid=success-message]')).toBeVisible();
 });
@@ -414,13 +414,13 @@ async def test_create_mock(client: AsyncClient, authenticated_user):
         "response": {"message": "Hello World"},
         "status_code": 200
     }
-    
+
     response = await client.post(
         "/api/v1/mocks/",
         json=mock_data,
         headers={"Authorization": f"Bearer {authenticated_user.token}"}
     )
-    
+
     assert response.status_code == 201
     data = response.json()
     assert data["name"] == mock_data["name"]
@@ -430,7 +430,7 @@ async def test_create_mock(client: AsyncClient, authenticated_user):
 async def test_simulate_mock(client: AsyncClient, sample_mock):
     """Test mock simulation"""
     response = await client.get(f"/simulate/{sample_mock.id}")
-    
+
     assert response.status_code == 200
     assert response.json() == sample_mock.response
 ```
@@ -443,16 +443,16 @@ async def test_mock_crud_operations(client: AsyncClient, authenticated_user):
     # Create
     create_response = await client.post("/api/v1/mocks/", json=mock_data)
     mock_id = create_response.json()["id"]
-    
+
     # Read
     get_response = await client.get(f"/api/v1/mocks/{mock_id}")
     assert get_response.status_code == 200
-    
+
     # Update
     update_data = {"name": "Updated Mock"}
     update_response = await client.put(f"/api/v1/mocks/{mock_id}", json=update_data)
     assert update_response.json()["name"] == "Updated Mock"
-    
+
     # Delete
     delete_response = await client.delete(f"/api/v1/mocks/{mock_id}")
     assert delete_response.status_code == 204
@@ -487,18 +487,18 @@ async def create_mock(
 ) -> Mock:
     """
     Create a new mock endpoint for a user.
-    
+
     Args:
         user_id: The ID of the user creating the mock
         mock_data: The mock configuration data
-        
+
     Returns:
         Mock: The created mock object
-        
+
     Raises:
         ValidationError: If the mock data is invalid
         DuplicateError: If a mock with the same endpoint already exists
-        
+
     Example:
         >>> mock_data = MockCreate(name="Test", endpoint="/test", method="GET")
         >>> mock = await create_mock(user_id, mock_data)
@@ -512,11 +512,11 @@ async def create_mock(
 ```typescript
 /**
  * Create a new mock endpoint
- * 
+ *
  * @param mockData - The mock configuration
  * @returns Promise that resolves to the created mock
  * @throws {Error} When the API request fails
- * 
+ *
  * @example
  * ```typescript
  * const mock = await createMock({

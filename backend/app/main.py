@@ -1,6 +1,7 @@
 """
 Main FastAPI application
 """
+
 import time
 import asyncio
 from contextlib import asynccontextmanager
@@ -15,8 +16,14 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.database import init_database, close_database
 from app.api.v1.api import router as api_v1_router
-from app.middleware.rate_limit_middleware import RateLimitMiddleware, SecurityHeadersMiddleware
-from app.middleware.security_middleware import AuthenticationMiddleware, SecurityValidationMiddleware
+from app.middleware.rate_limit_middleware import (
+    RateLimitMiddleware,
+    SecurityHeadersMiddleware,
+)
+from app.middleware.security_middleware import (
+    AuthenticationMiddleware,
+    SecurityValidationMiddleware,
+)
 from app.core.rate_limiting import rate_limiter, RATE_LIMITS
 from app.services.monitoring import cleanup_monitoring_data
 
@@ -32,30 +39,31 @@ cleanup_task = None
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     global cleanup_task
-    
+
     # Startup
     print("🚀 Starting MockBox Backend...")
     await init_database()
-    
+
     # Initialize rate limiter with Redis if configured
     if settings.redis_url:
         from app.core.rate_limiting import rate_limiter as rl
+
         rl.__init__(settings.redis_url)
         print(f"✅ Rate limiting initialized with Redis: {settings.redis_url}")
     else:
         print("⚠️  Rate limiting using memory cache (Redis not configured)")
-    
+
     # Start background monitoring cleanup task
     cleanup_task = asyncio.create_task(cleanup_monitoring_data())
     print("✅ Monitoring cleanup task started")
-    
+
     print("✅ Backend startup complete")
-    
+
     yield
-    
+
     # Shutdown
     print("🔄 Shutting down MockBox Backend...")
-    
+
     # Cancel background task
     if cleanup_task:
         cleanup_task.cancel()
@@ -63,7 +71,7 @@ async def lifespan(app: FastAPI):
             await cleanup_task
         except asyncio.CancelledError:
             pass
-    
+
     await close_database()
     print("✅ Backend shutdown complete")
 
@@ -75,7 +83,7 @@ app = FastAPI(
     description="MockBox - Professional API Mocking Service",
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add rate limiter (legacy for health check)
@@ -113,7 +121,7 @@ app.add_middleware(
 
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"] if settings.debug else ["localhost", "127.0.0.1"]
+    allowed_hosts=["*"] if settings.debug else ["localhost", "127.0.0.1"],
 )
 
 
@@ -138,8 +146,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             "success": False,
             "message": exc.detail,
             "error_code": f"HTTP_{exc.status_code}",
-            "timestamp": time.time()
-        }
+            "timestamp": time.time(),
+        },
     )
 
 
@@ -150,15 +158,15 @@ async def general_exception_handler(request: Request, exc: Exception):
         error_detail = str(exc)
     else:
         error_detail = "Internal server error"
-    
+
     return JSONResponse(
         status_code=500,
         content={
             "success": False,
             "message": error_detail,
             "error_code": "INTERNAL_ERROR",
-            "timestamp": time.time()
-        }
+            "timestamp": time.time(),
+        },
     )
 
 
@@ -168,15 +176,15 @@ async def general_exception_handler(request: Request, exc: Exception):
 async def health_check(request: Request):
     """Health check endpoint"""
     from app.core.database import db_manager
-    
+
     db_healthy = await db_manager.health_check()
-    
+
     return {
         "status": "healthy" if db_healthy else "unhealthy",
         "version": settings.app_version,
         "timestamp": time.time(),
         "database": db_healthy,
-        "environment": settings.environment
+        "environment": settings.environment,
     }
 
 
@@ -187,7 +195,7 @@ async def root():
     return {
         "message": "Welcome to MockBox API",
         "version": settings.app_version,
-        "docs": "/docs" if settings.debug else "Documentation disabled in production"
+        "docs": "/docs" if settings.debug else "Documentation disabled in production",
     }
 
 
@@ -197,10 +205,11 @@ app.include_router(api_v1_router, prefix=settings.api_v1_prefix)
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "app.main:app",
         host=settings.host,
         port=settings.port,
         reload=settings.debug,
-        log_level="debug" if settings.debug else "info"
+        log_level="debug" if settings.debug else "info",
     )
