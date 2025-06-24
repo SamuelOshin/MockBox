@@ -77,7 +77,7 @@ export default function MocksPage() {
     const fetchMocks = async () => {
       try {
         const data = await mockApi.getAllMocks()
-        
+
         if (Array.isArray(data)) {
           setMocks(data)
         } else {
@@ -98,16 +98,16 @@ export default function MocksPage() {
     }
 
     fetchMocks()  }, [toast])
-  
-  
+
+
     const filteredMocks = mocks.filter((mock) => {
     if (!mock || typeof mock !== 'object') return false;
-    
+
     const searchLower = searchQuery.toLowerCase();
     const name = mock.name || '';
     const endpoint = mock.endpoint || '';
     const method = mock.method || '';
-    
+
     return (
       name.toLowerCase().includes(searchLower) ||
       endpoint.toLowerCase().includes(searchLower) ||
@@ -180,7 +180,7 @@ export default function MocksPage() {
 
             <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
             {/* Header Section */}
-            <motion.div 
+            <motion.div
               className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -192,7 +192,7 @@ export default function MocksPage() {
                   Manage and organize your API mocks
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Button
                   onClick={() => navigateTo("/builder")}
@@ -205,7 +205,7 @@ export default function MocksPage() {
             </motion.div>
 
             {/* Quick Stats */}
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -263,7 +263,7 @@ export default function MocksPage() {
             </motion.div>
 
             {/* Search and Filters */}
-            <motion.div 
+            <motion.div
               className="flex flex-col sm:flex-row gap-4 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -278,7 +278,7 @@ export default function MocksPage() {
                   className={`pl-10 ${themeColors.cardBg}`}
                 />
               </div>
-              
+
               <div className="flex gap-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -307,7 +307,7 @@ export default function MocksPage() {
 
             {/* Bulk Actions */}
             {selectedMocks.length > 0 && (
-              <motion.div 
+              <motion.div
                 className={`flex items-center gap-3 p-4 ${themeColors.cardBg} rounded-lg border mb-6`}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -416,7 +416,7 @@ export default function MocksPage() {
                                 <Download className="mr-2 h-4 w-4" />
                                 Export
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => handleDeleteMock(mock.id)}
                                 className="text-red-600 focus:text-red-600"
                               >
@@ -432,7 +432,7 @@ export default function MocksPage() {
               </motion.div>
 
             {filteredMocks.length === 0 && (
-              <motion.div 
+              <motion.div
                 className={`${themeColors.cardBg} rounded-lg border p-12 text-center`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

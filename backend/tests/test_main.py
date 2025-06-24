@@ -1,6 +1,7 @@
 """
 Basic tests for the MockBox backend
 """
+
 import pytest
 import asyncio
 from httpx import AsyncClient

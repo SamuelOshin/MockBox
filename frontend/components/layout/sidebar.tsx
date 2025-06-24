@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
-import { 
+import {
   Home,
   Database,
   Plus,
@@ -123,14 +123,14 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed)
-  }  
+  }
   interface SidebarItemProps {
     title: string;
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     section: string;
   }
-  
+
   const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
     const isActive = pathname === item.href
     const Icon = item.icon
@@ -146,8 +146,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           className={cn(
             "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
             sidebarColors.itemBg,
-            isActive 
-              ? `${sidebarColors.activeBg} ${sidebarColors.text}` 
+            isActive
+              ? `${sidebarColors.activeBg} ${sidebarColors.text}`
               : `${sidebarColors.textSecondary} hover:${sidebarColors.text}`,
             isCollapsed && "justify-center"
           )}
@@ -155,7 +155,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           whileTap={{ scale: 0.98 }}
         >
           <Icon className="h-5 w-5 flex-shrink-0" />
-          
+
           <AnimatePresence>
             {!isCollapsed && (
               <motion.span
@@ -251,7 +251,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                   <span className="text-white font-bold text-sm">MB</span>
                 </div>
                 <Link href="/">
-                  <div className="whitespace-nowrap">                  
+                  <div className="whitespace-nowrap">
                     <div className={cn("font-bold text-sm", sidebarColors.text)}>MockBox</div>
                     <div className={cn("text-xs", sidebarColors.textSecondary)}>Mock API Builder</div>
                   </div>
@@ -283,7 +283,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <ChevronLeft className="h-4 w-4" />
             )}
           </Button>
-        </div>        
+        </div>
         {/* Navigation with ScrollbarContainer */}
         <ScrollbarContainer
           className="flex-1 py-4 space-y-1"
@@ -339,7 +339,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                   {user.email?.charAt(0).toUpperCase() || "U"}
                 </span>
               </div>
-              
+
               <AnimatePresence>
                 {!isCollapsed && (
                   <motion.div
@@ -387,7 +387,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center flex-shrink-0">
                   <User className="h-4 w-4 text-white" />
                 </div>
-                
+
                 <AnimatePresence>
                   {!isCollapsed && (
                     <motion.div

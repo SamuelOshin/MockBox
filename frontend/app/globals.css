@@ -41,9 +41,9 @@
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;    
+    --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    
+
     /* Enhanced scrollbar theme variables */
     --scrollbar-track: hsl(var(--muted));
     --scrollbar-thumb: hsl(var(--border));
@@ -75,7 +75,7 @@
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;    --chart-5: 340 75% 55%;
-    
+
     /* Enhanced dark theme scrollbar variables */
     --scrollbar-track: hsl(var(--card));
     --scrollbar-thumb: hsl(var(--border));
@@ -91,27 +91,27 @@
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
+
   .scrollbar-base::-webkit-scrollbar {
     width: var(--scrollbar-width);
     height: var(--scrollbar-width);
   }
-  
+
   .scrollbar-base::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
     border-radius: var(--scrollbar-border-radius);
   }
-  
+
   .scrollbar-base::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: var(--scrollbar-border-radius);
     transition: background-color 200ms ease;
   }
-  
+
   .scrollbar-base::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
   }
-  
+
   .scrollbar-base::-webkit-scrollbar-corner {
     background: var(--scrollbar-track);
   }
@@ -121,27 +121,27 @@
   * {
     @apply border-border;
   }
-  
+
   /* Apply centralized scrollbar styling to all elements */
   html, body, * {
     @apply scrollbar-base;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Enhanced theme transitions */
   html {
     transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
   }
-  
+
   html.theme-transitioning * {
-    transition: 
+    transition:
       background-color 200ms ease-in-out,
       border-color 200ms ease-in-out,
       color 200ms ease-in-out,
@@ -152,10 +152,10 @@
       transform 200ms ease-in-out,
       backdrop-filter 200ms ease-in-out !important;
   }
-  
+
   /* Normal smooth transitions for interactive elements */
   html:not(.theme-transitioning) * {
-    transition: 
+    transition:
       background-color 150ms ease,
       border-color 150ms ease,
       color 150ms ease,
@@ -166,18 +166,18 @@
       transform 150ms ease,
       backdrop-filter 150ms ease;
   }
-  
+
   /* Disable transitions for elements that should be instant */
   .no-transition,
   .no-transition * {
     transition: none !important;
   }
-  
+
   /* Special transitions for theme toggle components */
   [data-theme-toggle] {
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
-  
+
   /* Enhance backdrop blur transitions */
   .backdrop-blur-xl {
     transition: backdrop-filter 200ms ease-in-out;
@@ -190,11 +190,11 @@
   .zoom-90 {
     zoom: 0.9;
   }
-  
+
   .zoom-95 {
     zoom: 0.95;
   }
-  
+
   .zoom-100 {
     zoom: 1.0;
   }
@@ -204,27 +204,27 @@
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
+
   .scrollbar-theme::-webkit-scrollbar {
     width: var(--scrollbar-width);
     height: var(--scrollbar-width);
   }
-  
+
   .scrollbar-theme::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
     border-radius: var(--scrollbar-border-radius);
   }
-  
+
   .scrollbar-theme::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: var(--scrollbar-border-radius);
     transition: background-color 200ms ease;
   }
-  
+
   .scrollbar-theme::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover, var(--scrollbar-thumb));
   }
-  
+
   .scrollbar-theme::-webkit-scrollbar-corner {
     background: var(--scrollbar-track);
   }
@@ -234,23 +234,23 @@
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
     border-radius: 3px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 3px;
     transition: background-color 200ms ease;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover, var(--scrollbar-thumb));
   }
@@ -261,31 +261,31 @@
     scrollbar-color: transparent transparent;
     transition: scrollbar-color 200ms ease;
   }
-  
+
   .scrollbar-auto-hide:hover {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
+
   .scrollbar-auto-hide::-webkit-scrollbar {
     width: var(--scrollbar-width);
     height: var(--scrollbar-width);
   }
-  
+
   .scrollbar-auto-hide::-webkit-scrollbar-track {
     background: transparent;
     transition: background-color 200ms ease;
   }
-  
+
   .scrollbar-auto-hide::-webkit-scrollbar-thumb {
     background: transparent;
     border-radius: var(--scrollbar-border-radius);
     transition: background-color 200ms ease;
   }
-  
+
   .scrollbar-auto-hide:hover::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
   }
-  
+
   .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
   }
@@ -306,11 +306,11 @@
     font-size: 0.625rem;
     line-height: 0.75rem;
   }
-  
+
   .compact-spacing {
     letter-spacing: -0.01em;
   }
-  
+
   .compact-leading {
     line-height: 1.2;
   }
@@ -321,48 +321,48 @@
   .scrollbar-container {
     /* Smooth scrolling */
     scroll-behavior: smooth;
-    
+
     /* Better touch scrolling on iOS */
     -webkit-overflow-scrolling: touch;
-    
+
     /* Prevent scrollbar from taking up layout space */
     scrollbar-gutter: stable;
-    
+
     /* Theme-aware scrollbar using CSS variables */
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
+
   .scrollbar-container::-webkit-scrollbar {
     width: var(--scrollbar-width, 8px);
     height: var(--scrollbar-width, 8px);
   }
-  
+
   .scrollbar-container::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
     border-radius: var(--scrollbar-border-radius, 4px);
   }
-  
+
   .scrollbar-container::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: var(--scrollbar-border-radius, 4px);
     transition: background-color 200ms ease;
   }
-  
+
   .scrollbar-container::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
   }
-  
+
   .scrollbar-container::-webkit-scrollbar-corner {
     background: var(--scrollbar-track);
   }
-  
+
   /* Focus styles for accessibility */
   .scrollbar-container:focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
   }
-  
+
   /* Mobile responsive scrollbars */
   @media (max-width: 768px) {
     .scrollbar-container::-webkit-scrollbar,
@@ -372,7 +372,7 @@
       height: 4px;
     }
   }
-  
+
   /* High contrast mode support */
   @media (prefers-contrast: high) {
     .scrollbar-container::-webkit-scrollbar-thumb,
@@ -381,14 +381,14 @@
       border: 1px solid;
     }
   }
-  
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .scrollbar-container,
     html {
       scroll-behavior: auto;
     }
-    
+
     .scrollbar-container::-webkit-scrollbar-thumb,
     *::-webkit-scrollbar-thumb,
     html::-webkit-scrollbar-thumb {
@@ -403,25 +403,25 @@
   [data-radix-dialog-content] {
     background: inherit !important;
   }
-  
+
   /* More specific targeting for our modal */
   .ai-modal-override[data-radix-dialog-content] {
     background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
     background-color: #030712 !important;
   }
-  
+
   .light .ai-modal-override[data-radix-dialog-content] {
     background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
     background-color: #f8fafc !important;
   }
-  
+
   /* Force theme backgrounds with higher specificity */
   html.dark [data-radix-dialog-content].ai-modal-override,
   .dark [data-radix-dialog-content].ai-modal-override {
     background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
     background-color: #030712 !important;
   }
-  
+
   html.light [data-radix-dialog-content].ai-modal-override,
   .light [data-radix-dialog-content].ai-modal-override {
     background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
@@ -436,17 +436,17 @@
     background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
     background-color: #030712 !important;
   }
-  
+
   html.light .ai-modal-override {
     background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
     background-color: #f8fafc !important;
   }
-  
+
   /* Let cards and other UI elements use their proper theme colors */
   html.dark .ai-modal-override .bg-card {
     background-color: hsl(var(--card)) !important;
   }
-  
+
   html.light .ai-modal-override .bg-card {
     background-color: hsl(var(--card)) !important;
   }
@@ -458,30 +458,30 @@
     /* Let the modal content use proper theme colors */
     color-scheme: inherit;
   }
-  
+
   /* Ensure cards are visible with proper theme colors */
   .ai-modal-override .bg-card,
   .ai-modal-override [class*="bg-card"] {
     background-color: hsl(var(--card)) !important;
     border-color: hsl(var(--border)) !important;
   }
-  
+
   /* Ensure buttons use proper theme colors */
   .ai-modal-override .bg-primary {
     background-color: hsl(var(--primary)) !important;
     color: hsl(var(--primary-foreground)) !important;
   }
-  
+
   .ai-modal-override .bg-secondary {
     background-color: hsl(var(--secondary)) !important;
     color: hsl(var(--secondary-foreground)) !important;
   }
-  
+
   /* Ensure inputs use proper theme colors */
   .ai-modal-override .bg-background {
     background-color: hsl(var(--background)) !important;
   }
-  
+
   /* Ensure muted backgrounds use proper theme colors */
   .ai-modal-override .bg-muted {
     background-color: hsl(var(--muted)) !important;
@@ -496,14 +496,14 @@
   [data-radix-dialog-portal] {
     color-scheme: inherit;
   }
-  
+
   /* Ensure portal content inherits theme from html */
   html.dark [data-radix-dialog-portal] [data-radix-dialog-content] {
     background: linear-gradient(135deg, #030712 0%, #111827 50%, #051440 100%) !important;
     background-color: #030712 !important;
     color: hsl(var(--foreground));
   }
-  
+
   html.light [data-radix-dialog-portal] [data-radix-dialog-content] {
     background: linear-gradient(135deg, #f8fafc 0%, #ffffff 50%, #eff6ff 100%) !important;
     background-color: #f8fafc !important;

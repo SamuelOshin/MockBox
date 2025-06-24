@@ -11,7 +11,7 @@ export default function AuthCallbackPage() {
     const handleAuthCallback = async () => {
       try {
         const { data, error } = await supabase.auth.getSession()
-        
+
         if (error) {
           console.error("Error during auth callback:", error)
           router.push("/auth/login?error=callback_error")
@@ -22,7 +22,7 @@ export default function AuthCallbackPage() {
           // Get the stored redirect URL or default to dashboard
           const redirectUrl = localStorage.getItem('auth_redirect') || '/dashboard'
           localStorage.removeItem('auth_redirect') // Clean up
-          
+
           // Successfully authenticated, redirect to intended destination
           router.push(decodeURIComponent(redirectUrl))
         } else {

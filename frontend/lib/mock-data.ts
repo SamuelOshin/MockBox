@@ -57,7 +57,7 @@ export const sampleMocks = [
     description: "Mock API for user list"
   },
   {
-    id: "mock_2", 
+    id: "mock_2",
     name: "Product API",
     method: "POST" as const,
     endpoint: "/api/products",

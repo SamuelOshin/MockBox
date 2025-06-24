@@ -513,7 +513,7 @@ MockBox/
    ```bash
    cd backend
    python -m venv venv
-   
+
    # Activate virtual environment
    # Windows (PowerShell):
    venv\Scripts\Activate.ps1
@@ -521,7 +521,7 @@ MockBox/
    venv\Scripts\activate.bat
    # macOS/Linux:
    source venv/bin/activate
-   
+
    pip install -r requirements.txt
    cp .env.example .env
    # Edit .env with your Supabase credentials
@@ -588,13 +588,13 @@ CACHE_TTL=300
 cd backend
 uvicorn main:app --reload --port 8000
 
-# Terminal 2 - Start Frontend  
+# Terminal 2 - Start Frontend
 cd frontend
 pnpm dev
 
 # Access the application:
 # Frontend: http://localhost:3000
-# Backend API: http://localhost:8000  
+# Backend API: http://localhost:8000
 # API Documentation: http://localhost:8000/docs
 ```
 
@@ -612,7 +612,7 @@ docker-compose down
 
 **📱 Testing the Application**
 1. **Frontend Access**: Navigate to http://localhost:3000
-2. **Authentication Test**: 
+2. **Authentication Test**:
    - Go to `/auth/login` to test sign-in
    - Try `/auth/signup` for new user registration
    - Test OAuth with Google/GitHub (if configured)
@@ -625,10 +625,10 @@ docker-compose down
 cd frontend
 pnpm dev          # Development server with hot reload
 pnpm build        # Production build
-pnpm lint         # Code linting with ESLint  
+pnpm lint         # Code linting with ESLint
 pnpm type-check   # TypeScript type checking
 
-# Backend development commands  
+# Backend development commands
 cd backend
 uvicorn main:app --reload    # Development server with auto-reload
 python -m pytest            # Run test suite
@@ -896,4 +896,3 @@ We'd love to hear your ideas! Please open an issue to discuss new features.
   <a href="https://twitter.com/MockBoxdev">🐦 Follow on Twitter</a> •
   <a href="https://MockBox.dev">🌐 Visit Website</a>
 </div>
-

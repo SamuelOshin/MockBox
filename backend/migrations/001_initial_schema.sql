@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS mocks (
     last_accessed TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE,
-    
+
     -- Ensure unique endpoint per user and method
     UNIQUE(user_id, endpoint, method)
 );

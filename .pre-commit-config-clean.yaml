@@ -1,0 +1,89 @@
+# MockBox Pre-Commit Configuration
+# Prevents accidental commits of sensitive files and maintains code quality
+
+repos:
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # File safety checks
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+
+      # Content validation
+      - id: detect-private-key
+      - id: check-yaml
+        exclude: ^frontend/node_modules/
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+
+      # Code formatting
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+
+      # Security
+      - id: detect-aws-credentials
+        args: ['--allow-missing-credentials']
+
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: |
+          (?x)^(
+            .*\.lock$|
+            .*\.min\.js$|
+            .*\.map$|
+            package-lock\.json$|
+            pnpm-lock\.yaml$
+          )$
+
+  # Python specific hooks
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3
+        files: '^backend/.*\.py$'
+
+  # Custom hooks for this repository
+  - repo: local
+    hooks:
+      # Block .env files specifically
+      - id: block-env-files
+        name: 'Block .env files'
+        entry: python .pre-commit-hooks/block-env-files.py
+        language: system
+        files: '\.env'
+        always_run: false
+        pass_filenames: true
+
+      # Validate commit message format
+      - id: commit-msg-format
+        name: 'Validate commit message format'
+        entry: python .pre-commit-hooks/validate-commit-msg.py
+        language: system
+        stages: [commit-msg]
+        always_run: true
+        pass_filenames: false
+
+# Configuration for specific tools
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

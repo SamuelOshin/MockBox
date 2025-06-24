@@ -16,7 +16,7 @@ export function DashboardSkeleton({ theme }: DashboardSkeletonProps) {
     <div className={`flex-1 ${themeColors.background} overflow-hidden transition-colors duration-200`}>
       <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
         {/* Welcome Section Skeleton */}
-        <motion.div 
+        <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -27,7 +27,7 @@ export function DashboardSkeleton({ theme }: DashboardSkeletonProps) {
             <Skeleton className="h-10 w-80 bg-gradient-to-r from-slate-200 to-slate-100" />
           </div>
           <Skeleton className="h-6 w-96 mb-6 bg-gradient-to-r from-slate-100 to-slate-50" />
-          
+
           {/* Quick Actions Skeleton */}
           <div className="flex flex-wrap gap-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -44,7 +44,7 @@ export function DashboardSkeleton({ theme }: DashboardSkeletonProps) {
         </motion.div>
 
         {/* Key Metrics Skeleton */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -73,7 +73,7 @@ export function DashboardSkeleton({ theme }: DashboardSkeletonProps) {
         </motion.div>
 
         {/* Mocks Table Header Skeleton */}
-        <motion.div 
+        <motion.div
           className="flex items-center justify-between mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -90,7 +90,7 @@ export function DashboardSkeleton({ theme }: DashboardSkeletonProps) {
         </motion.div>
 
         {/* Search and Filters Skeleton */}
-        <motion.div 
+        <motion.div
           className="flex flex-col sm:flex-row gap-4 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,7 +125,7 @@ export function DashboardSkeleton({ theme }: DashboardSkeletonProps) {
                   <Skeleton className="h-4 w-20 bg-gradient-to-r from-purple-200 to-violet-200" />
                 </div>
               </div>
-              
+
               {/* Table Rows */}
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, index) => (

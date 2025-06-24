@@ -62,11 +62,11 @@ async def test_create_mock_duplicate_endpoint(self, mock_service, sample_user_id
     # Setup existing mock scenario
     existing_mock = MockModel(**sample_mock_data)
     mock_service._get_mock_by_endpoint = AsyncMock(return_value=existing_mock)
-    
+
     # Assert exception is raised
     with pytest.raises(HTTPException) as exc_info:
         await mock_service.create_mock(sample_user_id, sample_mock_create)
-    
+
     assert exc_info.value.status_code == status.HTTP_409_CONFLICT
 ```
 

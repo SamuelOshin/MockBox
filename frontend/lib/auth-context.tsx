@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) throw error
-        
+
         setSession(session)
         setUser(session?.user ?? null)
       } catch (error) {
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         // console.log("Auth state changed:", event, session?.user?.email)
-        
+
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       })
-      
+
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
@@ -122,9 +122,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: metadata,
         },
       })
-      
+
       if (error) throw error
-      
+
       toast({
         title: "Check your email",
         description: "We've sent you a confirmation link to complete your registration.",
@@ -162,19 +162,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     try {
       setLoading(true)
-      
+
       // Store current redirect URL for OAuth callback
       const urlParams = new URLSearchParams(window.location.search)
       const redirectUrl = urlParams.get('redirect') || '/dashboard'
       localStorage.setItem('auth_redirect', redirectUrl)
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       })
-      
+
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
@@ -191,18 +191,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGitHub = async () => {
     try {
       setLoading(true)
-      
+
       // Store current redirect URL for OAuth callback
       const urlParams = new URLSearchParams(window.location.search)
       const redirectUrl = urlParams.get('redirect') || '/dashboard'
       localStorage.setItem('auth_redirect', redirectUrl)
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',        options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       })
-      
+
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
@@ -223,9 +223,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
-      
+
       if (error) throw error
-      
+
       toast({
         title: "Password reset sent",
         description: "Check your email for password reset instructions.",
@@ -249,7 +249,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.updateUser({
         data: updates,
       })
-      
+
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError

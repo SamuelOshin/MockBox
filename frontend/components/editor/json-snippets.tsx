@@ -195,7 +195,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
       setTimeout(() => {
         setCopiedStates(prev => ({ ...prev, [snippetId]: false }))
       }, 2000)
-      
+
       toast({
         title: "Copied to clipboard",
         description: "JSON snippet has been copied successfully",
@@ -213,7 +213,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
   const downloadSnippet = async (snippet: object, title: string, snippetId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     setDownloadingStates(prev => ({ ...prev, [snippetId]: true }))
-    
+
     try {
       const jsonContent = JSON.stringify(snippet, null, 2)
       const blob = new Blob([jsonContent], { type: 'application/json' })
@@ -225,7 +225,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      
+
       toast({
         title: "Download started",
         description: `${title} JSON file is being downloaded`,
@@ -252,8 +252,8 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
         <h3 className={cn("text-base font-semibold", themeColors.text)}>JSON Snippets</h3>
       </div>
       <p className={cn("text-xs mb-4", themeColors.textMuted)}>Quick start templates for common API response patterns</p>
-      
-      {/* Scrollable container with custom scrollbar */}      <ScrollbarContainer 
+
+      {/* Scrollable container with custom scrollbar */}      <ScrollbarContainer
         maxHeight="384px"
         className="pr-2 space-y-4"
         theme={scrollbarTheme}
@@ -270,7 +270,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                     key={snippet.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                  >                    <Card 
+                  >                    <Card
                       className={cn(
                         "cursor-pointer transition-all duration-200 group",
                         themeColors.cardBg,
@@ -291,7 +291,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                               </CardDescription>
                             </div>
                           </div>
-                          
+
                           {/* Enhanced Action buttons */}
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">                            <Button
                               variant="ghost"
@@ -348,22 +348,22 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                       <CardContent className="px-3 pb-3 pt-0">                        {/* Tags */}
                         <div className="flex flex-wrap gap-1 mb-2">
                           {snippet.tags.slice(0, 3).map(tag => (
-                            <Badge 
-                              key={tag} 
-                              variant="secondary" 
+                            <Badge
+                              key={tag}
+                              variant="secondary"
                               className={cn("text-xs px-1.5 py-0 h-4", themeColors.badgeBg)}
                             >
                               {tag}
                             </Badge>
                           ))}
                         </div>
-                          <Button 
-                          variant="outline" 
-                          size="sm" 
+                          <Button
+                          variant="outline"
+                          size="sm"
                           className={cn(
                             "w-full text-xs h-6",
-                            actualTheme === 'light' 
-                              ? "bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-slate-400" 
+                            actualTheme === 'light'
+                              ? "bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-slate-400"
                               : "bg-[#1A1A1A] border-gray-600 text-white hover:bg-[#2D2D2D] hover:border-gray-500"
                           )}
                           onClick={(e) => {

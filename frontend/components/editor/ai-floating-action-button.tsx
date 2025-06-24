@@ -7,10 +7,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { 
-  Sparkles, 
-  Wand2, 
-  Zap, 
+import {
+  Sparkles,
+  Wand2,
+  Zap,
   Lightbulb,
   RefreshCw,
   Settings,
@@ -85,20 +85,20 @@ export function AIFloatingActionButton({
     if (isGenerating) {
       return <RefreshCw className="h-7 w-7 text-white animate-spin" />
     }
-    
+
     if (isExpanded) {
       return <X className="h-7 w-7 text-white" />
     }
-    
+
     // Use Wand2 as the primary icon
     return <Wand2 className="h-7 w-7 text-white" />
   }
-  
+
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
-    
+
     if (disabled || isGenerating) return
-    
+
     if (isExpanded) {
       // If expanded, just close it
       setIsExpanded(false)
@@ -112,9 +112,9 @@ export function AIFloatingActionButton({
   const handleQuickAction = (action: typeof quickActions[0], e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (disabled || isGenerating) return
-    
+
     onQuickGenerate?.(action.id)
     setIsExpanded(false)
   }
@@ -177,7 +177,7 @@ export function AIFloatingActionButton({
 
                 {/* Quick Actions */}                <div className="space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">Quick Generate</div>
-                  <div className="grid grid-cols-2 gap-2">                    
+                  <div className="grid grid-cols-2 gap-2">
                     {quickActions.map((action) => (
                       <motion.button
                         key={action.id}
@@ -224,14 +224,14 @@ export function AIFloatingActionButton({
           </motion.div>
         )}
       </AnimatePresence>        {/* Main FAB */}
-      <motion.div 
+      <motion.div
         className="relative"
         whileHover={{ scale: disabled ? 1 : 1.05 }}
         whileTap={{ scale: disabled ? 1 : 0.95 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
         <Tooltip>
-          <TooltipTrigger asChild>            
+          <TooltipTrigger asChild>
             <Button
               onClick={handleToggle}
               disabled={disabled}
@@ -244,7 +244,7 @@ export function AIFloatingActionButton({
                 "flex items-center justify-center p-0",
                 disabled && "cursor-not-allowed opacity-50"
               )}
-            >              
+            >
             {renderMainIcon()}
             </Button>
           </TooltipTrigger>
@@ -252,11 +252,11 @@ export function AIFloatingActionButton({
             <p className="font-medium">AI Mock Generator</p>
             <p className="text-xs text-gray-300">Generate intelligent mock data</p>
           </TooltipContent>
-        </Tooltip>        
-        
+        </Tooltip>
+
         {/* Usage Badge */}
         {!isExpanded && usage && (
-          <Badge 
+          <Badge
             variant={isLowOnGenerations ? "destructive" : "secondary"}
             className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold"
           >

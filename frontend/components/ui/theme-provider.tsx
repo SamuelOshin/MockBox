@@ -21,9 +21,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const applyThemeTransition = (callback: () => void) => {
     const root = window.document.documentElement
     root.classList.add('theme-transitioning')
-    
+
     callback()
-    
+
     // Single place to remove transition class
     setTimeout(() => {
       root.classList.remove('theme-transitioning')
@@ -52,7 +52,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
       root.classList.add(systemTheme)
       setActualTheme(systemTheme)
-      
+
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
       const handleChange = (e: MediaQueryListEvent) => {
         const newSystemTheme = e.matches ? "dark" : "light"
@@ -60,9 +60,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.add(newSystemTheme)
         setActualTheme(newSystemTheme)
       }
-      
+
       mediaQuery.addEventListener("change", handleChange)
-      
+
       return () => {
         mediaQuery.removeEventListener("change", handleChange)
       }

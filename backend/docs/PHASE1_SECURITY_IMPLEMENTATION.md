@@ -13,7 +13,7 @@ Phase 1 of the MockBox v1.0 Enterprise Readiness milestone has been successfully
 - **Multi-backend Support**: Supports both Redis and in-memory storage
 - **Endpoint-Type Specific Limits**: Different rate limits for:
   - AI endpoints: 10 requests/minute
-  - Public API endpoints: 100 requests/minute  
+  - Public API endpoints: 100 requests/minute
   - Authenticated endpoints: 1000 requests/minute
   - Anonymous endpoints: 60 requests/minute
   - Simulation endpoints: 200 requests/minute

@@ -17,7 +17,7 @@ INSERT INTO mock_templates (name, description, category, template_data, is_publi
             },
             {
                 "endpoint": "/users/{id}",
-                "method": "GET", 
+                "method": "GET",
                 "response": {"id": 1, "name": "John Doe", "email": "john@example.com"},
                 "status_code": 200
             },

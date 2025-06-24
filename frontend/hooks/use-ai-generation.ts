@@ -106,20 +106,20 @@ export function useAIGeneration(): UseAIGenerationReturn {
 
       if (response.status === 200 || response.status === 201) {
         const result = response.data as AIGenerationResponse
-        
+
         toast.success('Mock data generated successfully!', {
           description: `Generated with ${result.provider} in ${result.generation_time.toFixed(2)}s`
         })
-        
+
         return result
       } else {
         throw new Error('Failed to generate mock data')
       }
     } catch (err: any) {
       console.error('AI generation error:', err)
-      
+
       let errorMessage = 'Failed to generate mock data'
-      
+
       if (err.response?.status === 429) {
         errorMessage = 'Rate limit exceeded. Please try again in a minute.'
       } else if (err.response?.status === 503) {
@@ -129,12 +129,12 @@ export function useAIGeneration(): UseAIGenerationReturn {
       } else if (err.message) {
         errorMessage = err.message
       }
-      
+
       setError(errorMessage)
       toast.error('Generation Failed', {
         description: errorMessage
       })
-      
+
       return null
     } finally {
       setIsGenerating(false)
@@ -158,7 +158,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
       queryParams.is_public = request.isPublic || false      // Handle tags as array - FastAPI expects multiple query params for lists
       const tagsToUse = request.tags && request.tags.length > 0 ? request.tags : ['ai-generated']
       queryParams.tags = tagsToUse
-      
+
       const response = await apiClient.post<SavedMockResponse>('/api/v1/ai/generate-and-save', {
         method: request.method.toUpperCase(),
         endpoint: request.endpoint,
@@ -175,20 +175,20 @@ export function useAIGeneration(): UseAIGenerationReturn {
 
       if (response.status === 200 || response.status === 201) {
         const result = response.data
-        
+
         toast.success('AI mock created successfully!', {
           description: `Created "${result.name}" and saved to your mocks`
         })
-        
+
         return result
       } else {
         throw new Error('Failed to create AI mock')
       }
     } catch (err: any) {
       console.error('AI creation error:', err)
-      
+
       let errorMessage = 'Failed to create AI mock'
-      
+
       if (err.response?.status === 429) {
         errorMessage = 'Rate limit exceeded. Please try again in a minute.'
       } else if (err.response?.status === 503) {
@@ -198,33 +198,33 @@ export function useAIGeneration(): UseAIGenerationReturn {
       } else if (err.message) {
         errorMessage = err.message
       }
-      
+
       setError(errorMessage)
       toast.error('Creation Failed', {
         description: errorMessage
       })
-      
+
       return null
     } finally {
       setIsGenerating(false)
     }
   }
-  
+
   const fetchUsage = async () => {
     try {
       // Get current user from auth context
       if (!user) {
         throw new Error('User not found')
       }
-      
+
       const userId = user.id
-      
+
       if (!userId) {
         throw new Error('User ID not found')
       }
 
       const response = await apiClient.get<AIUsageResponse>(`/api/v1/ai/usage/${userId}`)
-      
+
       if (response.status === 200) {
         const data = response.data
         setUsage({

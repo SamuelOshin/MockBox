@@ -31,7 +31,7 @@ export function NavigationLink({ href, children, className, onClick }: Navigatio
 // Hook version for more control
 export function useNavigationLink() {
   const { navigateTo, startNavigation } = useNavigation()
-  
+
   return {
     navigateTo,
     handleNavigation: (href: string, callback?: () => void) => {

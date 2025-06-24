@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Building a modern web application with FastAPI and Supabase should be straightforward, right? Well, as many developers discover, integrating these powerful tools can present some unexpected challenges, especially when it comes to Row Level Security (RLS) and authentication. 
+Building a modern web application with FastAPI and Supabase should be straightforward, right? Well, as many developers discover, integrating these powerful tools can present some unexpected challenges, especially when it comes to Row Level Security (RLS) and authentication.
 
 This blog post documents my journey through a particularly tricky authentication issue with Supabase RLS policies in a FastAPI backend, the challenges I faced, and the hybrid solution that ultimately resolved the problem. If you're working with Supabase, FastAPI, and struggling with RLS policies, this post is for you.
 
@@ -74,7 +74,7 @@ def get_client_with_auth(self, user_token: Optional[str] = None) -> Client:
     token = user_token or self.user_token
     if token:
         client = create_client(settings.supabase_url, settings.supabase_key)
-        
+
         # Set authentication headers for RLS
         auth_headers = {
             "Authorization": f"Bearer {token}",
@@ -82,11 +82,11 @@ def get_client_with_auth(self, user_token: Optional[str] = None) -> Client:
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        
+
         # Update headers on PostgREST client
         if hasattr(client, 'postgrest') and hasattr(client.postgrest, 'headers'):
             client.postgrest.headers.update(auth_headers)
-        
+
         return client
     else:
         return self.supabase.client
@@ -147,7 +147,7 @@ async def create_mock(self, user_id: UUID, mock_data: MockCreate) -> Mock:
         "name": mock_data.name,
         # ... other fields
     }
-    
+
     # RLS allows insert with basic validation
     result = self.client.table("mocks").insert(mock_dict).execute()
 ```
@@ -172,15 +172,15 @@ def verify_supabase_token(token: str) -> Dict[str, Any]:
         # Decode without verification since Supabase validates it
         # We just need the payload for user info
         payload = jwt.decode(
-            token, 
+            token,
             options={"verify_signature": False}
         )
-        
+
         # Extract user ID from the 'sub' claim
         user_id = payload.get('sub')
         if not user_id:
             raise AuthError("Token missing user ID")
-            
+
         return {
             'user_id': user_id,
             'email': payload.get('email'),
@@ -223,7 +223,7 @@ To ensure the solution worked correctly, I created comprehensive tests:
 async def test_authenticated_insert():
     """Test that authenticated users can insert mocks"""
     token = get_fresh_token()  # Get valid Supabase JWT
-    
+
     mock_data = {
         "name": "Test Mock",
         "endpoint": "/test",
@@ -231,13 +231,13 @@ async def test_authenticated_insert():
         "response": {"message": "hello"},
         "status_code": 200
     }
-    
+
     response = requests.post(
         f"{BASE_URL}/mocks/",
         json=mock_data,
         headers={"Authorization": f"Bearer {token}"}
     )
-    
+
     assert response.status_code == 201
     assert "id" in response.json()
 ```

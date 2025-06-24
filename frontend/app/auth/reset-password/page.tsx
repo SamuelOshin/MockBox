@@ -30,7 +30,7 @@ function ResetPasswordForm() {
       try {
         // Check if we have a valid session for password reset
         const { data: { session }, error } = await supabase.auth.getSession()
-        
+
         if (error || !session) {
           toast({
             title: "Invalid reset link",
