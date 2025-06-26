@@ -41,7 +41,9 @@ const methodColors = {
   POST: "bg-blue-600 text-white",
   PUT: "bg-orange-600 text-white",
   DELETE: "bg-red-600 text-white",
-  PATCH: "bg-purple-600 text-white"
+  PATCH: "bg-purple-600 text-white",
+  HEAD: "bg-gray-600 text-white",
+  OPTIONS: "bg-indigo-600 text-white"
 }
 
 export default function CloneMockPage() {
@@ -91,11 +93,10 @@ export default function CloneMockPage() {
         // Try to get the mock from the API
         const mockData = await mockApi.getMock(mockId)
         setOriginalMock(mockData)
-        
-        // Prepare form data for cloning
+          // Prepare form data for cloning
         setFormData({
           name: `${mockData.name} (Copy)`,
-          description: mockData.description,
+          description: mockData.description || undefined,
           endpoint: `${mockData.endpoint}-copy`,
           method: mockData.method,
           status_code: mockData.status_code,
@@ -130,13 +131,12 @@ export default function CloneMockPage() {
           tags: ["users", "profile", "api"]
         }
         setOriginalMock(sampleMock as MockEndpoint)
-        
-        // Prepare form data for cloning
+          // Prepare form data for cloning
         setFormData({
           name: `${sampleMock.name} (Copy)`,
           description: sampleMock.description,
           endpoint: `${sampleMock.endpoint}-copy`,
-          method: sampleMock.method,
+          method: sampleMock.method as "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS",
           status_code: sampleMock.status_code,
           response: sampleMock.response,
           delay_ms: sampleMock.delay_ms,
@@ -164,9 +164,11 @@ export default function CloneMockPage() {
   const handleSwitchChange = (checked: boolean) => {
     setFormData(prev => ({ ...prev, is_public: checked }))
   }
-
   const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, method: value }))
+    setFormData(prev => ({ 
+      ...prev, 
+      method: value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS"
+    }))
   }
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -526,8 +528,7 @@ export default function CloneMockPage() {
                   </Button>
                 </motion.div>
               </div>
-            </div>
-          </main>
+            </div>          </main>
         </div>
       </SidebarLayout>
     </ProtectedRoute>

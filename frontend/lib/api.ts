@@ -1,10 +1,32 @@
 import { supabase } from './supabase'
-import { MockEndpoint, CreateMockRequest, PaginatedResponse } from './types'
+import { MockEndpoint, CreateMockRequest, PaginatedResponse, MockError, ApiErrorType } from './types'
+
+// Create error helper function
+function createMockError(message: string, status?: number, details?: any): MockError {
+  let type: ApiErrorType = 'SERVER_ERROR'
+  
+  if (status) {
+    if (status === 401) type = 'AUTH_ERROR'
+    else if (status === 403) type = 'FORBIDDEN'
+    else if (status === 404) type = 'NOT_FOUND'
+    else if (status >= 400 && status < 500) type = 'VALIDATION_ERROR'
+    else if (status >= 500) type = 'SERVER_ERROR'
+  } else if (message.toLowerCase().includes('network')) {
+    type = 'NETWORK_ERROR'
+  }
+  
+  return {
+    type,
+    message,
+    status,
+    details
+  }
+}
 
 // Base API configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-// API helper function
+// API helper function with enhanced error handling
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -16,7 +38,7 @@ async function apiRequest<T>(
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
     if (sessionError) {
-      throw new Error(`Session error: ${sessionError.message}`)
+      throw createMockError(`Authentication error: ${sessionError.message}`, 401, sessionError)
     }
 
     const defaultHeaders: Record<string, string> = {
@@ -38,20 +60,29 @@ async function apiRequest<T>(
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}`
+      let errorDetails: any = null
+      
       try {
         const errorData = await response.json()
         errorMessage = errorData.message || errorData.detail || errorMessage
+        errorDetails = errorData
       } catch (e) {
         const errorText = await response.text()
         errorMessage = errorText || errorMessage
       }
-      throw new Error(`API Error: ${response.status} - ${errorMessage}`)
-    }
-
-    const responseData = await response.json()
+      
+      throw createMockError(errorMessage, response.status, errorDetails)
+    }    const responseData = await response.json()
     return responseData
   } catch (error) {
-    throw error
+    // If it's already a MockError, re-throw it
+    if (error && typeof error === 'object' && 'type' in error) {
+      throw error
+    }
+    
+    // Handle network errors and other exceptions
+    const message = error instanceof Error ? error.message : 'Unknown error occurred'
+    throw createMockError(`Network error: ${message}`)
   }
 }
 
@@ -130,16 +161,80 @@ export const mockApi = {
       throw new Error(`Test failed: ${response.status}`)
     }
   },
-
   async getAllMocks(): Promise<MockEndpoint[]> {
     const response = await apiRequest<PaginatedResponse<MockEndpoint>>('/api/v1/mocks/')
     return response.data
-  },
+  },  
+  async getMock(id: string): Promise<MockEndpoint> {
+    if (!id || typeof id !== 'string') {
+      throw createMockError('Invalid mock ID provided', 400)
+    }
 
+    try {
+      const mock = await apiRequest<MockEndpoint>(`/api/v1/mocks/${id}`)
+      
+      // Validate the returned mock data
+      if (!mock || typeof mock !== 'object') {
+        throw createMockError('Invalid mock data received from server', 500)
+      }
+
+      // Ensure required fields are present
+      const requiredFields = ['id', 'name', 'endpoint', 'method', 'response']
+      const missingFields = requiredFields.filter(field => !(field in mock))
+      
+      if (missingFields.length > 0) {
+        throw createMockError(
+          `Mock data is missing required fields: ${missingFields.join(', ')}`, 
+          500,
+          { missingFields, receivedData: mock }
+        )
+      }
+
+      return mock
+    } catch (error) {
+      // Re-throw MockError instances
+      if (error && typeof error === 'object' && 'type' in error) {
+        throw error
+      }
+      
+      // Handle unexpected errors
+      const message = error instanceof Error ? error.message : 'Failed to fetch mock'
+      throw createMockError(message)
+    }
+  },
   async deleteMock(id: string): Promise<void> {
     return apiRequest<void>(`/api/v1/mocks/${id}`, {
       method: 'DELETE',
     })
+  },
+
+  async updateMock(id: string, data: CreateMockRequest): Promise<MockEndpoint> {
+    if (!id || typeof id !== 'string') {
+      throw createMockError('Invalid mock ID provided', 400)
+    }
+
+    try {
+      const updatedMock = await apiRequest<MockEndpoint>(`/api/v1/mocks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      })
+      
+      // Validate the returned mock data
+      if (!updatedMock || typeof updatedMock !== 'object') {
+        throw createMockError('Invalid mock data received from server', 500)
+      }
+
+      return updatedMock
+    } catch (error) {
+      // Re-throw MockError instances
+      if (error && typeof error === 'object' && 'type' in error) {
+        throw error
+      }
+      
+      // Handle unexpected errors
+      const message = error instanceof Error ? error.message : 'Failed to update mock'
+      throw createMockError(message)
+    }
   },
 
   async deleteMocks(ids: string[]): Promise<void> {

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
 import { motion } from "framer-motion"
 import { Header } from "@/components/layout/header"
@@ -101,6 +102,9 @@ const statusCodes = [
 
 export default function BuilderPage() {
   const { actualTheme } = useTheme()
+  const searchParams = useSearchParams()
+  const editMockId = searchParams.get('mockId') // Get mockId from URL params
+  
   const [method, setMethod] = useState("GET")
   const [path, setPath] = useState("/api/users")
   const [statusCode, setStatusCode] = useState("200")
@@ -108,6 +112,7 @@ export default function BuilderPage() {
   const [isPublic, setIsPublic] = useState(true)
   const [response, setResponse] = useState(JSON.stringify(responseTemplates.userList, null, 2))
   const [mockName, setMockName] = useState("User List API")
+  const [description, setDescription] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [isTesting, setIsTesting] = useState(false)
@@ -116,18 +121,68 @@ export default function BuilderPage() {
   const [jsonError, setJsonError] = useState<string | null>(null)
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop")
   const [showAIModal, setShowAIModal] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [loadingError, setLoadingError] = useState<string | null>(null)
   const { toast } = useToast()
 
   const generatedUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/mock${path}`
 
-  // Simulate initial loading
+  // Load existing mock data if editing
   useEffect(() => {
+    const loadMockForEditing = async () => {
+      if (!editMockId) {
+        setIsInitialLoading(false)
+        return
+      }
+
+      try {
+        setIsEditMode(true)
+        setIsInitialLoading(true)
+        setLoadingError(null)
+
+        const mockData = await mockApi.getMock(editMockId)
+        
+        // Populate form with existing mock data
+        setMockName(mockData.name)
+        setDescription(mockData.description || "")
+        setPath(mockData.endpoint)
+        setMethod(mockData.method)
+        setStatusCode(mockData.status_code.toString())
+        setDelay([mockData.delay_ms])
+        setIsPublic(mockData.is_public)
+        setResponse(JSON.stringify(mockData.response, null, 2))
+
+        toast({
+          title: "Mock loaded successfully",
+          description: `Editing "${mockData.name}"`,
+          variant: "success",
+        })
+      } catch (error) {
+        console.error("Error loading mock for editing:", error)
+        setLoadingError("Failed to load mock data for editing")
+        toast({
+          title: "Error loading mock",
+          description: "Failed to load mock data. You can still create a new mock.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsInitialLoading(false)
+      }
+    }
+
+    loadMockForEditing()
+  }, [editMockId, toast])
+
+  // Simulate initial loading for new mocks
+  useEffect(() => {
+    if (editMockId) return // Skip if editing
+
     const timer = setTimeout(() => {
       setIsInitialLoading(false)
     }, 1500) // Show skeleton for 1.5 seconds on initial load
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [editMockId])
 
   // Theme-aware colors
   const themeColors = {
@@ -229,7 +284,6 @@ export default function BuilderPage() {
       setIsTesting(false)
     }
   }
-
   const handleSave = async () => {
     if (!validateJson(response)) {
       toast({
@@ -238,10 +292,13 @@ export default function BuilderPage() {
         variant: "destructive",
       })
       return
-    }    setIsLoading(true)
+    }
+
+    setIsLoading(true)
     try {
       const mockData: CreateMockRequest = {
         name: mockName,
+        description: description || undefined,
         method: method as any,
         endpoint: path,
         status_code: Number.parseInt(statusCode),
@@ -250,17 +307,29 @@ export default function BuilderPage() {
         is_public: isPublic,
       }
 
-      await mockApi.createMock(mockData)
-      setLastSaved(new Date())
-      toast({
-        title: "💾 Mock Saved",
-        description: "Mock endpoint has been saved as draft successfully",
-        variant: "default",
-      })
+      if (isEditMode && editMockId) {
+        // Update existing mock
+        await mockApi.updateMock(editMockId, mockData)
+        setLastSaved(new Date())
+        toast({
+          title: "✅ Mock Updated",
+          description: "Mock endpoint has been updated successfully",
+          variant: "success",
+        })
+      } else {
+        // Create new mock
+        await mockApi.createMock(mockData)
+        setLastSaved(new Date())
+        toast({
+          title: "💾 Mock Saved",
+          description: "Mock endpoint has been created successfully",
+          variant: "success",
+        })
+      }
     } catch (error) {
       toast({
-        title: "❌ Save Failed",
-        description: error instanceof Error ? error.message : "Failed to save mock",
+        title: isEditMode ? "❌ Update Failed" : "❌ Save Failed",
+        description: error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'save'} mock`,
         variant: "destructive",
       })
     } finally {
@@ -377,10 +446,49 @@ export default function BuilderPage() {
   }
     return (
     <ProtectedRoute>
-      <TooltipProvider>
-        <SidebarLayout>
+      <TooltipProvider>        <SidebarLayout>
           {isInitialLoading ? (
             <BuilderPageSkeleton theme={actualTheme} />
+          ) : loadingError ? (
+            <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>
+              <Header />
+              <main className="p-4 flex items-center justify-center h-[calc(100vh-3.5rem)]">
+                <Card className="max-w-md mx-auto">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-5 w-5" />
+                      Failed to Load Mock
+                    </CardTitle>
+                    <CardDescription>
+                      {loadingError}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      You can still use the builder to create a new mock.
+                    </p>
+                    <Button 
+                      onClick={() => {
+                        setLoadingError(null)
+                        setIsEditMode(false)
+                        // Reset form to defaults
+                        setMockName("User List API")
+                        setDescription("")
+                        setPath("/api/users")
+                        setMethod("GET")
+                        setStatusCode("200")
+                        setDelay([100])
+                        setIsPublic(true)
+                        setResponse(JSON.stringify(responseTemplates.userList, null, 2))
+                      }}
+                      className="w-full"
+                    >
+                      Create New Mock Instead
+                    </Button>
+                  </CardContent>
+                </Card>
+              </main>
+            </div>
           ) : (
             <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>
               <Header />
@@ -396,11 +504,13 @@ export default function BuilderPage() {
                   <div className="flex items-center gap-2.5 mb-1.5">
                     <div className="p-1.5 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
                       <Code className="h-4 w-4 text-white" />
-                    </div>
-                    <h1 className={`text-lg lg:text-xl font-bold ${themeColors.text} compact-leading`}>
-                      Mock Builder
-                    </h1>                </div>
-                  <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-0.5 text-xs`}>Create and configure your API mock endpoint</p>
+                    </div>                    <h1 className={`text-lg lg:text-xl font-bold ${themeColors.text} compact-leading`}>
+                      {isEditMode ? 'Edit Mock' : 'Mock Builder'}
+                    </h1>
+                </div>
+                  <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-0.5 text-xs`}>
+                    {isEditMode ? 'Update your existing API mock endpoint' : 'Create and configure your API mock endpoint'}
+                  </p>
                   {lastSaved && (
                     <motion.div
                       className={`flex items-center gap-2 mt-2 text-xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}
@@ -435,7 +545,7 @@ export default function BuilderPage() {
                       className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs h-7 px-3`}
                     >
                       {isLoading ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
-                      {isLoading ? "Saving..." : "Save Draft"}
+                      {isLoading ? (isEditMode ? "Updating..." : "Saving...") : (isEditMode ? "Update Mock" : "Save Draft")}
                     </Button>
                   </motion.div>
 
@@ -494,9 +604,7 @@ export default function BuilderPage() {
                         </CardTitle>
                         <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-2xs`}>Set up the fundamental properties of your mock endpoint</CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-
-                        <div>
+                      <CardContent className="space-y-3">                        <div>
                           <Label htmlFor="mock-name" className={`${themeColors.text} text-xs`}>Mock Name</Label>
                           <Input
                             id="mock-name"
@@ -504,6 +612,18 @@ export default function BuilderPage() {
                             onChange={(e) => setMockName(e.target.value)}
                             placeholder="Enter a descriptive name"
                             className={`mt-1 ${themeColors.inputBg} ${themeColors.text} text-xs h-8`}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="mock-description" className={`${themeColors.text} text-xs`}>Description (Optional)</Label>
+                          <Textarea
+                            id="mock-description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Describe what this mock endpoint does"
+                            className={`mt-1 ${themeColors.inputBg} ${themeColors.text} text-xs resize-none`}
+                            rows={2}
                           />
                         </div>
 

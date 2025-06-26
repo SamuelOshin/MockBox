@@ -44,6 +44,11 @@ import {
   Loader2
 } from "lucide-react"
 
+// Required for static export with dynamic routes
+export async function generateStaticParams() {
+  return []
+}
+
 // Method colors for badges
 const methodColors = {
   GET: "bg-green-600 text-white",
