@@ -107,15 +107,26 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const pathname = usePathname()
   const { actualTheme } = useTheme()
   const { user, signOut, loading } = useAuth()
-
   // Check for mobile screen size
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768
       setIsMobile(mobile)
       if (mobile) {
-        setIsCollapsed(true) // Always collapse on mobile
-        setIsMobileOpen(false) // Close mobile menu
+        setIsMobileOpen(false) // Close mobile menu on resize
+      } else {
+        // On desktop, maintain previous collapsed state or default to expanded
+        if (!localStorage.getItem('sidebar-collapsed')) {
+          setIsCollapsed(false)
+        }
+      }
+    }
+
+    // Load saved sidebar state on desktop
+    if (typeof window !== 'undefined') {
+      const savedCollapsed = localStorage.getItem('sidebar-collapsed')
+      if (savedCollapsed && window.innerWidth >= 768) {
+        setIsCollapsed(JSON.parse(savedCollapsed))
       }
     }
 
@@ -145,12 +156,14 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     tooltipText: actualTheme === 'light' ? 'text-white' : 'text-white',
     tooltipBorder: actualTheme === 'light' ? 'border-slate-700' : 'border-gray-700'
   }
-
   const toggleSidebar = () => {
     if (isMobile) {
       setIsMobileOpen(!isMobileOpen)
     } else {
-      setIsCollapsed(!isCollapsed)
+      const newCollapsed = !isCollapsed
+      setIsCollapsed(newCollapsed)
+      // Save state to localStorage for desktop
+      localStorage.setItem('sidebar-collapsed', JSON.stringify(newCollapsed))
     }
   }
   interface SidebarItemProps {
@@ -158,11 +171,13 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     section: string;
-  }
-  const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
+  }  const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
     const isActive = pathname === item.href
     const Icon = item.icon
     const { navigateTo } = useNavigation()
+
+    // For mobile, never show as collapsed (always show text)
+    const showText = isMobile ? true : !isCollapsed
 
     const handleClick = (e: React.MouseEvent) => {
       e.preventDefault()
@@ -174,22 +189,23 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     }
 
     return (
-      <Link href={item.href} onClick={handleClick}>        <motion.div
+      <Link href={item.href} onClick={handleClick}>
+        <motion.div
           className={cn(
             "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
             sidebarColors.itemBg,
             isActive
               ? `${sidebarColors.activeBg} ${sidebarColors.text}`
               : `${sidebarColors.textSecondary} hover:${sidebarColors.text}`,
-            isCollapsed && "justify-center"
+            !showText && "justify-center"
           )}
-          whileHover={{ x: isCollapsed ? 0 : 2 }}
+          whileHover={{ x: !showText ? 0 : 2 }}
           whileTap={{ scale: 0.98 }}
         >
           <Icon className="h-5 w-5 flex-shrink-0" />
 
           <AnimatePresence>
-            {!isCollapsed && (
+            {showText && (
               <motion.span
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: "auto" }}
@@ -200,10 +216,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 {item.title}
               </motion.span>
             )}
-          </AnimatePresence>
-
-          {/* Tooltip for collapsed state - positioned outside sidebar */}
-          {isCollapsed && (
+          </AnimatePresence>          {/* Tooltip for collapsed state - only show on desktop when collapsed */}
+          {!isMobile && !showText && (
             <div className={cn(
               "absolute left-full ml-3 px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
               sidebarColors.tooltipBg.replace('bg-', 'bg-'),
@@ -232,51 +246,51 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       </Link>
     )
   }
-
-  const SectionHeader = ({ title, isCollapsed }: { title: string, isCollapsed: boolean }) => (
-    <AnimatePresence>
-      {!isCollapsed && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.2 }}
-          className={cn(
-            "px-3 py-2 text-xs font-semibold uppercase tracking-wider",
-            sidebarColors.textMuted
-          )}
-        >
-          <h3>{title}</h3>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
+  const SectionHeader = ({ title, isCollapsed }: { title: string, isCollapsed: boolean }) => {
+    // For mobile, never show as collapsed (always show text)
+    const showText = isMobile ? true : !isCollapsed
+    
+    return (
+      <AnimatePresence>
+        {showText && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              "px-3 py-2 text-xs font-semibold uppercase tracking-wider",
+              sidebarColors.textMuted
+            )}
+          >
+            <h3>{title}</h3>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  }
   return (
-    <div className={cn("flex h-screen", sidebarColors.containerBg)}>
-      {/* Mobile Overlay */}
+    <div className={cn("flex h-screen", sidebarColors.containerBg)}>      {/* Professional Mobile Overlay */}
       <AnimatePresence>
         {isMobile && isMobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             onClick={() => setIsMobileOpen(false)}
           />
         )}
-      </AnimatePresence>
-
-      {/* Sidebar */}
+      </AnimatePresence>{/* Sidebar */}
       <motion.aside
         initial={false}
         animate={{ 
-          width: isMobile ? (isMobileOpen ? 250 : 0) : (isCollapsed ? 70 : 250),
-          x: isMobile ? (isMobileOpen ? 0 : -250) : 0
+          width: isMobile ? (isMobileOpen ? 280 : 0) : (isCollapsed ? 70 : 250),
+          x: isMobile ? (isMobileOpen ? 0 : -280) : 0
         }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={cn(
-          "border-r flex flex-col relative z-50 flex-shrink-0",
+        transition={{ duration: 0.3, ease: "easeInOut" }}        className={cn(
+          "border-r flex flex-col relative z-50 flex-shrink-0 shadow-xl",
           isMobile ? "fixed left-0 top-0 h-full" : "relative",
           sidebarColors.background,
           sidebarColors.border
@@ -287,7 +301,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           sidebarColors.border
         )}>
           <AnimatePresence>
-            {(!isCollapsed || isMobileOpen) && (
+            {((!isCollapsed && !isMobile) || (isMobile && isMobileOpen)) && (
               <motion.div
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: "auto" }}
@@ -306,13 +320,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 </Link>
               </motion.div>
             )}
-          </AnimatePresence>
-
-          {isCollapsed && (
+          </AnimatePresence>          {(isCollapsed && !isMobile) && (
             <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
               <span className="text-white font-bold text-sm">MB</span>
             </div>
-          )}          <Button
+          )}<Button
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
@@ -332,8 +344,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <ChevronLeft className="h-4 w-4" />
             )}
           </Button>
-        </div>
-        {/* Navigation with ScrollbarContainer */}
+        </div>        {/* Navigation with ScrollbarContainer */}
         <ScrollbarContainer
           className="flex-1 py-4 space-y-1"
           theme="auto"
@@ -342,30 +353,30 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         >
           {/* Navigation Section */}
           <div className="px-2">
-            <SectionHeader title="Navigation" isCollapsed={isCollapsed} />
+            <SectionHeader title="Navigation" isCollapsed={!isMobile && isCollapsed} />
             <div className="space-y-1">
               {navigationItems.map((item) => (
-                <SidebarItem key={item.href} item={item} isCollapsed={isCollapsed} />
+                <SidebarItem key={item.href} item={item} isCollapsed={!isMobile && isCollapsed} />
               ))}
             </div>
           </div>
 
           {/* Tools Section */}
           <div className="px-2 mt-6">
-            <SectionHeader title="Tools" isCollapsed={isCollapsed} />
+            <SectionHeader title="Tools" isCollapsed={!isMobile && isCollapsed} />
             <div className="space-y-1">
               {toolsItems.map((item) => (
-                <SidebarItem key={item.href} item={item} isCollapsed={isCollapsed} />
+                <SidebarItem key={item.href} item={item} isCollapsed={!isMobile && isCollapsed} />
               ))}
             </div>
           </div>
 
           {/* Account Section */}
           <div className="px-2 mt-6">
-            <SectionHeader title="Account" isCollapsed={isCollapsed} />
+            <SectionHeader title="Account" isCollapsed={!isMobile && isCollapsed} />
             <div className="space-y-1">
               {accountItems.map((item) => (
-                <SidebarItem key={item.href} item={item} isCollapsed={isCollapsed} />
+                <SidebarItem key={item.href} item={item} isCollapsed={!isMobile && isCollapsed} />
               ))}
             </div>
           </div>
@@ -380,7 +391,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
                 sidebarColors.itemBg
               )}
-              whileHover={{ x: isCollapsed ? 0 : 2 }}
+              whileHover={{ x: (isMobile || !isCollapsed) ? 2 : 0 }}
               onClick={() => signOut()}
             >
               <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
@@ -390,7 +401,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               </div>
 
               <AnimatePresence>
-                {!isCollapsed && (
+                {(isMobile || !isCollapsed) && (
                   <motion.div
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: "auto" }}
@@ -406,10 +417,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                     </div>
                   </motion.div>
                 )}
-              </AnimatePresence>
-
+              </AnimatePresence>              
               {/* Tooltip for collapsed state */}
-              {isCollapsed && (
+              {!isMobile && isCollapsed && (
                 <div className={cn(
                   "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
                   sidebarColors.tooltipBg,
@@ -424,21 +434,20 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 </div>
               )}
             </motion.div>
-          ) : (
-            <Link href="/auth/login">
+          ) : (            <Link href="/auth/login">
               <motion.div
                 className={cn(
                   "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
                   sidebarColors.itemBg
                 )}
-                whileHover={{ x: isCollapsed ? 0 : 2 }}
+                whileHover={{ x: (isMobile || !isCollapsed) ? 2 : 0 }}
               >
                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center flex-shrink-0">
                   <User className="h-4 w-4 text-white" />
                 </div>
 
                 <AnimatePresence>
-                  {!isCollapsed && (
+                  {(isMobile || !isCollapsed) && (
                     <motion.div
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: "auto" }}
@@ -454,10 +463,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>
-
-                {/* Tooltip for collapsed state */}
-                {isCollapsed && (
+                </AnimatePresence>                {/* Tooltip for collapsed state */}
+                {!isMobile && isCollapsed && (
                   <div className={cn(
                     "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
                     sidebarColors.tooltipBg,
@@ -476,29 +483,46 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           )}
         </div>
       </motion.aside>      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Menu Button */}
+      <div className="flex-1 flex flex-col overflow-hidden">        {/* Simple Mobile Header - Just Menu and Logo */}
         {isMobile && (
-          <div className={cn(
-            "flex items-center justify-start p-4 border-b md:hidden",
-            sidebarColors.background,
-            sidebarColors.border
-          )}>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={cn(
+              "flex items-center justify-start p-4 border-b md:hidden",
+              sidebarColors.background,
+              sidebarColors.border
+            )}
+          >
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileOpen(true)}
               className={cn(
-                "h-8 w-8 p-0 flex-shrink-0 transition-colors",
+                "h-9 w-9 p-0 flex-shrink-0 transition-all duration-200 rounded-lg",
                 sidebarColors.textSecondary,
                 `hover:${sidebarColors.text.replace('text-', 'text-')}`,
-                `hover:${sidebarColors.itemBg.replace('hover:', '')}`
+                `hover:${sidebarColors.itemBg.replace('hover:', '')}`,
+                "hover:scale-105 active:scale-95"
               )}
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             </Button>
-            <span className={cn("ml-3 font-semibold", sidebarColors.text)}>MockBox</span>
-          </div>
+            
+            <Link href="/dashboard" className="flex items-center gap-3 ml-3 transition-all duration-200 hover:opacity-80">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-sm">MB</span>
+              </div>
+              <div className="flex flex-col">
+                <span className={cn("font-bold text-sm leading-none", sidebarColors.text)}>
+                  MockBox
+                </span>
+                <span className={cn("text-xs leading-none mt-1", sidebarColors.textMuted)}>
+                  API Builder
+                </span>
+              </div>
+            </Link>
+          </motion.div>
         )}
         {children}
       </div>

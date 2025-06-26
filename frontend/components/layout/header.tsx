@@ -26,7 +26,7 @@ import {
   ChevronDown,
   LogOut
 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTheme } from "@/components/ui/theme-provider"
 import { useAuth } from "@/lib/auth-context"
 import { motion } from "framer-motion"
@@ -36,6 +36,18 @@ export function Header() {
   const { theme, setTheme, actualTheme } = useTheme()
   const { user, signOut, loading } = useAuth()
   const router = useRouter()
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Check for mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleSignOut = async () => {
     try {
@@ -75,141 +87,249 @@ export function Header() {
   }
 
   return (
-    <header className={`h-16 border-b ${headerColors.border} flex items-center justify-between px-6 transition-colors duration-200`} style={{ backgroundColor: headerColors.background }}>
-        {/* Center - Search */}
-      <div className="flex-1 max-w-md mx-8">
-        <div className="relative">
-          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${headerColors.searchIcon}`} />
-          <Input
-            placeholder="Search mocks..."
-            className={`pl-10 ${headerColors.searchBorder} ${headerColors.searchText} ${headerColors.searchPlaceholder} focus:border-blue-500 focus:ring-blue-500/20 transition-colors duration-200`}
-            style={{ backgroundColor: headerColors.searchBg }}
-          />
-        </div>
-      </div>
-      {/* Right side - Actions */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 w-9 p-0 transition-colors duration-200`}
-        >
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-        {/* Enhanced Theme Toggle Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+    <header className={`h-16 border-b ${headerColors.border} flex items-center justify-between px-4 md:px-6 transition-colors duration-200`} style={{ backgroundColor: headerColors.background }}>
+      {/* Mobile: Simple layout with search and user */}
+      {isMobile ? (
+        <>
+          {/* Mobile Search - Full width */}
+          <div className="flex-1 max-w-none">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${headerColors.searchIcon}`} />
+              <Input
+                placeholder="Search mocks..."
+                className={`pl-10 pr-4 ${headerColors.searchBorder} ${headerColors.searchText} ${headerColors.searchPlaceholder} focus:border-blue-500 focus:ring-blue-500/20 transition-colors duration-200`}
+                style={{ backgroundColor: headerColors.searchBg }}
+              />
+            </div>
+          </div>
+          
+          {/* Mobile Actions - Minimal */}
+          <div className="flex items-center gap-2 ml-3">
+            {/* Notifications */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 w-9 p-0 transition-colors duration-200`}
+              >
+                <Bell className="h-4 w-4" />
+              </Button>
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">2</span>
+              </div>
+            </div>
+            
+            {/* User Profile */}
+            {loading ? (
+              <div className={`h-8 w-8 rounded-full animate-pulse ${actualTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
+                      <AvatarFallback>
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
+                          <span className="text-white font-bold text-xs">
+                            {user?.email?.charAt(0).toUpperCase() || "U"}
+                          </span>
+                        </div>
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">
+                        {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                      </p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  const currentPath = window.location.pathname
+                  const redirectUrl = encodeURIComponent(currentPath === '/auth/login' ? '/dashboard' : currentPath)
+                  router.push(`/auth/login?redirect=${redirectUrl}`)
+                }}
+                disabled={loading}
+                className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+              >
+                {loading ? "Loading..." : "Sign In"}
+              </Button>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Desktop: Full layout */
+        <>
+          {/* Desktop Search */}
+          <div className="flex-1 max-w-md mx-8">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${headerColors.searchIcon}`} />
+              <Input
+                placeholder="Search mocks..."
+                className={`pl-10 ${headerColors.searchBorder} ${headerColors.searchText} ${headerColors.searchPlaceholder} focus:border-blue-500 focus:ring-blue-500/20 transition-colors duration-200`}
+                style={{ backgroundColor: headerColors.searchBg }}
+              />
+            </div>
+          </div>
+          
+          {/* Desktop Actions */}
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
-              className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 px-3 gap-2 transition-colors duration-200`}
+              className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 w-9 p-0 transition-colors duration-200`}
             >
-              <motion.div
-                key={actualTheme}
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                transition={{ duration: 0.2 }}
-              >
-                {actualTheme === "dark" ? (
-                  <Moon className="h-4 w-4" />
-                ) : (
-                  <Sun className="h-4 w-4" />
-                )}
-              </motion.div>
-              <ChevronDown className="h-3 w-3" />
+              <HelpCircle className="h-4 w-4" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className={`${headerColors.dropdownBg} ${headerColors.dropdownBorder} w-40`}>
-            {themeOptions.map((option) => {
-              const Icon = option.icon
-              return (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() => setTheme(option.value as any)}
-                  className={`${headerColors.dropdownItemText} ${headerColors.dropdownItemHover} cursor-pointer flex items-center gap-2 transition-colors duration-200 ${
-                    theme === option.value ? headerColors.dropdownItemActive : ''
-                  }`}
+            
+            {/* Enhanced Theme Toggle Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 px-3 gap-2 transition-colors duration-200`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{option.label}</span>
-                  {theme === option.value && (
-                    <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
-                  )}
-                </DropdownMenuItem>
-              )
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>        <div className="relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 w-9 p-0 transition-colors duration-200`}
-          >
-            <Bell className="h-4 w-4" />
-          </Button>
-          <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-bold">2</span>
-          </div>
-        </div>        <div className={`h-6 w-px ${headerColors.divider}`} />        {loading ? (
-          <div className={`h-8 w-8 rounded-full animate-pulse ${actualTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
-        ) : user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
-                  <AvatarFallback>
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-bold text-xs">
-                        {user?.email?.charAt(0).toUpperCase() || "U"}
-                      </span>
-                    </div>
-                  </AvatarFallback>
-                </Avatar>
+                  <motion.div
+                    key={actualTheme}
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {actualTheme === "dark" ? (
+                      <Moon className="h-4 w-4" />
+                    ) : (
+                      <Sun className="h-4 w-4" />
+                    )}
+                  </motion.div>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className={`${headerColors.dropdownBg} ${headerColors.dropdownBorder} w-40`}>
+                {themeOptions.map((option) => {
+                  const Icon = option.icon
+                  return (
+                    <DropdownMenuItem
+                      key={option.value}
+                      onClick={() => setTheme(option.value as any)}
+                      className={`${headerColors.dropdownItemText} ${headerColors.dropdownItemHover} cursor-pointer flex items-center gap-2 transition-colors duration-200 ${
+                        theme === option.value ? headerColors.dropdownItemActive : ''
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{option.label}</span>
+                      {theme === option.value && (
+                        <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
+                      )}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-9 w-9 p-0 transition-colors duration-200`}
+              >
+                <Bell className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">
-                    {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
-                  </p>
-                  <p className="w-[200px] truncate text-sm text-muted-foreground">
-                    {user.email}
-                  </p>
-                </div>
+              <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-bold">2</span>
               </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>        ) : (
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              const currentPath = window.location.pathname
-              const redirectUrl = encodeURIComponent(currentPath === '/auth/login' ? '/dashboard' : currentPath)
-              router.push(`/auth/login?redirect=${redirectUrl}`)
-            }}
-            disabled={loading}
-            className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {loading ? "Loading..." : "Sign In"}
-          </Button>
-        )}
-      </div>
+            </div>
+            
+            <div className={`h-6 w-px ${headerColors.divider}`} />
+            
+            {loading ? (
+              <div className={`h-8 w-8 rounded-full animate-pulse ${actualTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
+                      <AvatarFallback>
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-xs">
+                            {user?.email?.charAt(0).toUpperCase() || "U"}
+                          </span>
+                        </div>
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">
+                        {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                      </p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  const currentPath = window.location.pathname
+                  const redirectUrl = encodeURIComponent(currentPath === '/auth/login' ? '/dashboard' : currentPath)
+                  router.push(`/auth/login?redirect=${redirectUrl}`)
+                }}
+                disabled={loading}
+                className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {loading ? "Loading..." : "Sign In"}
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </header>
   )
 }
