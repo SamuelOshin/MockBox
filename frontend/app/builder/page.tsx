@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
 import { motion } from "framer-motion"
@@ -100,7 +100,8 @@ const statusCodes = [
   { value: "500", label: "500 - Internal Server Error" },
 ]
 
-export default function BuilderPage() {
+// Builder component that uses useSearchParams
+function BuilderContent() {
   const { actualTheme } = useTheme()
   const searchParams = useSearchParams()
   const editMockId = searchParams.get('mockId') // Get mockId from URL params
@@ -905,11 +906,30 @@ export default function BuilderPage() {
                 initialMethod={method}
               />
             </div>
-          </main>
-            </div>
+          </main>            </div>
           )}
         </SidebarLayout>
       </TooltipProvider>
     </ProtectedRoute>
+  )
+}
+
+// Loading component for Suspense fallback
+function BuilderLoading() {
+  return (
+    <ProtectedRoute>
+      <SidebarLayout>
+        <BuilderPageSkeleton theme="light" />
+      </SidebarLayout>
+    </ProtectedRoute>
+  )
+}
+
+// Main export wrapped in Suspense
+export default function BuilderPage() {
+  return (
+    <Suspense fallback={<BuilderLoading />}>
+      <BuilderContent />
+    </Suspense>
   )
 }

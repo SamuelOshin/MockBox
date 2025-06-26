@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, ReactNode } from "react"
+import { useState, ReactNode, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -102,9 +102,34 @@ const accountItems = [
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
   const { actualTheme } = useTheme()
   const { user, signOut, loading } = useAuth()
+
+  // Check for mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) {
+        setIsCollapsed(true) // Always collapse on mobile
+        setIsMobileOpen(false) // Close mobile menu
+      }
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileOpen(false)
+    }
+  }, [pathname, isMobile])
 
   // Theme-aware colors for sidebar
   const sidebarColors = {
@@ -122,7 +147,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   }
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed)
+    if (isMobile) {
+      setIsMobileOpen(!isMobileOpen)
+    } else {
+      setIsCollapsed(!isCollapsed)
+    }
   }
   interface SidebarItemProps {
     title: string;
@@ -130,7 +159,6 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     icon: React.ComponentType<{ className?: string }>;
     section: string;
   }
-
   const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
     const isActive = pathname === item.href
     const Icon = item.icon
@@ -139,6 +167,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     const handleClick = (e: React.MouseEvent) => {
       e.preventDefault()
       navigateTo(item.href)
+      // Close mobile menu after navigation
+      if (isMobile) {
+        setIsMobileOpen(false)
+      }
     }
 
     return (
@@ -219,27 +251,43 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       )}
     </AnimatePresence>
   )
-
   return (
     <div className={cn("flex h-screen", sidebarColors.containerBg)}>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobile && isMobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setIsMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? 70 : 250 }}
+        animate={{ 
+          width: isMobile ? (isMobileOpen ? 250 : 0) : (isCollapsed ? 70 : 250),
+          x: isMobile ? (isMobileOpen ? 0 : -250) : 0
+        }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "border-r flex flex-col relative z-40 flex-shrink-0",
+          "border-r flex flex-col relative z-50 flex-shrink-0",
+          isMobile ? "fixed left-0 top-0 h-full" : "relative",
           sidebarColors.background,
           sidebarColors.border
         )}
-      >
-        {/* Logo and Toggle */}
+      >        {/* Logo and Toggle */}
         <div className={cn(
           "flex items-center justify-between p-4 border-b min-h-[73px]",
           sidebarColors.border
         )}>
           <AnimatePresence>
-            {!isCollapsed && (
+            {(!isCollapsed || isMobileOpen) && (
               <motion.div
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: "auto" }}
@@ -264,20 +312,21 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
               <span className="text-white font-bold text-sm">MB</span>
             </div>
-          )}
-
-          <Button
+          )}          <Button
             variant="ghost"
             size="sm"
-            onClick={toggleSidebar}            className={cn(
+            onClick={toggleSidebar}
+            className={cn(
               "h-8 w-8 p-0 flex-shrink-0 transition-colors",
               sidebarColors.textSecondary,
               `hover:${sidebarColors.text.replace('text-', 'text-')}`,
               `hover:${sidebarColors.itemBg.replace('hover:', '')}`,
-              isCollapsed && `absolute -right-3 top-4 border rounded-full shadow-lg ${sidebarColors.background} ${sidebarColors.border}`
+              !isMobile && isCollapsed && `absolute -right-3 top-4 border rounded-full shadow-lg ${sidebarColors.background} ${sidebarColors.border}`
             )}
           >
-            {isCollapsed ? (
+            {isMobile ? (
+              <X className="h-4 w-4" />
+            ) : isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
             ) : (
               <ChevronLeft className="h-4 w-4" />
@@ -426,10 +475,31 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             </Link>
           )}
         </div>
-      </motion.aside>
-
-      {/* Main Content */}
+      </motion.aside>      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <div className={cn(
+            "flex items-center justify-start p-4 border-b md:hidden",
+            sidebarColors.background,
+            sidebarColors.border
+          )}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileOpen(true)}
+              className={cn(
+                "h-8 w-8 p-0 flex-shrink-0 transition-colors",
+                sidebarColors.textSecondary,
+                `hover:${sidebarColors.text.replace('text-', 'text-')}`,
+                `hover:${sidebarColors.itemBg.replace('hover:', '')}`
+              )}
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <span className={cn("ml-3 font-semibold", sidebarColors.text)}>MockBox</span>
+          </div>
+        )}
         {children}
       </div>
     </div>
