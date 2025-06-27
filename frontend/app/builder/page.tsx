@@ -35,7 +35,8 @@ import {
   Smartphone,
   Tablet,
   Sparkles,
-  Zap
+  Zap,
+  X
 } from "lucide-react"
 import { responseTemplates } from "@/lib/mock-data"
 import { mockApi } from "@/lib/api"
@@ -124,6 +125,10 @@ function BuilderContent() {
   const [showAIModal, setShowAIModal] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [loadingError, setLoadingError] = useState<string | null>(null)
+  const [showSimModal, setShowSimModal] = useState(false)
+  const [simResult, setSimResult] = useState<any | null>(null)
+  const [simStatus, setSimStatus] = useState<number | null>(null)
+  const [simHeaders, setSimHeaders] = useState<Record<string, string> | null>(null)
   const { toast } = useToast()
 
   const generatedUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/mock${path}`
@@ -151,6 +156,7 @@ function BuilderContent() {
         setStatusCode(mockData.status_code.toString())
         setDelay([mockData.delay_ms])
         setIsPublic(mockData.is_public)
+        // Use the actual response from the mock, not the default
         setResponse(JSON.stringify(mockData.response, null, 2))
 
         toast({
@@ -257,7 +263,11 @@ function BuilderContent() {
         variant: "destructive",
       })
       return
-    }    setIsTesting(true)
+    }
+    setIsTesting(true)
+    setSimResult(null)
+    setSimStatus(null)
+    setSimHeaders(null)
     try {
       const mockData: CreateMockRequest = {
         name: mockName,
@@ -268,14 +278,21 @@ function BuilderContent() {
         delay_ms: delay[0],
         is_public: isPublic,
       }
-
-      await mockApi.testMock(mockData)
+      const simulation = await mockApi.simulateMock(mockData)
+      setSimResult(simulation.body)
+      setSimStatus(simulation.status)
+      setSimHeaders(simulation.headers)
+      setShowSimModal(true)
       toast({
         title: "✅ Test Successful",
         description: "Mock endpoint is working correctly",
         variant: "default",
       })
     } catch (error) {
+      setSimResult({ error: error instanceof Error ? error.message : String(error) })
+      setSimStatus(null)
+      setSimHeaders(null)
+      setShowSimModal(true)
       toast({
         title: "❌ Test Failed",
         description: error instanceof Error ? error.message : "Failed to test mock",
@@ -447,7 +464,8 @@ function BuilderContent() {
   }
     return (
     <ProtectedRoute>
-      <TooltipProvider>        <SidebarLayout>
+      <TooltipProvider>        
+        <SidebarLayout>
           {isInitialLoading ? (
             <BuilderPageSkeleton theme={actualTheme} />
           ) : loadingError ? (
@@ -523,7 +541,8 @@ function BuilderContent() {
                       Last saved {lastSaved.toLocaleTimeString()}
                     </motion.div>
                   )}
-                </div>              {/* Enhanced Action Buttons */}
+                </div>              
+                {/* Enhanced Action Buttons */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 w-full lg:w-auto">                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
                       variant="outline"
@@ -566,7 +585,8 @@ function BuilderContent() {
                     </Button>
                   </motion.div>
                 </div>
-              </motion.div>            {/* Enhanced JSON Error Alert */}
+              </motion.div>            
+              {/* Enhanced JSON Error Alert */}
               {jsonError && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -591,14 +611,16 @@ function BuilderContent() {
                   transition={{ duration: 0.6, delay: 0.1 }}
                 >
                   {/* Configure Endpoint Section */}
-                  <div>                  <div className="flex items-center gap-1.5 mb-1.5">
+                  <div>                  
+                    <div className="flex items-center gap-1.5 mb-1.5">
                       <div className="p-1 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
                         <Settings className="h-3 w-3 text-white" />
                       </div>
                       <h2 className={`text-sm font-semibold ${themeColors.text}`}>Configure Endpoint</h2>
                     </div>
 
-                    <Card className={themeColors.cardBg}>                    <CardHeader className="pb-1.5 pt-3 px-3">
+                    <Card className={themeColors.cardBg}>                    
+                      <CardHeader className="pb-1.5 pt-3 px-3">
                         <CardTitle className={`flex items-center gap-1.5 ${themeColors.text} text-xs`}>
                           <Sparkles className="h-3 w-3 text-blue-400" />
                           Basic Configuration
@@ -704,7 +726,8 @@ function BuilderContent() {
                         </div>
                       </CardContent>
                     </Card>
-                  </div>                {/* AI-Enhanced JSON Snippets */}
+                  </div>                
+                  {/* AI-Enhanced JSON Snippets */}
                   <div>
                     <AISnippetWizard
                       onSnippetGenerated={handleAIResponseGenerated}
@@ -731,7 +754,8 @@ function BuilderContent() {
                         </div>
                       </AccordionContent>
                     </AccordionItem>
-                  </Accordion>                  {/* AI Enhanced Generator - Now Modal Triggered */}
+                  </Accordion>                 
+                   {/* AI Enhanced Generator - Now Modal Triggered */}
                 </motion.div>
                 {/* Right Panel - Response Editor & Preview */}
                 <motion.div
@@ -905,8 +929,148 @@ function BuilderContent() {
                 initialEndpoint={path}
                 initialMethod={method}
               />
+
+              {/* Simulation Result Modal */}
+              {showSimModal && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center"
+                  style={{
+                    background: actualTheme === "light"
+                      ? "rgba(30, 41, 59, 0.25)"
+                      : "rgba(0,0,0,0.55)",
+                    backdropFilter: "blur(4px)",
+                    WebkitBackdropFilter: "blur(4px)",
+                  }}
+                >
+                  <div
+                    className={cn(
+                      "w-full max-w-lg rounded-2xl shadow-2xl border transition-all duration-200",
+                      actualTheme === "light"
+                        ? "bg-white border-slate-200"
+                        : "bg-[#18181b] border-gray-700"
+                    )}
+                    style={{
+                      boxShadow:
+                        actualTheme === "light"
+                          ? "0 8px 32px 0 rgba(31, 41, 55, 0.10)"
+                          : "0 8px 32px 0 rgba(0,0,0,0.45)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between px-5 pt-5 pb-2 border-b"
+                      style={{
+                        borderColor: actualTheme === "light" ? "#e5e7eb" : "#27272a",
+                      }}
+                    >
+                      <h3 className={cn(
+                        "text-lg font-semibold",
+                        actualTheme === "light" ? "text-slate-900" : "text-white"
+                      )}>
+                        <span className="inline-flex items-center gap-2">
+                          <Eye className="h-5 w-5 text-blue-500" />
+                          Simulation Result
+                        </span>
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowSimModal(false)}
+                        className={cn(
+                          "h-8 w-8 p-0 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition",
+                          actualTheme === "light" ? "text-slate-500" : "text-gray-400"
+                        )}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="px-5 py-4 space-y-4">
+                      <div>
+                        <Label className={cn("text-xs font-medium", themeColors.text)}>
+                          Status Code
+                        </Label>
+                        <div className="mt-1 flex items-center gap-2">
+                          {/* Postman-style status badge */}
+                          {simStatus !== null ? (
+                            <Badge
+                              className={cn(
+                                "font-mono text-xs px-3 py-1 rounded-full border-0 shadow-sm",
+                                simStatus >= 200 && simStatus < 300 && "bg-green-600 text-white",
+                                simStatus >= 300 && simStatus < 400 && "bg-blue-500 text-white",
+                                simStatus >= 400 && simStatus < 500 && "bg-yellow-500 text-white",
+                                simStatus >= 500 && "bg-red-600 text-white"
+                              )}
+                            >
+                              {simStatus} {(() => {
+                                if (simStatus === 200) return "OK"
+                                if (simStatus === 201) return "Created"
+                                if (simStatus === 400) return "Bad Request"
+                                if (simStatus === 401) return "Unauthorized"
+                                if (simStatus === 404) return "Not Found"
+                                if (simStatus === 500) return "Internal Server Error"
+                                if (simStatus >= 200 && simStatus < 300) return "Success"
+                                if (simStatus >= 300 && simStatus < 400) return "Redirect"
+                                if (simStatus >= 400 && simStatus < 500) return "Client Error"
+                                if (simStatus >= 500) return "Server Error"
+                                return ""
+                              })()}
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-400 text-white font-mono text-xs px-3 py-1 rounded-full border-0 shadow-sm">N/A</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className={cn("text-xs font-medium", themeColors.text)}>
+                          Response Headers
+                        </Label>
+                        <Textarea
+                          value={
+                            simHeaders
+                              ? Object.entries(simHeaders)
+                                  .map(([key, value]) => `${key}: ${value}`)
+                                  .join("\n")
+                              : ""
+                          }
+                          readOnly
+                          className={cn(
+                            "mt-1 font-mono text-xs resize-none rounded-lg border",
+                            themeColors.inputBg,
+                            themeColors.text,
+                            actualTheme === "light"
+                              ? "bg-slate-50 border-slate-200"
+                              : "bg-zinc-900 border-zinc-700"
+                          )}
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label className={cn("text-xs font-medium", themeColors.text)}>
+                          Response Body
+                        </Label>
+                        <div
+                          className={cn(
+                            "mt-1 rounded-lg border overflow-hidden",
+                            actualTheme === "light"
+                              ? "bg-slate-50 border-slate-200"
+                              : "bg-zinc-900 border-zinc-700"
+                          )}
+                        >
+                          <MonacoJsonEditor
+                            value={JSON.stringify(simResult || response, null, 2)}
+                            readOnly={true}
+                            height="180px"
+                            showValidation={false}
+                            showToolbar={false}
+                            onChange={() => {}}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </main>            </div>
+          </main>            
+          </div>
           )}
         </SidebarLayout>
       </TooltipProvider>

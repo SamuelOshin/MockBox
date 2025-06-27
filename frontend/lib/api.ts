@@ -152,14 +152,26 @@ export const mockApi = {
     })
   },
 
-  async testMock(data: CreateMockRequest): Promise<void> {
-    // For testing, we'll create a temporary mock and then simulate it
-    const tempMock = await this.createMock(data)
-    const response = await fetch(`${API_BASE_URL}/simulate/${tempMock.id}`)
-
-    if (!response.ok) {
-      throw new Error(`Test failed: ${response.status}`)
+  async testMock(data: CreateMockRequest): Promise<any> {
+    // Use the simulate endpoint for testing without creating a mock
+    const endpointPath = data.endpoint.startsWith('/') ? data.endpoint.slice(1) : data.endpoint;
+    const url = `${API_BASE_URL}/api/v1/simulate/${endpointPath}`;
+    const fetchOptions: RequestInit = {
+      method: data.method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    // Only include body for methods that allow it
+    if (data.method !== 'GET' && data.method !== 'HEAD') {
+      fetchOptions.body = JSON.stringify(data.response);
     }
+    const response = await fetch(url, fetchOptions);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Test failed: ${response.status} ${errorText}`);
+    }
+    return response.json();
   },
   async getAllMocks(): Promise<MockEndpoint[]> {
     const response = await apiRequest<PaginatedResponse<MockEndpoint>>('/api/v1/mocks/')
@@ -241,5 +253,25 @@ export const mockApi = {
     // Delete mocks one by one since bulk delete might not be implemented
     const promises = ids.map(id => this.deleteMock(id))
     await Promise.all(promises)
-  }
+  },
+
+  async simulateMock(data: CreateMockRequest): Promise<{ status: number, headers: Record<string, string>, body: any }> {
+    const endpointPath = data.endpoint.startsWith('/') ? data.endpoint.slice(1) : data.endpoint;
+    const url = `${API_BASE_URL}/api/v1/simulate/${endpointPath}`;
+    const fetchOptions: RequestInit = {
+      method: data.method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    // Only include body for methods that allow it
+    if (data.method !== 'GET' && data.method !== 'HEAD') {
+      fetchOptions.body = JSON.stringify(data.response);
+    }
+    const response = await fetch(url, fetchOptions);
+    const body = await response.json().catch(() => ({}));
+    const headers: Record<string, string> = {};
+    response.headers.forEach((value, key) => { headers[key] = value });
+    return { status: response.status, headers, body };
+  },
 }
