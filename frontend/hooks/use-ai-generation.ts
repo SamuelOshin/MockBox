@@ -116,8 +116,6 @@ export function useAIGeneration(): UseAIGenerationReturn {
         throw new Error('Failed to generate mock data')
       }
     } catch (err: any) {
-      console.error('AI generation error:', err)
-
       let errorMessage = 'Failed to generate mock data'
 
       if (err.response?.status === 429) {
@@ -134,8 +132,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
       toast.error('Generation Failed', {
         description: errorMessage
       })
-
-      return null
+      return { response_data: null, status_code: err.response?.status || 500, headers: {}, explanation: errorMessage, provider: '', model: '', generation_time: 0 } as AIGenerationResponse
     } finally {
       setIsGenerating(false)
     }
@@ -185,8 +182,6 @@ export function useAIGeneration(): UseAIGenerationReturn {
         throw new Error('Failed to create AI mock')
       }
     } catch (err: any) {
-      console.error('AI creation error:', err)
-
       let errorMessage = 'Failed to create AI mock'
 
       if (err.response?.status === 429) {
@@ -203,8 +198,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
       toast.error('Creation Failed', {
         description: errorMessage
       })
-
-      return null
+      return { error: errorMessage }
     } finally {
       setIsGenerating(false)
     }

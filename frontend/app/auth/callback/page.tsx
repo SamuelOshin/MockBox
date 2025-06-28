@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Loader2 } from "lucide-react"
+import { EngineSpinner } from "@/components/ui/engine-spinner"
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -40,13 +41,12 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="text-center space-y-4">
-        <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-          <span className="text-white font-bold text-lg">MB</span>
+      <div className="text-center space-y-6">
+        <div className="flex items-center justify-center">
+          <EngineSpinner size={48} color="#6366f1" />
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Completing authentication...</span>
+        <div className="flex items-center gap-2 text-muted-foreground justify-center">
+          <span className="font-bold tracking-tight text-lg text-slate-800 dark:text-slate-100">Completing authentication...</span>
         </div>
       </div>
     </div>

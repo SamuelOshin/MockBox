@@ -246,7 +246,8 @@ function ResetPasswordForm() {
                 )}
               </div>
 
-              <Button                type="submit"
+              <Button                
+              type="submit"
                 className="w-full h-11"
                 disabled={isLoading || !isFormValid}
               >

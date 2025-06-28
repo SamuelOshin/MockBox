@@ -8,6 +8,7 @@ from supabase import create_client, Client
 from postgrest import APIResponse
 import httpx
 from app.core.config import settings
+from uuid import UUID
 
 
 class SupabaseClient:
@@ -142,3 +143,88 @@ async def close_database():
     """Close database connections"""
     await db_manager.close()
     print("✅ Database connections closed")
+
+
+async def get_usage_stats_for_user(user_id: UUID, use_service_key: bool = True, user_token: Optional[str] = None) -> dict:
+    """
+    Fetch AI usage statistics for a user from Supabase (production-ready).
+    If use_service_key is True (default), uses the service key (admin privileges, for backend writes/updates).
+    If use_service_key is False, uses the user's JWT (for user-facing SELECTs, RLS enforced).
+    """
+    from datetime import datetime, timedelta
+    try:
+        if use_service_key:
+            client = db_manager.supabase.client
+        else:
+            db_with_auth = DatabaseManager(user_token=user_token)
+            client = db_with_auth.get_client_with_auth()
+        # Query usage stats for the user
+        response = client.table("ai_usage_stats").select("*").eq("user_id", str(user_id)).single().execute()
+        if response.data:
+            usage = response.data
+            now = datetime.utcnow()
+            rate_limit_reset = (now + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z"
+            return {
+                "requests_today": usage.get("requests_today", 0),
+                "requests_this_month": usage.get("requests_this_month", 0),
+                "tokens_used_today": usage.get("tokens_used_today", 0),
+                "tokens_used_this_month": usage.get("tokens_used_this_month", 0),
+                "rate_limit_remaining": usage.get("rate_limit_remaining", 0),
+                "rate_limit_reset": usage.get("rate_limit_reset", rate_limit_reset),
+                "last_request": usage.get("last_request", None),
+            }
+        else:
+            return {
+                "requests_today": 0,
+                "requests_this_month": 0,
+                "tokens_used_today": 0,
+                "tokens_used_this_month": 0,
+                "rate_limit_remaining": 0,
+                "rate_limit_reset": (datetime.utcnow() + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z",
+                "last_request": None,
+            }
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        # Handle Supabase PGRST116 error (no rows found for .single()) gracefully
+        if isinstance(e, dict) and e.get("code") == "PGRST116":
+            return {
+                "requests_today": 0,
+                "requests_this_month": 0,
+                "tokens_used_today": 0,
+                "tokens_used_this_month": 0,
+                "rate_limit_remaining": 0,
+                "rate_limit_reset": (datetime.utcnow() + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z",
+                "last_request": None,
+            }
+        logger.error(f"Failed to fetch usage stats for user {user_id}: {e}")
+        raise
+
+
+async def upsert_usage_stats_for_user(user_id: UUID, increment: dict = None) -> None:
+    """
+    Upsert (insert or update) AI usage statistics for a user in Supabase.
+    - If the user does not have a row, create it with initial values.
+    - If the user has a row, increment the provided fields atomically.
+    - Uses the service key (admin privileges) to bypass RLS for writes.
+    Args:
+        user_id: UUID of the user
+        increment: dict of fields to increment (e.g., {"requests_today": 1, "tokens_used_today": 100})
+    """
+    from datetime import datetime
+    try:
+        client = db_manager.supabase.client
+        now = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+        # Prepare the upsert payload
+        payload = {"user_id": str(user_id), "updated_at": now}
+        if increment:
+            payload.update(increment)
+        # Upsert: if row exists, update; else, insert
+        response = client.table("ai_usage_stats").upsert(payload, on_conflict=["user_id"]).execute()
+        if response.error:
+            raise Exception(response.error)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to upsert usage stats for user {user_id}: {e}")
+        raise

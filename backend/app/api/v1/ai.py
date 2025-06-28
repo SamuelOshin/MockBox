@@ -65,6 +65,11 @@ async def generate_mock_data(
         # Generate mock data using AI
         result = await ai_service.generate_mock_data(request, UUID(user_id))
 
+        # Upsert usage stats for the user (production ready)
+        from app.core.database import upsert_usage_stats_for_user
+
+        await upsert_usage_stats_for_user(UUID(user_id), increment={"requests_today": 1})
+
         logger.info(f"AI mock generated for user {user_id}: {request.endpoint}")
         return result
 
@@ -250,17 +255,30 @@ async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_u
         )
 
     try:
-        # In production, this would query actual usage from database
-        # For Phase 2, returning mock usage data
+        # In production, query actual usage from your database or analytics system
+        # Example assumes a SQLAlchemy session or similar ORM/database access
+        from datetime import datetime, timedelta
+        from app.core.database import get_usage_stats_for_user  # You must implement this function
+
+        try:
+            usage = await get_usage_stats_for_user(user_id)
+        except Exception as db_exc:
+            logger.error(f"Database error fetching usage for user {user_id}: {db_exc}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve usage statistics from database",
+            )
+
+        # usage should be a dict with keys matching the API contract
         usage_stats = {
             "user_id": str(user_id),
-            "requests_today": 5,
-            "requests_this_month": 42,
-            "tokens_used_today": 1250,
-            "tokens_used_this_month": 15600,
-            "rate_limit_remaining": 5,
-            "rate_limit_reset": "2024-01-15T11:00:00Z",
-            "last_request": "2024-01-15T10:25:00Z",
+            "requests_today": usage.get("requests_today", 0),
+            "requests_this_month": usage.get("requests_this_month", 0),
+            "tokens_used_today": usage.get("tokens_used_today", 0),
+            "tokens_used_this_month": usage.get("tokens_used_this_month", 0),
+            "rate_limit_remaining": usage.get("rate_limit_remaining", 0),
+            "rate_limit_reset": usage.get("rate_limit_reset", (datetime.utcnow() + timedelta(minutes=10)).isoformat() + "Z"),
+            "last_request": usage.get("last_request", None),
         }
 
         return usage_stats

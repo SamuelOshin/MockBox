@@ -273,6 +273,16 @@ export function AIEnhancedGenerator({
 
   const isFormValid = formData.method && formData.endpoint
 
+  // Add a utility to check if the generation result is an error
+  function isGenerationError(data: any) {
+    if (!data) return false;
+    // If explanation is an object with error/message, or response_data is null and explanation is error-like
+    if (typeof data.explanation === 'object' && (data.explanation.error || data.explanation.message)) return true;
+    if (typeof data.explanation === 'string' && data.explanation.toLowerCase().includes('error')) return true;
+    if (data.response_data === null && data.status_code && data.status_code >= 400) return true;
+    return false;
+  }
+
   if (isMinimized) {
     return (
       <motion.div
@@ -757,7 +767,17 @@ export function AIEnhancedGenerator({
             >
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  {typeof error === 'string'
+                    ? error
+                    : error && typeof error === 'object'
+                      ? ('message' in error
+                        ? (error as any).message
+                        : 'error' in error
+                          ? (error as any).error
+                          : JSON.stringify(error, null, 2))
+                      : String(error)}
+                </AlertDescription>
               </Alert>
             </motion.div>
           )}
@@ -798,7 +818,7 @@ export function AIEnhancedGenerator({
 
         {/* Generated Data Display with Enhanced UI */}
         <AnimatePresence>
-          {generatedData && (
+          {generatedData && !isGenerationError(generatedData) && (
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -821,14 +841,22 @@ export function AIEnhancedGenerator({
                           Generation Successful! 🎉
                         </CardTitle>
                         <CardDescription className="text-green-700 dark:text-green-300">
-                          {generatedData.explanation}
+                          {typeof generatedData.explanation === 'string'
+                            ? generatedData.explanation
+                            : generatedData.explanation && typeof generatedData.explanation === 'object'
+                              ? ('message' in generatedData.explanation
+                                ? generatedData.explanation.message
+                                : 'error' in generatedData.explanation
+                                  ? generatedData.explanation.error
+                                  : JSON.stringify(generatedData.explanation, null, 2))
+                            : String(generatedData.explanation)}
                         </CardDescription>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        {generatedData.generation_time.toFixed(2)}s
+                        {generatedData.generation_time && generatedData.generation_time.toFixed ? generatedData.generation_time.toFixed(2) : generatedData.generation_time}s
                       </div>
                       <div className="flex items-center gap-1">
                         <Zap className="h-4 w-4" />
@@ -898,6 +926,45 @@ export function AIEnhancedGenerator({
           )}
         </AnimatePresence>
 
+        {/* Error Generation Display */}
+        {generatedData && isGenerationError(generatedData) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Card className="border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="p-2 rounded-full bg-red-100 dark:bg-red-900/40"
+                  >
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                  </motion.div>
+                  <div>
+                    <CardTitle className="text-base text-red-800 dark:text-red-200">
+                      Generation Failed
+                    </CardTitle>
+                    <CardDescription className="text-red-700 dark:text-red-300">
+                      {typeof generatedData.explanation === 'string'
+                        ? generatedData.explanation
+                        : generatedData.explanation && typeof generatedData.explanation === 'object'
+                          ? ('message' in generatedData.explanation
+                            ? generatedData.explanation.message
+                            : 'error' in generatedData.explanation
+                              ? generatedData.explanation.error
+                              : JSON.stringify(generatedData.explanation, null, 2))
+                          : String(generatedData.explanation)}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          </motion.div>
+        )}
         {/* Enhanced Save Options */}
         <AnimatePresence>
           {showSaveOptions && generatedData && (
