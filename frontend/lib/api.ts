@@ -275,3 +275,35 @@ export const mockApi = {
     return { status: response.status, headers, body };
   },
 }
+
+// --- Mock Template API ---
+export async function getTemplateById(id: string) {
+  if (!id || typeof id !== "string") {
+    throw createMockError("Invalid template ID provided", 400);
+  }
+  try {
+    const { data } = await apiClient.get(`/api/v1/mocks/templates/${id}`);
+    return data;
+  } catch (error: any) {
+    // Re-throw MockError instances
+    if (error && typeof error === "object" && "type" in error) {
+      throw error;
+    }
+    throw createMockError(error?.message || "Failed to fetch template");
+  }
+}
+
+export async function getAllTemplates(params?: { page?: number; limit?: number }) {
+  try {
+    const { data } = await apiClient.get<{ data: any[] }>(
+      "/api/v1/mocks/templates",
+      { params: { page: params?.page ?? 1, limit: params?.limit ?? 50 } }
+    );
+    return data.data || [];
+  } catch (error: any) {
+    if (error && typeof error === "object" && "type" in error) {
+      throw error;
+    }
+    throw createMockError(error?.message || "Failed to fetch templates");
+  }
+}

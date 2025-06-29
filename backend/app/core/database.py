@@ -115,6 +115,36 @@ class DatabaseManager:
         """Close database connections"""
         await self.supabase.close()
 
+    async def get_user_plan_and_quota(self, user_id: UUID) -> Optional[dict]:
+        """
+        Fetch the user's plan and quota from Supabase (using profiles table).
+        Returns a dict with plan info and quotas, or None if not found.
+        """
+        try:
+            client = self.supabase.client
+            # Join profiles and user_plans on plan_id
+            response = client.rpc(
+                "execute_sql",
+                {
+                    "query": """
+                        SELECT up.name AS plan_name, up.daily_request_quota, up.monthly_token_quota
+                        FROM public.profiles p
+                        JOIN public.user_plans up ON p.plan_id = up.id
+                        WHERE p.user_id = %(user_id)s
+                    """,
+                    "params": {"user_id": str(user_id)},
+                },
+            ).execute()
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+            return None
+        except Exception as e:
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to fetch plan/quota for user {user_id}: {e}")
+            return None
+
 
 # Global database manager instance
 db_manager = DatabaseManager()
@@ -145,13 +175,16 @@ async def close_database():
     print("✅ Database connections closed")
 
 
-async def get_usage_stats_for_user(user_id: UUID, use_service_key: bool = True, user_token: Optional[str] = None) -> dict:
+async def get_usage_stats_for_user(
+    user_id: UUID, use_service_key: bool = True, user_token: Optional[str] = None
+) -> dict:
     """
     Fetch AI usage statistics for a user from Supabase (production-ready).
     If use_service_key is True (default), uses the service key (admin privileges, for backend writes/updates).
     If use_service_key is False, uses the user's JWT (for user-facing SELECTs, RLS enforced).
     """
     from datetime import datetime, timedelta
+
     try:
         if use_service_key:
             client = db_manager.supabase.client
@@ -159,11 +192,19 @@ async def get_usage_stats_for_user(user_id: UUID, use_service_key: bool = True, 
             db_with_auth = DatabaseManager(user_token=user_token)
             client = db_with_auth.get_client_with_auth()
         # Query usage stats for the user
-        response = client.table("ai_usage_stats").select("*").eq("user_id", str(user_id)).single().execute()
+        response = (
+            client.table("ai_usage_stats")
+            .select("*")
+            .eq("user_id", str(user_id))
+            .single()
+            .execute()
+        )
         if response.data:
             usage = response.data
             now = datetime.utcnow()
-            rate_limit_reset = (now + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z"
+            rate_limit_reset = (
+                (now + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z"
+            )
             return {
                 "requests_today": usage.get("requests_today", 0),
                 "requests_this_month": usage.get("requests_this_month", 0),
@@ -180,11 +221,14 @@ async def get_usage_stats_for_user(user_id: UUID, use_service_key: bool = True, 
                 "tokens_used_today": 0,
                 "tokens_used_this_month": 0,
                 "rate_limit_remaining": 0,
-                "rate_limit_reset": (datetime.utcnow() + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z",
+                "rate_limit_reset": (
+                    datetime.utcnow() + timedelta(hours=1)
+                ).replace(microsecond=0).isoformat() + "Z",
                 "last_request": None,
             }
     except Exception as e:
         import logging
+
         logger = logging.getLogger(__name__)
         # Handle Supabase PGRST116 error (no rows found for .single()) gracefully
         if isinstance(e, dict) and e.get("code") == "PGRST116":
@@ -194,7 +238,9 @@ async def get_usage_stats_for_user(user_id: UUID, use_service_key: bool = True, 
                 "tokens_used_today": 0,
                 "tokens_used_this_month": 0,
                 "rate_limit_remaining": 0,
-                "rate_limit_reset": (datetime.utcnow() + timedelta(hours=1)).replace(microsecond=0).isoformat() + "Z",
+                "rate_limit_reset": (
+                    datetime.utcnow() + timedelta(hours=1)
+                ).replace(microsecond=0).isoformat() + "Z",
                 "last_request": None,
             }
         logger.error(f"Failed to fetch usage stats for user {user_id}: {e}")
@@ -212,6 +258,7 @@ async def upsert_usage_stats_for_user(user_id: UUID, increment: dict = None) -> 
         increment: dict of fields to increment (e.g., {"requests_today": 1, "tokens_used_today": 100})
     """
     from datetime import datetime
+
     try:
         client = db_manager.supabase.client
         now = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
@@ -220,11 +267,16 @@ async def upsert_usage_stats_for_user(user_id: UUID, increment: dict = None) -> 
         if increment:
             payload.update(increment)
         # Upsert: if row exists, update; else, insert
-        response = client.table("ai_usage_stats").upsert(payload, on_conflict=["user_id"]).execute()
+        response = (
+            client.table("ai_usage_stats")
+            .upsert(payload, on_conflict=["user_id"])
+            .execute()
+        )
         if response.error:
             raise Exception(response.error)
     except Exception as e:
         import logging
+
         logger = logging.getLogger(__name__)
         logger.error(f"Failed to upsert usage stats for user {user_id}: {e}")
         raise

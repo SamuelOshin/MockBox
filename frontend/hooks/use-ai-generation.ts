@@ -58,6 +58,10 @@ interface AIUsageResponse {
   rate_limit_remaining: number
   rate_limit_reset: string
   last_request: string
+  // Add plan info fields
+  plan_name?: string
+  daily_request_quota?: number
+  monthly_token_quota?: number
 }
 
 interface UseAIGenerationReturn {
@@ -71,6 +75,9 @@ interface UseAIGenerationReturn {
     tokensUsedToday: number
     tokensUsedThisMonth: number
     rateLimitRemaining: number
+    planName?: string
+    dailyRequestQuota?: number
+    monthlyTokenQuota?: number
   } | null
   fetchUsage: () => Promise<void>
 }
@@ -226,7 +233,10 @@ export function useAIGeneration(): UseAIGenerationReturn {
           requestsThisMonth: data.requests_this_month,
           tokensUsedToday: data.tokens_used_today,
           tokensUsedThisMonth: data.tokens_used_this_month,
-          rateLimitRemaining: data.rate_limit_remaining
+          rateLimitRemaining: data.rate_limit_remaining,
+          planName: data.plan_name,
+          dailyRequestQuota: data.daily_request_quota,
+          monthlyTokenQuota: data.monthly_token_quota,
         })
       }
     } catch (err: any) {

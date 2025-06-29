@@ -34,6 +34,7 @@ async def generate_mock_data(
     request: MockGenerationRequest,
     current_user: dict = Depends(get_current_user),
     ai_service: AIService = Depends(get_ai_service),
+    db: DatabaseManager = Depends(get_database),
 ):
     """
     Generate mock data using AI
@@ -60,6 +61,40 @@ async def generate_mock_data(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token: missing user ID",
+            )
+
+        # Fetch user plan and quota
+        plan_info = await db.get_user_plan_and_quota(UUID(user_id))
+        if not plan_info:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No plan assigned or plan not found for user.",
+            )
+        daily_quota = plan_info.get("daily_request_quota", 0)
+        monthly_quota = plan_info.get("monthly_token_quota", 0)
+
+        # Fetch current usage
+        from app.core.database import get_usage_stats_for_user
+        usage = await get_usage_stats_for_user(UUID(user_id))
+        requests_today = usage.get("requests_today", 0)
+        tokens_used_this_month = usage.get("tokens_used_this_month", 0)
+
+        # Enforce quota
+        if requests_today >= daily_quota:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "DAILY_QUOTA_EXCEEDED",
+                    "message": f"You have reached your daily request quota ({daily_quota}).",
+                },
+            )
+        if tokens_used_this_month >= monthly_quota:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "MONTHLY_TOKEN_QUOTA_EXCEEDED",
+                    "message": f"You have reached your monthly token quota ({monthly_quota}).",
+                },
             )
 
         # Generate mock data using AI
@@ -122,6 +157,40 @@ async def generate_and_save_mock(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token: missing user ID",
+            )
+
+        # Fetch user plan and quota
+        plan_info = await db.get_user_plan_and_quota(UUID(user_id))
+        if not plan_info:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No plan assigned or plan not found for user.",
+            )
+        daily_quota = plan_info.get("daily_request_quota", 0)
+        monthly_quota = plan_info.get("monthly_token_quota", 0)
+
+        # Fetch current usage
+        from app.core.database import get_usage_stats_for_user
+        usage = await get_usage_stats_for_user(UUID(user_id))
+        requests_today = usage.get("requests_today", 0)
+        tokens_used_this_month = usage.get("tokens_used_this_month", 0)
+
+        # Enforce quota
+        if requests_today >= daily_quota:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "DAILY_QUOTA_EXCEEDED",
+                    "message": f"You have reached your daily request quota ({daily_quota}).",
+                },
+            )
+        if tokens_used_this_month >= monthly_quota:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "MONTHLY_TOKEN_QUOTA_EXCEEDED",
+                    "message": f"You have reached your monthly token quota ({monthly_quota}).",
+                },
             )
 
         # Generate mock data using AI
@@ -237,12 +306,12 @@ async def ai_health_check(ai_service: AIService = Depends(get_ai_service)):
 
 
 @router.get("/usage/{user_id}")
-async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_user)):
+async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_user), db: DatabaseManager = Depends(get_database)):
     """
     Get AI usage statistics for a user
 
     Returns current usage statistics including request counts,
-    token usage, and rate limit status.
+    token usage, rate limit status, and plan info.
 
     **Note:** Users can only view their own usage statistics.
     """
@@ -255,10 +324,8 @@ async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_u
         )
 
     try:
-        # In production, query actual usage from your database or analytics system
-        # Example assumes a SQLAlchemy session or similar ORM/database access
         from datetime import datetime, timedelta
-        from app.core.database import get_usage_stats_for_user  # You must implement this function
+        from app.core.database import get_usage_stats_for_user
 
         try:
             usage = await get_usage_stats_for_user(user_id)
@@ -269,7 +336,12 @@ async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_u
                 detail="Failed to retrieve usage statistics from database",
             )
 
-        # usage should be a dict with keys matching the API contract
+        # Fetch plan info
+        plan_info = await db.get_user_plan_and_quota(user_id)
+        plan_name = plan_info.get("plan_name") if plan_info else None
+        daily_request_quota = plan_info.get("daily_request_quota") if plan_info else None
+        monthly_token_quota = plan_info.get("monthly_token_quota") if plan_info else None
+
         usage_stats = {
             "user_id": str(user_id),
             "requests_today": usage.get("requests_today", 0),
@@ -279,6 +351,9 @@ async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_u
             "rate_limit_remaining": usage.get("rate_limit_remaining", 0),
             "rate_limit_reset": usage.get("rate_limit_reset", (datetime.utcnow() + timedelta(minutes=10)).isoformat() + "Z"),
             "last_request": usage.get("last_request", None),
+            "plan_name": plan_name,
+            "daily_request_quota": daily_request_quota,
+            "monthly_token_quota": monthly_token_quota,
         }
 
         return usage_stats

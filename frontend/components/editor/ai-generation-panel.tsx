@@ -190,21 +190,42 @@ export function AIGenerationPanel({
       {usage && (
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle className="text-sm font-medium">AI Usage Today</CardTitle>
+            <CardTitle className="text-sm font-medium">AI Usage</CardTitle>
+            {usage.planName && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Plan: <span className="font-semibold">{usage.planName}</span>
+                {usage.dailyRequestQuota && (
+                  <> &bull; Daily Quota: <span className="font-semibold">{usage.dailyRequestQuota}</span></>
+                )}
+                {usage.monthlyTokenQuota && (
+                  <> &bull; Monthly Token Quota: <span className="font-semibold">{usage.monthlyTokenQuota.toLocaleString()}</span></>
+                )}
+              </div>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div className="text-muted-foreground">Requests</div>
-                <div className="font-medium">{usage.requestsToday}/10</div>
+                <div className="text-muted-foreground">Requests (Today)</div>
+                <div className="font-medium">
+                  {usage.requestsToday}
+                  {typeof usage.dailyRequestQuota === 'number' && (
+                    <>/<span>{usage.dailyRequestQuota}</span></>
+                  )}
+                </div>
               </div>
               <div>
-                <div className="text-muted-foreground">Tokens</div>
-                <div className="font-medium">{usage.tokensUsedToday.toLocaleString()}</div>
+                <div className="text-muted-foreground">Tokens (This Month)</div>
+                <div className="font-medium">
+                  {usage.tokensUsedThisMonth.toLocaleString()}
+                  {typeof usage.monthlyTokenQuota === 'number' && (
+                    <>/<span>{usage.monthlyTokenQuota.toLocaleString()}</span></>
+                  )}
+                </div>
               </div>
             </div>
             <Progress
-              value={(usage.requestsToday / 10) * 100}
+              value={usage.dailyRequestQuota ? (usage.requestsToday / usage.dailyRequestQuota) * 100 : 0}
               className="h-2"
             />
             {usage.rateLimitRemaining <= 2 && (

@@ -82,10 +82,8 @@ export default function MocksPage() {
         if (Array.isArray(data)) {
           setMocks(data)
         } else {
-          console.error('API returned non-array data:', data);
           throw new Error('Invalid data format returned from API');
         }      } catch (error) {
-        console.error('Mocks page fetch error:', error);
         toast({
           title: "Error",
           description: "Failed to fetch mocks from server",
