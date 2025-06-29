@@ -36,7 +36,8 @@ import {
   Clock, 
   Tag, 
   SlidersHorizontal, 
-  RefreshCw
+  RefreshCw,
+  Eye
 } from "lucide-react";
 
 // Category icons mapping
@@ -171,7 +172,7 @@ export default function TemplatesPage() {
     navigateTo(`/builder?templateId=${templateId}`);
   };
 
-  if (loading) {
+  if (loading) 
     return (
       <SidebarLayout>
         <div className={`min-h-screen flex items-center justify-center ${themeColors.background}`}>
@@ -188,7 +189,6 @@ export default function TemplatesPage() {
         </div>
       </SidebarLayout>
     );
-  }
 
   return (
     <SidebarLayout>

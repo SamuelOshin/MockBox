@@ -78,13 +78,13 @@ export interface Template {
   description?: string;
   category: string;
   tags: string[];
+  created_at: string;
+  usage_count: number;
 }
 
 export interface TemplateDetail extends Template {
   template_data: any;
   is_public: boolean;
-  usage_count: number;
   created_by?: string;
-  created_at: string;
   updated_at?: string;
 }
