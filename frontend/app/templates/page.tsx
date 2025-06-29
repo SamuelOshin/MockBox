@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -194,7 +194,7 @@ export default function TemplatesPage() {
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
         <Header />
-        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 overflow-y-auto">
+        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 h-[calc(100vh-4rem)] overflow-y-auto">
           {/* Hero Section */}
           <motion.div 
             className="mb-8 text-center"

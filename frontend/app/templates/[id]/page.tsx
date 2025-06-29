@@ -94,7 +94,8 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
       setLoading(true);
       setError(null);
       try {
-        const data = await getTemplateById(params.id);
+        const templateId = params.id;
+        const data = await getTemplateById(templateId);
         setTemplate(data as TemplateDetail);
         setJsonString(JSON.stringify(data.template_data, null, 2));
       } catch (err: any) {
@@ -103,6 +104,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
         setLoading(false);
       }
     }
+    
     if (params.id) fetchTemplate();
   }, [params.id]);
 
@@ -216,7 +218,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
         <Header />
-        <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+        <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 h-[calc(100vh-4rem)] overflow-y-auto">
           {/* Back Button and Header */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
