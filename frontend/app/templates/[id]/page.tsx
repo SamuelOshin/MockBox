@@ -178,7 +178,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
       <SidebarLayout>
         <div className={`flex-1 min-h-screen ${themeColors.background}`}>
           <Header />
-          <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
+          <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 overflow-y-auto">
             <div className="mb-6">
               <Button 
                 variant="outline" 
