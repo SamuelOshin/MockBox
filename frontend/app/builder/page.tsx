@@ -28,7 +28,7 @@ import { AIGeneratorModal } from "@/components/editor/ai-generator-modal"
 import { AIFloatingActionButton } from "@/components/editor/ai-floating-action-button"
 import { mockApi } from "@/lib/api"
 import { getTemplateById } from "@/lib/api"
-import { CreateMockRequest } from "@/lib/types"
+import { CreateMockRequest, TemplateDetail } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import {
   ArrowLeft,
@@ -144,11 +144,17 @@ export default function BuilderPage() {
           }
         } catch (error) {
           console.error("Error loading template:", error)
-          setTemplateLoadError(error instanceof Error ? error.message : "Failed to load template")
+          const errorMessage = error instanceof Error 
+            ? error.message 
+            : typeof error === 'object' && error !== null && 'message' in error 
+              ? String((error as any).message) 
+              : "Failed to load template";
+          
+          setTemplateLoadError(errorMessage)
           
           toast({
             title: "Template loading failed",
-            description: error instanceof Error ? error.message : "Failed to load template",
+            description: errorMessage,
             variant: "destructive",
           })
         } finally {
@@ -188,8 +194,8 @@ export default function BuilderPage() {
     setFormData(prev => ({ ...prev, is_public: checked }))
   }
 
-  const handleSnippetSelect = (snippet: object) => {
-    setJsonString(JSON.stringify(snippet, null, 2))
+  const handleSnippetSelect = (snippet: string) => {
+    setJsonString(snippet)
   }
 
   const handleResponseGeneration = (response: string) => {

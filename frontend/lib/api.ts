@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { MockEndpoint, CreateMockRequest, PaginatedResponse, MockError, ApiErrorType } from './types'
+import { MockEndpoint, CreateMockRequest, PaginatedResponse, MockError, ApiErrorType, TemplateDetail } from './types'
 
 // Create error helper function
 function createMockError(message: string, status?: number, details?: any): MockError {
@@ -277,12 +277,12 @@ export const mockApi = {
 }
 
 // --- Mock Template API ---
-export async function getTemplateById(id: string) {
+export async function getTemplateById(id: string): Promise<TemplateDetail> {
   if (!id || typeof id !== "string") {
     throw createMockError("Invalid template ID provided", 400);
   }
   try {
-    const { data } = await apiClient.get(`/api/v1/mocks/templates/${id}`);
+    const { data } = await apiClient.get<TemplateDetail>(`/api/v1/mocks/templates/${id}`);
     return data;
   } catch (error: any) {
     // Re-throw MockError instances

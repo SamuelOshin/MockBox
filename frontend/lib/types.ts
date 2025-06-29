@@ -83,7 +83,17 @@ export interface Template {
 }
 
 export interface TemplateDetail extends Template {
-  template_data: any;
+  template_data: {
+    endpoints?: Array<{
+      endpoint?: string;
+      method?: string;
+      response?: any;
+      headers?: Record<string, string>;
+      status_code?: number;
+      delay_ms?: number;
+    }>;
+    [key: string]: any;
+  };
   is_public: boolean;
   created_by?: string;
   updated_at?: string;
