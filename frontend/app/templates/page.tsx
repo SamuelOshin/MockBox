@@ -194,7 +194,7 @@ export default function TemplatesPage() {
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
         <Header />
-        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6">
+        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 overflow-y-auto">
           {/* Hero Section */}
           <motion.div 
             className="mb-8 text-center"
