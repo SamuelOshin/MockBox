@@ -52,9 +52,9 @@
     --scrollbar-border-radius: 4px;
   }
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 0 0% 10%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 0 0% 22%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
@@ -68,7 +68,7 @@
     --accent-foreground: 210 40% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
+    --border: 0 0% 10%;
     --input: 217.2 32.6% 17.5%;
     --ring: 220 90% 56%;
     --chart-1: 220 70% 50%;
@@ -406,8 +406,7 @@
 
   /* More specific targeting for our modal */
   .ai-modal-override[data-radix-dialog-content] {
-    background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
-    background-color: #030712 !important;
+    background-color: #02050e !important;
   }
 
   .light .ai-modal-override[data-radix-dialog-content] {
@@ -418,8 +417,7 @@
   /* Force theme backgrounds with higher specificity */
   html.dark [data-radix-dialog-content].ai-modal-override,
   .dark [data-radix-dialog-content].ai-modal-override {
-    background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
-    background-color: #030712 !important;
+    background-color: #02050e !important;
   }
 
   html.light [data-radix-dialog-content].ai-modal-override,
@@ -433,8 +431,7 @@
 @layer utilities {
   /* Only target the modal container, not all child elements */
   html.dark .ai-modal-override {
-    background: linear-gradient(135deg, #030712 0%, #111827 50%, #1e3a8a 100%) !important;
-    background-color: #030712 !important;
+    background-color: #02050e !important;
   }
 
   html.light .ai-modal-override {
@@ -444,7 +441,7 @@
 
   /* Let cards and other UI elements use their proper theme colors */
   html.dark .ai-modal-override .bg-card {
-    background-color: hsl(var(--card)) !important;
+    background-color: hsl(222.2 84% 4.9%) !important;
   }
 
   html.light .ai-modal-override .bg-card {
@@ -479,7 +476,7 @@
 
   /* Ensure inputs use proper theme colors */
   .ai-modal-override .bg-background {
-    background-color: hsl(var(--background)) !important;
+    background-color: hsl(222 88% 7%) !important;
   }
 
   /* Ensure muted backgrounds use proper theme colors */

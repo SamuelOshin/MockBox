@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import {
   Sparkles,
   Loader2,
@@ -334,713 +334,715 @@ export function AIEnhancedGenerator({
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        transition={{ duration: 0.3 }}
-        className={cn("space-y-4", className)}
-      >
-        {/* Enhanced Header with Progress */}
-        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <motion.div
-                  className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-blue-600 shadow-lg"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Wand2 className="h-5 w-5 text-white" />
-                </motion.div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">AI Mock Generator</CardTitle>
-                    <Badge variant="secondary" className="bg-white/50">
-                      <Star className="h-3 w-3 mr-1 text-yellow-500" />
-                      Pro
-                    </Badge>
+    <TooltipProvider>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          transition={{ duration: 0.3 }}
+          className={cn("space-y-4", className)}
+        >
+          {/* Enhanced Header with Progress */}
+          <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 overflow-hidden">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <motion.div
+                    className="p-2 rounded-xl bg-gradient-to-r from-purple-500 to-blue-600 shadow-lg"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Wand2 className="h-5 w-5 text-white" />
+                  </motion.div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-lg">AI Mock Generator</CardTitle>
+                      <Badge variant="secondary" className="bg-white/50">
+                        <Star className="h-3 w-3 mr-1 text-yellow-500" />
+                        Pro
+                      </Badge>
+                    </div>
+                    <CardDescription className="text-sm">
+                      Generate intelligent, realistic mock data with AI
+                    </CardDescription>
                   </div>
-                  <CardDescription className="text-sm">
-                    Generate intelligent, realistic mock data with AI
-                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onToggleMinimize}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Minimize2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClose}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onToggleMinimize}
-                  className="h-8 w-8 p-0"
-                >
-                  <Minimize2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
 
-            {/* Progress Steps */}
-            <div className="flex items-center justify-between mt-4">
-              {steps.map((step, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="flex items-center gap-2">
-                    <motion.div
-                      className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
-                        index <= activeStep
-                          ? "bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-lg"
-                          : "bg-white/50 text-gray-400"
-                      )}
-                      animate={index === activeStep ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <step.icon className="h-4 w-4" />
-                    </motion.div>
-                    <div className="text-xs">
-                      <div className={cn(
-                        "font-medium",
-                        index <= activeStep ? "text-purple-700" : "text-gray-400"
-                      )}>
-                        {step.title}
+              {/* Progress Steps */}
+              <div className="flex items-center justify-between mt-4">
+                {steps.map((step, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="flex items-center gap-2">
+                      <motion.div
+                        className={cn(
+                          "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+                          index <= activeStep
+                            ? "bg-gradient-to-r from-purple-500 to-blue-600 text-white shadow-lg"
+                            : "bg-white/50 text-gray-400"
+                        )}
+                        animate={index === activeStep ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <step.icon className="h-4 w-4" />
+                      </motion.div>
+                      <div className="text-xs">
+                        <div className={cn(
+                          "font-medium",
+                          index <= activeStep ? "text-purple-700" : "text-gray-400"
+                        )}>
+                          {step.title}
+                        </div>
                       </div>
                     </div>
+                    {index < steps.length - 1 && (
+                      <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-blue-200 mx-3" />
+                    )}
                   </div>
-                  {index < steps.length - 1 && (
-                    <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-blue-200 mx-3" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardHeader>
-        </Card>
+                ))}
+              </div>
+            </CardHeader>
+          </Card>
 
-        {/* Usage Stats with Enhanced Visualization */}
-        {usage && (
+          {/* Usage Stats with Enhanced Visualization */}
+          {usage && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-medium">Today's Usage</span>
+                    </div>
+                    <Badge variant={usage.rateLimitRemaining > 5 ? "default" : "destructive"}>
+                      {usage.rateLimitRemaining} left
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">{usage.requestsToday}</div>
+                      <div className="text-xs text-muted-foreground">Requests</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{usage.tokensUsedToday.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">Tokens</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{usage.requestsThisMonth}</div>
+                      <div className="text-xs text-muted-foreground">This Month</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span>Daily Limit</span>
+                      <span>{usage.requestsToday}/10</span>
+                    </div>
+                    <Progress
+                      value={(usage.requestsToday / 10) * 100}
+                      className="h-2"
+                    />
+                  </div>
+
+                  {usage.rateLimitRemaining <= 2 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="mt-3"
+                    >
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                          Only {usage.rateLimitRemaining} AI generations remaining today.
+                        </AlertDescription>
+                      </Alert>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Quick Start Templates */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.2 }}
           >
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-medium">Today's Usage</span>
-                  </div>
-                  <Badge variant={usage.rateLimitRemaining > 5 ? "default" : "destructive"}>
-                    {usage.rateLimitRemaining} left
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{usage.requestsToday}</div>
-                    <div className="text-xs text-muted-foreground">Requests</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{usage.tokensUsedToday.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">Tokens</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{usage.requestsThisMonth}</div>
-                    <div className="text-xs text-muted-foreground">This Month</div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span>Daily Limit</span>
-                    <span>{usage.requestsToday}/10</span>
-                  </div>
-                  <Progress
-                    value={(usage.requestsToday / 10) * 100}
-                    className="h-2"
-                  />
-                </div>
-
-                {usage.rateLimitRemaining <= 2 && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="mt-3"
-                  >
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="text-xs">
-                        Only {usage.rateLimitRemaining} AI generations remaining today.
-                      </AlertDescription>
-                    </Alert>
-                  </motion.div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {/* Quick Start Templates */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-amber-500" />
-                <CardTitle className="text-sm">Quick Start Templates</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                {predefinedPrompts.map((template, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => handlePromptSelect(template.prompt)}
-                    className="p-3 text-left rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="text-lg">{template.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs text-gray-900 dark:text-gray-100 mb-1">
-                          {template.title}
-                        </div>
-                        <div className="text-xs text-gray-500 line-clamp-2">
-                          {template.description}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Main Configuration Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
-                  <Target className="h-4 w-4 text-blue-500" />
-                  <CardTitle className="text-base">Endpoint Configuration</CardTitle>
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <CardTitle className="text-sm">Quick Start Templates</CardTitle>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="text-xs"
-                >
-                  {showAdvanced ? 'Simple' : 'Advanced'}
-                  <ChevronRight className={cn(
-                    "h-3 w-3 ml-1 transition-transform",
-                    showAdvanced && "rotate-90"
-                  )} />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="method" className="text-xs font-medium">HTTP Method</Label>
-                  <Select
-                    value={formData.method}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as HTTPMethod }))}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GET">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">GET</Badge>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="POST">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">POST</Badge>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="PUT">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">PUT</Badge>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="PATCH">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">PATCH</Badge>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="DELETE">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">DELETE</Badge>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status-code" className="text-xs font-medium">Status Code</Label>
-                  <Input
-                    id="status-code"
-                    type="number"
-                    min="100"
-                    max="599"
-                    value={formData.statusCode}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      statusCode: parseInt(e.target.value) || 200
-                    }))}
-                    className="h-9"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="endpoint" className="text-xs font-medium">Endpoint Path</Label>
-                <Input
-                  id="endpoint"
-                  placeholder="/api/users/123"
-                  value={formData.endpoint}
-                  onChange={(e) => setFormData(prev => ({ ...prev, endpoint: e.target.value }))}
-                  className="h-9 font-mono"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-xs font-medium">
-                  AI Prompt
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-3 w-3 ml-1 inline-block" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">Describe what data you want the AI to generate</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </Label>
-                <Textarea
-                  ref={promptRef}
-                  id="description"
-                  placeholder="Describe what this endpoint should return... e.g., 'User profile with personal details, preferences, and activity history'"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={3}
-                  className="resize-none"
-                />
-              </div>
-
-              {/* Complexity Selector with Visual Cards */}
-              <div className="space-y-3">
-                <Label className="text-xs font-medium">Data Complexity</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {complexityLevels.map((level) => (
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2">
+                  {predefinedPrompts.map((template, index) => (
                     <motion.button
-                      key={level.value}
-                      onClick={() => setFormData(prev => ({ ...prev, complexity: level.value }))}
-                      className={cn(
-                        "p-3 rounded-lg border-2 transition-all text-left",
-                        formData.complexity === level.value
-                          ? "border-purple-300 bg-purple-50 dark:bg-purple-900/20"
-                          : "border-gray-200 hover:border-gray-300"
-                      )}
+                      key={index}
+                      onClick={() => handlePromptSelect(template.prompt)}
+                      className="p-3 text-left rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <div className="text-lg mb-1">{level.icon}</div>
-                      <div className="text-xs font-medium">{level.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {level.description}
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg">{template.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-xs text-gray-900 dark:text-gray-100 mb-1">
+                            {template.title}
+                          </div>
+                          <div className="text-xs text-gray-500 line-clamp-2">
+                            {template.description}
+                          </div>
+                        </div>
                       </div>
                     </motion.button>
                   ))}
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-              <AnimatePresence>
-                {showAdvanced && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-4 pt-4 border-t"
-                  >
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="format" className="text-xs font-medium">Response Format</Label>
-                        <Select
-                          value={formData.responseFormat}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, responseFormat: value }))}
-                        >
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="json">
-                              <div className="flex items-center gap-2">
-                                <Code2 className="h-3 w-3" />
-                                JSON
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="xml">XML</SelectItem>
-                            <SelectItem value="html">HTML</SelectItem>
-                            <SelectItem value="text">Text</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="schema-hint" className="text-xs font-medium">Schema Hint</Label>
-                        <Input
-                          id="schema-hint"
-                          placeholder="e.g., User, Product, Order..."
-                          value={formData.schemaHint}
-                          onChange={(e) => setFormData(prev => ({ ...prev, schemaHint: e.target.value }))}
-                          className="h-9"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="realistic-data"
-                          checked={formData.realisticData}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, realisticData: checked }))}
-                        />
-                        <Label htmlFor="realistic-data" className="text-xs">Realistic Data</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="include-headers"
-                          checked={formData.includeHeaders}
-                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, includeHeaders: checked }))}
-                        />
-                        <Label htmlFor="include-headers" className="text-xs">Include Headers</Label>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="auto-save"
-                        checked={formData.autoSave}
-                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, autoSave: checked }))}
-                      />
-                      <Label htmlFor="auto-save" className="text-xs">Generate and Save Automatically</Label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Automatically save the generated mock to your collection</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Error Display */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {typeof error === 'string'
-                    ? error
-                    : error && typeof error === 'object'
-                      ? ('message' in error
-                        ? (error as any).message
-                        : 'error' in error
-                          ? (error as any).error
-                          : JSON.stringify(error, null, 2))
-                      : String(error)}
-                </AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Enhanced Generate Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Button
-            onClick={handleGenerate}
-            disabled={!isFormValid || isGenerating || (usage?.rateLimitRemaining === 0)}
-            className="w-full h-12 text-base bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
-            size="lg"
+          {/* Main Configuration Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
           >
-            {isGenerating ? (
-              <motion.div className="flex items-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Generating Magic...</span>
-              </motion.div>
-            ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-blue-500" />
+                    <CardTitle className="text-base">Endpoint Configuration</CardTitle>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="text-xs"
+                  >
+                    {showAdvanced ? 'Simple' : 'Advanced'}
+                    <ChevronRight className={cn(
+                      "h-3 w-3 ml-1 transition-transform",
+                      showAdvanced && "rotate-90"
+                    )} />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="method" className="text-xs font-medium">HTTP Method</Label>
+                    <Select
+                      value={formData.method}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as HTTPMethod }))}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="GET">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">GET</Badge>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="POST">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">POST</Badge>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="PUT">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">PUT</Badge>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="PATCH">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">PATCH</Badge>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="DELETE">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">DELETE</Badge>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status-code" className="text-xs font-medium">Status Code</Label>
+                    <Input
+                      id="status-code"
+                      type="number"
+                      min="100"
+                      max="599"
+                      value={formData.statusCode}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        statusCode: parseInt(e.target.value) || 200
+                      }))}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="endpoint" className="text-xs font-medium">Endpoint Path</Label>
+                  <Input
+                    id="endpoint"
+                    placeholder="/api/users/123"
+                    value={formData.endpoint}
+                    onChange={(e) => setFormData(prev => ({ ...prev, endpoint: e.target.value }))}
+                    className="h-9 font-mono"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-xs font-medium">
+                    AI Prompt
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="h-3 w-3 ml-1 inline-block" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Describe what data you want the AI to generate</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <Textarea
+                    ref={promptRef}
+                    id="description"
+                    placeholder="Describe what this endpoint should return... e.g., 'User profile with personal details, preferences, and activity history'"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Complexity Selector with Visual Cards */}
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium">Data Complexity</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {complexityLevels.map((level) => (
+                      <motion.button
+                        key={level.value}
+                        onClick={() => setFormData(prev => ({ ...prev, complexity: level.value }))}
+                        className={cn(
+                          "p-3 rounded-lg border-2 transition-all text-left",
+                          formData.complexity === level.value
+                            ? "border-purple-300 bg-purple-50 dark:bg-purple-900/20"
+                            : "border-gray-200 hover:border-gray-300"
+                        )}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="text-lg mb-1">{level.icon}</div>
+                        <div className="text-xs font-medium">{level.label}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {level.description}
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {showAdvanced && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-4 pt-4 border-t"
+                    >
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="format" className="text-xs font-medium">Response Format</Label>
+                          <Select
+                            value={formData.responseFormat}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, responseFormat: value }))}
+                          >
+                            <SelectTrigger className="h-9">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="json">
+                                <div className="flex items-center gap-2">
+                                  <Code2 className="h-3 w-3" />
+                                  JSON
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="xml">XML</SelectItem>
+                              <SelectItem value="html">HTML</SelectItem>
+                              <SelectItem value="text">Text</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="schema-hint" className="text-xs font-medium">Schema Hint</Label>
+                          <Input
+                            id="schema-hint"
+                            placeholder="e.g., User, Product, Order..."
+                            value={formData.schemaHint}
+                            onChange={(e) => setFormData(prev => ({ ...prev, schemaHint: e.target.value }))}
+                            className="h-9"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="realistic-data"
+                            checked={formData.realisticData}
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, realisticData: checked }))}
+                          />
+                          <Label htmlFor="realistic-data" className="text-xs">Realistic Data</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                            id="include-headers"
+                            checked={formData.includeHeaders}
+                            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, includeHeaders: checked }))}
+                          />
+                          <Label htmlFor="include-headers" className="text-xs">Include Headers</Label>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="auto-save"
+                          checked={formData.autoSave}
+                          onCheckedChange={(checked) => setFormData(prev => ({ ...prev, autoSave: checked }))}
+                        />
+                        <Label htmlFor="auto-save" className="text-xs">Generate and Save Automatically</Label>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-3 w-3 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">Automatically save the generated mock to your collection</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Error Display */}
+          <AnimatePresence>
+            {error && (
               <motion.div
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
               >
-                <Sparkles className="h-5 w-5" />
-                <span>
-                  {formData.autoSave ? 'Generate & Save Mock' : 'Generate Mock Data'}
-                </span>
-                <ArrowRight className="h-4 w-4" />
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {typeof error === 'string'
+                      ? error
+                      : error && typeof error === 'object'
+                        ? ('message' in error
+                          ? (error as any).message
+                          : 'error' in error
+                            ? (error as any).error
+                            : JSON.stringify(error, null, 2))
+                        : String(error)}
+                  </AlertDescription>
+                </Alert>
               </motion.div>
             )}
-          </Button>
-        </motion.div>
+          </AnimatePresence>
 
-        {/* Generated Data Display with Enhanced UI */}
-        <AnimatePresence>
-          {generatedData && !isGenerationError(generatedData) && (
+          {/* Enhanced Generate Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Button
+              onClick={handleGenerate}
+              disabled={!isFormValid || isGenerating || (usage?.rateLimitRemaining === 0)}
+              className="w-full h-12 text-base bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              size="lg"
+            >
+              {isGenerating ? (
+                <motion.div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Generating Magic...</span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="flex items-center gap-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Sparkles className="h-5 w-5" />
+                  <span>
+                    {formData.autoSave ? 'Generate & Save Mock' : 'Generate Mock Data'}
+                  </span>
+                  <ArrowRight className="h-4 w-4" />
+                </motion.div>
+              )}
+            </Button>
+          </motion.div>
+
+          {/* Generated Data Display with Enhanced UI */}
+          <AnimatePresence>
+            {generatedData && !isGenerationError(generatedData) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 overflow-hidden">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="p-2 rounded-full bg-green-100 dark:bg-green-900/40"
+                        >
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        </motion.div>
+                        <div>
+                          <CardTitle className="text-base text-green-800 dark:text-green-200">
+                            Generation Successful! 🎉
+                          </CardTitle>
+                          <CardDescription className="text-green-700 dark:text-green-300">
+                            {typeof generatedData.explanation === 'string'
+                              ? generatedData.explanation
+                              : generatedData.explanation && typeof generatedData.explanation === 'object'
+                                ? ('message' in generatedData.explanation
+                                  ? generatedData.explanation.message
+                                  : 'error' in generatedData.explanation
+                                    ? generatedData.explanation.error
+                                    : JSON.stringify(generatedData.explanation, null, 2))
+                              : String(generatedData.explanation)}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {generatedData.generation_time && generatedData.generation_time.toFixed ? generatedData.generation_time.toFixed(2) : generatedData.generation_time}s
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Zap className="h-4 w-4" />
+                          {generatedData.provider}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="font-medium">Generated Response</Label>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyToClipboard(JSON.stringify(generatedData.response_data, null, 2))}
+                            className="h-8"
+                          >
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onResponseGenerated?.(JSON.stringify(generatedData.response_data, null, 2))}
+                            className="h-8"
+                          >
+                            <ArrowRight className="h-3 w-3 mr-1" />
+                            Use
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto max-h-60 border shadow-inner">
+                          {JSON.stringify(generatedData.response_data, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+
+                    {generatedData.headers && Object.keys(generatedData.headers).length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="font-medium">Headers</Label>
+                        <pre className="bg-white dark:bg-gray-900 p-3 rounded-lg text-sm border shadow-inner">
+                          {JSON.stringify(generatedData.headers, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-3 gap-4 p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-green-600">{generatedData.status_code}</div>
+                        <div className="text-xs text-muted-foreground">Status Code</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-600">{generatedData.model}</div>
+                        <div className="text-xs text-muted-foreground">Model</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-purple-600">{generatedData.tokens_used || 0}</div>
+                        <div className="text-xs text-muted-foreground">Tokens Used</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Error Generation Display */}
+          {generatedData && isGenerationError(generatedData) && (
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.4 }}
             >
-              <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 overflow-hidden">
+              <Card className="border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 overflow-hidden">
                 <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="p-2 rounded-full bg-green-100 dark:bg-green-900/40"
-                      >
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      </motion.div>
-                      <div>
-                        <CardTitle className="text-base text-green-800 dark:text-green-200">
-                          Generation Successful! 🎉
-                        </CardTitle>
-                        <CardDescription className="text-green-700 dark:text-green-300">
-                          {typeof generatedData.explanation === 'string'
-                            ? generatedData.explanation
-                            : generatedData.explanation && typeof generatedData.explanation === 'object'
-                              ? ('message' in generatedData.explanation
-                                ? generatedData.explanation.message
-                                : 'error' in generatedData.explanation
-                                  ? generatedData.explanation.error
-                                  : JSON.stringify(generatedData.explanation, null, 2))
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="p-2 rounded-full bg-red-100 dark:bg-red-900/40"
+                    >
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                    </motion.div>
+                    <div>
+                      <CardTitle className="text-base text-red-800 dark:text-red-200">
+                        Generation Failed
+                      </CardTitle>
+                      <CardDescription className="text-red-700 dark:text-red-300">
+                        {typeof generatedData.explanation === 'string'
+                          ? generatedData.explanation
+                          : generatedData.explanation && typeof generatedData.explanation === 'object'
+                            ? ('message' in generatedData.explanation
+                              ? generatedData.explanation.message
+                              : 'error' in generatedData.explanation
+                                ? generatedData.explanation.error
+                                : JSON.stringify(generatedData.explanation, null, 2))
                             : String(generatedData.explanation)}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {generatedData.generation_time && generatedData.generation_time.toFixed ? generatedData.generation_time.toFixed(2) : generatedData.generation_time}s
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Zap className="h-4 w-4" />
-                        {generatedData.provider}
-                      </div>
+                      </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="font-medium">Generated Response</Label>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(JSON.stringify(generatedData.response_data, null, 2))}
-                          className="h-8"
-                        >
-                          <Copy className="h-3 w-3 mr-1" />
-                          Copy
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onResponseGenerated?.(JSON.stringify(generatedData.response_data, null, 2))}
-                          className="h-8"
-                        >
-                          <ArrowRight className="h-3 w-3 mr-1" />
-                          Use
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="relative">
-                      <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto max-h-60 border shadow-inner">
-                        {JSON.stringify(generatedData.response_data, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
-
-                  {generatedData.headers && Object.keys(generatedData.headers).length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="font-medium">Headers</Label>
-                      <pre className="bg-white dark:bg-gray-900 p-3 rounded-lg text-sm border shadow-inner">
-                        {JSON.stringify(generatedData.headers, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-3 gap-4 p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-green-600">{generatedData.status_code}</div>
-                      <div className="text-xs text-muted-foreground">Status Code</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-blue-600">{generatedData.model}</div>
-                      <div className="text-xs text-muted-foreground">Model</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-purple-600">{generatedData.tokens_used || 0}</div>
-                      <div className="text-xs text-muted-foreground">Tokens Used</div>
-                    </div>
-                  </div>
-                </CardContent>
               </Card>
             </motion.div>
           )}
-        </AnimatePresence>
-
-        {/* Error Generation Display */}
-        {generatedData && isGenerationError(generatedData) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.4 }}
-          >
-            <Card className="border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="p-2 rounded-full bg-red-100 dark:bg-red-900/40"
-                  >
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                  </motion.div>
-                  <div>
-                    <CardTitle className="text-base text-red-800 dark:text-red-200">
-                      Generation Failed
-                    </CardTitle>
-                    <CardDescription className="text-red-700 dark:text-red-300">
-                      {typeof generatedData.explanation === 'string'
-                        ? generatedData.explanation
-                        : generatedData.explanation && typeof generatedData.explanation === 'object'
-                          ? ('message' in generatedData.explanation
-                            ? generatedData.explanation.message
-                            : 'error' in generatedData.explanation
-                              ? generatedData.explanation.error
-                              : JSON.stringify(generatedData.explanation, null, 2))
-                          : String(generatedData.explanation)}
+          {/* Enhanced Save Options */}
+          <AnimatePresence>
+            {showSaveOptions && generatedData && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Save className="h-4 w-4 text-blue-500" />
+                      <CardTitle className="text-base">Save as Reusable Mock</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Save this AI-generated data to your mock collection for future use
                     </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </motion.div>
-        )}
-        {/* Enhanced Save Options */}
-        <AnimatePresence>
-          {showSaveOptions && generatedData && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Save className="h-4 w-4 text-blue-500" />
-                    <CardTitle className="text-base">Save as Reusable Mock</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Save this AI-generated data to your mock collection for future use
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="mock-name" className="text-xs font-medium">Mock Name</Label>
-                    <Input
-                      id="mock-name"
-                      placeholder={`AI Generated - ${formData.endpoint}`}
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="h-9"
-                    />
-                  </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="mock-name" className="text-xs font-medium">Mock Name</Label>
+                      <Input
+                        id="mock-name"
+                        placeholder={`AI Generated - ${formData.endpoint}`}
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        className="h-9"
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="save-description" className="text-xs font-medium">Description</Label>
-                    <Textarea
-                      id="save-description"
-                      placeholder="Describe this mock endpoint..."
-                      value={formData.saveDescription}
-                      onChange={(e) => setFormData(prev => ({ ...prev, saveDescription: e.target.value }))}
-                      rows={2}
-                      className="resize-none"
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="save-description" className="text-xs font-medium">Description</Label>
+                      <Textarea
+                        id="save-description"
+                        placeholder="Describe this mock endpoint..."
+                        value={formData.saveDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, saveDescription: e.target.value }))}
+                        rows={2}
+                        className="resize-none"
+                      />
+                    </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="is-public"
-                      checked={formData.isPublic}
-                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
-                    />
-                    <Label htmlFor="is-public" className="text-xs">Make Public</Label>
-                  </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="is-public"
+                        checked={formData.isPublic}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
+                      />
+                      <Label htmlFor="is-public" className="text-xs">Make Public</Label>
+                    </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleSaveGenerated}
-                      disabled={isGenerating}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Mock
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowSaveOptions(false)}
-                      className="flex-1"
-                    >
-                      Skip
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </AnimatePresence>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSaveGenerated}
+                        disabled={isGenerating}
+                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Mock
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowSaveOptions(false)}
+                        className="flex-1"
+                      >
+                        Skip
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </AnimatePresence>
+    </TooltipProvider>
   )
 }

@@ -255,7 +255,7 @@ export function AIGenerationPanel({
               <Label htmlFor="method">HTTP Method</Label>
               <Select
                 value={formData.method}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, method: value }))}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as HTTPMethod }))}
               >
                 <SelectTrigger>
                   <SelectValue />

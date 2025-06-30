@@ -74,7 +74,14 @@ const statusCodeColors: Record<string, string> = {
   "default": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
 };
 
-export default function TemplateDetailPage({ params }: { params: { id: string } }) {
+
+interface TemplateDetailPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
   const [template, setTemplate] = useState<TemplateDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +116,8 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
       setLoading(true);
       setError(null);
       try {
-        const templateId = params.id;
+        const resolvedParams = await params;
+        const templateId = resolvedParams.id;
         const data = await getTemplateById(templateId);
         setTemplate(data as TemplateDetail);
         
@@ -137,8 +145,8 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
       }
     }
     
-    if (params.id) fetchTemplate();
-  }, [params.id]);
+    fetchTemplate();
+  }, [params]);
 
   const handleCopyJson = () => {
     navigator.clipboard.writeText(jsonString);
@@ -975,4 +983,6 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
       </div>
     </SidebarLayout>
   );
-}
+};
+
+export default TemplateDetailPage;
