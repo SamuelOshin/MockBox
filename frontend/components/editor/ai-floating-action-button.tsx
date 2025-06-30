@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import {
   Sparkles,
   Wand2,
@@ -230,29 +230,31 @@ export function AIFloatingActionButton({
         whileTap={{ scale: disabled ? 1 : 0.95 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={handleToggle}
-              disabled={disabled}
-              className={cn(
-                "w-16 h-16 rounded-full shadow-2xl transition-all duration-200 border-2 border-white/20",
-                "bg-gradient-to-r from-purple-500 via-blue-600 to-indigo-700",
-                "hover:from-purple-600 hover:via-blue-700 hover:to-indigo-800",
-                "disabled:from-gray-400 disabled:to-gray-500",
-                "hover:shadow-3xl active:scale-95",
-                "flex items-center justify-center p-0",
-                disabled && "cursor-not-allowed opacity-50"
-              )}
-            >
-            {renderMainIcon()}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left" className="bg-gray-900 text-white border-gray-700">
-            <p className="font-medium">AI Mock Generator</p>
-            <p className="text-xs text-gray-300">Generate intelligent mock data</p>
-          </TooltipContent>
-        </Tooltip>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleToggle}
+                disabled={disabled}
+                className={cn(
+                  "w-16 h-16 rounded-full shadow-2xl transition-all duration-200 border-2 border-white/20",
+                  "bg-gradient-to-r from-purple-500 via-blue-600 to-indigo-700",
+                  "hover:from-purple-600 hover:via-blue-700 hover:to-indigo-800",
+                  "disabled:from-gray-400 disabled:to-gray-500",
+                  "hover:shadow-3xl active:scale-95",
+                  "flex items-center justify-center p-0",
+                  disabled && "cursor-not-allowed opacity-50"
+                )}
+              >
+              {renderMainIcon()}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="bg-gray-900 text-white border-gray-700">
+              <p className="font-medium">AI Mock Generator</p>
+              <p className="text-xs text-gray-300">Generate intelligent mock data</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* Usage Badge */}
         {!isExpanded && usage && (
