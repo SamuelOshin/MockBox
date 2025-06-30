@@ -34,7 +34,9 @@ import {
   ShoppingCart, 
   BarChart3, 
   MessageSquare,
-  CheckCircle
+  CheckCircle,
+  Code,
+  Server
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -68,6 +70,8 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
   const [error, setError] = useState<string | null>(null);
   const [jsonString, setJsonString] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  const [selectedEndpointIndex, setSelectedEndpointIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("overview");
   
   const router = useRouter();
   const { navigateTo } = useNavigation();
@@ -97,7 +101,17 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
         const templateId = params.id;
         const data = await getTemplateById(templateId);
         setTemplate(data as TemplateDetail);
+        
+        // Set initial JSON string to the full template_data
         setJsonString(JSON.stringify(data.template_data, null, 2));
+        
+        // If there are endpoints, set the first endpoint's response as the initial JSON
+        if (data.template_data?.endpoints && data.template_data.endpoints.length > 0) {
+          const firstEndpoint = data.template_data.endpoints[0];
+          if (firstEndpoint.response) {
+            setJsonString(JSON.stringify(firstEndpoint.response, null, 2));
+          }
+        }
       } catch (err: any) {
         setError(err.message || "Unknown error");
       } finally {
@@ -122,6 +136,31 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
     if (template) {
       navigateTo(`/builder?templateId=${template.id}`);
     }
+  };
+
+  const handleSelectEndpoint = (index: number) => {
+    if (template?.template_data?.endpoints && template.template_data.endpoints[index]) {
+      setSelectedEndpointIndex(index);
+      const endpoint = template.template_data.endpoints[index];
+      if (endpoint.response) {
+        setJsonString(JSON.stringify(endpoint.response, null, 2));
+      } else {
+        setJsonString("{}");
+      }
+    }
+  };
+
+  // Get the currently selected endpoint
+  const selectedEndpoint = template?.template_data?.endpoints?.[selectedEndpointIndex];
+
+  // Method colors for badges
+  const methodColors: Record<string, string> = {
+    "GET": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    "POST": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    "PUT": "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+    "DELETE": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    "PATCH": "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    "default": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
   };
 
   if (loading) 
@@ -214,6 +253,9 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
   const CategoryIcon = categoryIcons[template.category] || categoryIcons.default;
   const categoryColor = categoryColors[template.category] || categoryColors.default;
 
+  // Count the number of endpoints in the template
+  const endpointCount = template.template_data?.endpoints?.length || 0;
+
   return (
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
@@ -249,6 +291,10 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                         Private
                       </Badge>
                     )}
+                    <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                      <Server className="h-3 w-3 mr-1" />
+                      {endpointCount} {endpointCount === 1 ? 'Endpoint' : 'Endpoints'}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -295,226 +341,493 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
             )}
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Template Metadata */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6"
-            >
-              {/* Template Info Card */}
-              <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-500" />
-                    Template Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Usage Count</h3>
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4 text-blue-500" />
-                        <span className={`text-lg font-semibold ${themeColors.text}`}>{template.usage_count}</span>
+          {/* Main Content Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className={themeColors.tabsBg}>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="endpoints">Endpoints ({endpointCount})</TabsTrigger>
+              <TabsTrigger value="responses">Responses</TabsTrigger>
+            </TabsList>
+
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Template Metadata */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-6"
+                >
+                  {/* Template Info Card */}
+                  <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        Template Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Usage Count</h3>
+                          <div className="flex items-center gap-2">
+                            <Eye className="h-4 w-4 text-blue-500" />
+                            <span className={`text-lg font-semibold ${themeColors.text}`}>{template.usage_count}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Visibility</h3>
+                          <div className="flex items-center gap-2">
+                            {template.is_public ? (
+                              <>
+                                <Globe className="h-4 w-4 text-green-500" />
+                                <span className={`${themeColors.text}`}>Public</span>
+                              </>
+                            ) : (
+                              <>
+                                <Lock className="h-4 w-4 text-amber-500" />
+                                <span className={`${themeColors.text}`}>Private</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Visibility</h3>
-                      <div className="flex items-center gap-2">
-                        {template.is_public ? (
+                      
+                      <Separator />
+                      
+                      <div>
+                        <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Created</h3>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-purple-500" />
+                          <span className={`${themeColors.text}`}>
+                            {new Date(template.created_at).toLocaleDateString(undefined, {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {template.updated_at && (
+                        <div>
+                          <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Last Updated</h3>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-amber-500" />
+                            <span className={`${themeColors.text}`}>
+                              {new Date(template.updated_at).toLocaleDateString(undefined, {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {template.created_by && (
+                        <div>
+                          <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Created By</h3>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-indigo-500" />
+                            <span className={`${themeColors.text}`}>User ID: {template.created_by}</span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Tags Card */}
+                  <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-green-500" />
+                        Tags
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {template.tags.length > 0 ? (
+                          template.tags.map((tag) => (
+                            <Badge 
+                              key={tag} 
+                              variant="secondary"
+                              className="text-xs py-1"
+                            >
+                              {tag}
+                            </Badge>
+                          ))
+                        ) : (
+                          <p className={`text-sm ${themeColors.textMuted}`}>No tags available</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Quick Actions */}
+                  <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-amber-500" />
+                        Quick Actions
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button 
+                        className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+                        onClick={handleUseTemplate}
+                      >
+                        <Zap className="h-4 w-4" />
+                        Use in Builder
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full gap-2"
+                        onClick={handleCopyJson}
+                      >
+                        {copied ? (
                           <>
-                            <Globe className="h-4 w-4 text-green-500" />
-                            <span className={`${themeColors.text}`}>Public</span>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            Copied!
                           </>
                         ) : (
                           <>
-                            <Lock className="h-4 w-4 text-amber-500" />
-                            <span className={`${themeColors.text}`}>Private</span>
+                            <Copy className="h-4 w-4" />
+                            Copy JSON
                           </>
                         )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Created</h3>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-500" />
-                      <span className={`${themeColors.text}`}>
-                        {new Date(template.created_at).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {template.updated_at && (
-                    <div>
-                      <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Last Updated</h3>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-amber-500" />
-                        <span className={`${themeColors.text}`}>
-                          {new Date(template.updated_at).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {template.created_by && (
-                    <div>
-                      <h3 className={`text-sm font-medium ${themeColors.textMuted} mb-1`}>Created By</h3>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-indigo-500" />
-                        <span className={`${themeColors.text}`}>User ID: {template.created_by}</span>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {/* Tags Card */}
-              <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-green-500" />
-                    Tags
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {template.tags.length > 0 ? (
-                      template.tags.map((tag) => (
-                        <Badge 
-                          key={tag} 
-                          variant="secondary"
-                          className="text-xs py-1"
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full gap-2"
+                        onClick={() => navigateTo(`/templates`)}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Templates
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+                
+                {/* Right Column - Template Data Preview */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="lg:col-span-2"
+                >
+                  <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-blue-500" />
+                          Template Data
+                        </CardTitle>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleCopyJson}
+                          className="gap-2"
                         >
-                          {tag}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className={`text-sm ${themeColors.textMuted}`}>No tags available</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Quick Actions */}
+                          {copied ? (
+                            <>
+                              <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <CardDescription>
+                        Preview the template data structure that will be used to create your mock API.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <MonacoJsonEditor
+                          value={jsonString}
+                          onChange={setJsonString}
+                          height="500px"
+                          readOnly={true}
+                          showToolbar={true}
+                        />
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-0">
+                      <Button 
+                        onClick={handleUseTemplate}
+                        className="gap-2 bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Zap className="h-4 w-4" />
+                        Use This Template
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              </div>
+            </TabsContent>
+
+            {/* Endpoints Tab */}
+            <TabsContent value="endpoints" className="space-y-6">
               <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
-                <CardHeader className="pb-3">
+                <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-500" />
-                    Quick Actions
+                    <Server className="h-4 w-4 text-blue-500" />
+                    Available Endpoints
                   </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
-                    onClick={handleUseTemplate}
-                  >
-                    <Zap className="h-4 w-4" />
-                    Use in Builder
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full gap-2"
-                    onClick={handleCopyJson}
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        Copy JSON
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full gap-2"
-                    onClick={() => navigateTo(`/templates`)}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Templates
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-            
-            {/* Right Column - Template Data Preview */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="lg:col-span-2"
-            >
-              <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-500" />
-                      Template Data
-                    </CardTitle>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleCopyJson}
-                      className="gap-2"
-                    >
-                      {copied ? (
-                        <>
-                          <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3.5 w-3.5" />
-                          Copy
-                        </>
-                      )}
-                    </Button>
-                  </div>
                   <CardDescription>
-                    Preview the template data structure that will be used to create your mock API.
+                    This template includes {endpointCount} {endpointCount === 1 ? 'endpoint' : 'endpoints'} that you can use in your mock API.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <MonacoJsonEditor
-                      value={jsonString}
-                      onChange={setJsonString}
-                      height="500px"
-                      readOnly={true}
-                      showToolbar={true}
-                    />
-                  </div>
+                  {template.template_data?.endpoints && template.template_data.endpoints.length > 0 ? (
+                    <div className="space-y-4">
+                      {template.template_data.endpoints.map((endpoint, index) => {
+                        const methodColor = methodColors[endpoint.method || 'default'] || methodColors.default;
+                        
+                        return (
+                          <Card 
+                            key={index} 
+                            className={`${themeColors.cardBg} ${themeColors.cardBorder} ${themeColors.cardHover} transition-all duration-200 overflow-hidden`}
+                          >
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Badge className={methodColor}>
+                                    {endpoint.method || 'GET'}
+                                  </Badge>
+                                  <span className={`font-mono text-sm ${themeColors.text}`}>
+                                    {endpoint.endpoint || '/api/endpoint'}
+                                  </span>
+                                </div>
+                                <Badge variant="outline">
+                                  Status: {endpoint.status_code || 200}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="pb-3">
+                              {endpoint.description && (
+                                <p className={`text-sm ${themeColors.textSecondary} mb-3`}>
+                                  {endpoint.description}
+                                </p>
+                              )}
+                              
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                  {endpoint.delay_ms && (
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3 text-amber-500" />
+                                      <span className={`text-xs ${themeColors.textMuted}`}>
+                                        {endpoint.delay_ms}ms delay
+                                      </span>
+                                    </div>
+                                  )}
+                                  
+                                  {endpoint.headers && Object.keys(endpoint.headers).length > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      <Code className="h-3 w-3 text-purple-500" />
+                                      <span className={`text-xs ${themeColors.textMuted}`}>
+                                        {Object.keys(endpoint.headers).length} {Object.keys(endpoint.headers).length === 1 ? 'header' : 'headers'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setSelectedEndpointIndex(index);
+                                    setActiveTab("responses");
+                                  }}
+                                  className="text-xs h-7 px-2"
+                                >
+                                  View Response
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                      <h3 className={`text-lg font-semibold ${themeColors.text} mb-2`}>No Endpoints Found</h3>
+                      <p className={`${themeColors.textSecondary}`}>
+                        This template doesn't contain any endpoint definitions.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
-                <CardFooter className="pt-0">
-                  <Button 
-                    onClick={handleUseTemplate}
-                    className="gap-2 bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Zap className="h-4 w-4" />
-                    Use This Template
-                  </Button>
-                </CardFooter>
               </Card>
-            </motion.div>
-          </div>
+            </TabsContent>
+
+            {/* Responses Tab */}
+            <TabsContent value="responses" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Endpoint List */}
+                <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Server className="h-4 w-4 text-blue-500" />
+                      Endpoints
+                    </CardTitle>
+                    <CardDescription>
+                      Select an endpoint to view its response
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <ScrollbarContainer maxHeight="400px" theme={actualTheme === 'light' ? 'light' : 'dark'}>
+                      <div className="p-3 space-y-1">
+                        {template.template_data?.endpoints && template.template_data.endpoints.length > 0 ? (
+                          template.template_data.endpoints.map((endpoint, index) => {
+                            const methodColor = methodColors[endpoint.method || 'default'] || methodColors.default;
+                            const isSelected = index === selectedEndpointIndex;
+                            
+                            return (
+                              <div 
+                                key={index}
+                                onClick={() => handleSelectEndpoint(index)}
+                                className={`p-3 rounded-md cursor-pointer transition-colors ${
+                                  isSelected 
+                                    ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
+                                    : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border border-transparent'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Badge className={methodColor}>
+                                    {endpoint.method || 'GET'}
+                                  </Badge>
+                                  <span className={`font-mono text-sm ${themeColors.text} truncate`}>
+                                    {endpoint.endpoint || '/api/endpoint'}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                  <Badge variant="outline" className="text-xs h-5">
+                                    {endpoint.status_code || 200}
+                                  </Badge>
+                                  {endpoint.delay_ms && (
+                                    <span className={`${themeColors.textMuted} text-xs`}>
+                                      {endpoint.delay_ms}ms
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="text-center py-8">
+                            <p className={`${themeColors.textMuted}`}>
+                              No endpoints available
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </ScrollbarContainer>
+                  </CardContent>
+                </Card>
+
+                {/* Right Column - Response Viewer */}
+                <Card className={`lg:col-span-2 ${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Code className="h-4 w-4 text-purple-500" />
+                          Response Preview
+                        </CardTitle>
+                        {selectedEndpoint && (
+                          <CardDescription>
+                            {selectedEndpoint.method || 'GET'} {selectedEndpoint.endpoint || '/api/endpoint'} ({selectedEndpoint.status_code || 200})
+                          </CardDescription>
+                        )}
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleCopyJson}
+                        className="gap-2"
+                      >
+                        {copied ? (
+                          <>
+                            <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" />
+                            Copy
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedEndpoint ? (
+                      <div className="rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <MonacoJsonEditor
+                          value={jsonString}
+                          onChange={setJsonString}
+                          height="400px"
+                          readOnly={true}
+                          showToolbar={true}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                        <h3 className={`text-lg font-semibold ${themeColors.text} mb-2`}>No Endpoint Selected</h3>
+                        <p className={`${themeColors.textSecondary}`}>
+                          Select an endpoint from the list to view its response.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    {selectedEndpoint && (
+                      <div className="w-full">
+                        <Separator className="mb-3" />
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            {selectedEndpoint.headers && Object.keys(selectedEndpoint.headers).length > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Code className="h-3 w-3 text-purple-500" />
+                                <span className={`text-xs ${themeColors.textMuted}`}>
+                                  {Object.keys(selectedEndpoint.headers).length} {Object.keys(selectedEndpoint.headers).length === 1 ? 'header' : 'headers'}
+                                </span>
+                              </div>
+                            )}
+                            {selectedEndpoint.delay_ms && (
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3 text-amber-500" />
+                                <span className={`text-xs ${themeColors.textMuted}`}>
+                                  {selectedEndpoint.delay_ms}ms delay
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <Button 
+                            onClick={handleUseTemplate}
+                            size="sm"
+                            className="gap-2"
+                          >
+                            <Zap className="h-3 w-3" />
+                            Use Template
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </SidebarLayout>

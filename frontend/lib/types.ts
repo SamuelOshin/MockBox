@@ -82,6 +82,7 @@ export interface Template {
   usage_count: number;
 }
 
+// Enhanced TemplateDetail interface with better typing for template_data
 export interface TemplateDetail extends Template {
   template_data: {
     endpoints?: Array<{
@@ -91,6 +92,7 @@ export interface TemplateDetail extends Template {
       headers?: Record<string, string>;
       status_code?: number;
       delay_ms?: number;
+      description?: string;
     }>;
     [key: string]: any;
   };
