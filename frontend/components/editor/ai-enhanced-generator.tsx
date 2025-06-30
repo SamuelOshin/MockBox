@@ -560,7 +560,7 @@ export function AIEnhancedGenerator({
                   <Label htmlFor="method" className="text-xs font-medium">HTTP Method</Label>
                   <Select
                     value={formData.method}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, method: value }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, method: value as HTTPMethod }))}
                   >
                     <SelectTrigger className="h-9">
                       <SelectValue />
