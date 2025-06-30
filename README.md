@@ -1,6 +1,6 @@
 # 🚀 MockBox - Professional API Mocking Platform
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/SamuelOshin/MockBox)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/SamuelOshin/MockBox)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Backend](https://img.shields.io/badge/backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
 [![Frontend](https://img.shields.io/badge/frontend-Next.js%2015-000000.svg)](https://nextjs.org/)
