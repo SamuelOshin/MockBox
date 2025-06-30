@@ -93,6 +93,14 @@ export interface TemplateDetail extends Template {
       status_code?: number;
       delay_ms?: number;
       description?: string;
+      // Add support for multiple responses
+      responses?: Array<{
+        response: any;
+        status_code: number;
+        headers?: Record<string, string>;
+        delay_ms?: number;
+        description?: string;
+      }>;
     }>;
     [key: string]: any;
   };

@@ -64,6 +64,16 @@ const categoryColors: Record<string, string> = {
   "default": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
 };
 
+// Status code colors for visual distinction
+const statusCodeColors: Record<string, string> = {
+  "2xx": "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  "3xx": "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  "4xx": "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  "5xx": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+  // Fallback for unknown status codes
+  "default": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+};
+
 export default function TemplateDetailPage({ params }: { params: { id: string } }) {
   const [template, setTemplate] = useState<TemplateDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +81,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
   const [jsonString, setJsonString] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [selectedEndpointIndex, setSelectedEndpointIndex] = useState(0);
+  const [selectedResponseIndex, setSelectedResponseIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("overview");
   
   const router = useRouter();
@@ -105,10 +116,17 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
         // Set initial JSON string to the full template_data
         setJsonString(JSON.stringify(data.template_data, null, 2));
         
-        // If there are endpoints, set the first endpoint's response as the initial JSON
+        // If there are endpoints with responses, set the first response of the first endpoint as the initial JSON
         if (data.template_data?.endpoints && data.template_data.endpoints.length > 0) {
           const firstEndpoint = data.template_data.endpoints[0];
-          if (firstEndpoint.response) {
+          
+          // Check if the endpoint has a responses array
+          if (firstEndpoint.responses && firstEndpoint.responses.length > 0) {
+            // Use the first response in the responses array
+            setJsonString(JSON.stringify(firstEndpoint.responses[0].response, null, 2));
+          } 
+          // Fallback to the direct response property if it exists
+          else if (firstEndpoint.response) {
             setJsonString(JSON.stringify(firstEndpoint.response, null, 2));
           }
         }
@@ -141,8 +159,17 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
   const handleSelectEndpoint = (index: number) => {
     if (template?.template_data?.endpoints && template.template_data.endpoints[index]) {
       setSelectedEndpointIndex(index);
+      setSelectedResponseIndex(0); // Reset to first response when changing endpoints
+      
       const endpoint = template.template_data.endpoints[index];
-      if (endpoint.response) {
+      
+      // Check if the endpoint has a responses array
+      if (endpoint.responses && endpoint.responses.length > 0) {
+        // Use the first response in the responses array
+        setJsonString(JSON.stringify(endpoint.responses[0].response, null, 2));
+      } 
+      // Fallback to the direct response property if it exists
+      else if (endpoint.response) {
         setJsonString(JSON.stringify(endpoint.response, null, 2));
       } else {
         setJsonString("{}");
@@ -150,8 +177,36 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
     }
   };
 
+  const handleSelectResponse = (endpointIndex: number, responseIndex: number) => {
+    if (template?.template_data?.endpoints && 
+        template.template_data.endpoints[endpointIndex] && 
+        template.template_data.endpoints[endpointIndex].responses && 
+        template.template_data.endpoints[endpointIndex].responses![responseIndex]) {
+      
+      setSelectedEndpointIndex(endpointIndex);
+      setSelectedResponseIndex(responseIndex);
+      
+      const response = template.template_data.endpoints[endpointIndex].responses![responseIndex].response;
+      setJsonString(JSON.stringify(response, null, 2));
+    }
+  };
+
   // Get the currently selected endpoint
   const selectedEndpoint = template?.template_data?.endpoints?.[selectedEndpointIndex];
+  
+  // Get the responses for the selected endpoint
+  const selectedEndpointResponses = selectedEndpoint?.responses || [];
+  
+  // If the endpoint has a direct response property but no responses array, create a virtual responses array
+  const virtualResponses = selectedEndpoint && !selectedEndpoint.responses && selectedEndpoint.response 
+    ? [{ response: selectedEndpoint.response, status_code: selectedEndpoint.status_code || 200 }] 
+    : [];
+  
+  // Combined responses (either from the responses array or the virtual one)
+  const responses = selectedEndpointResponses.length > 0 ? selectedEndpointResponses : virtualResponses;
+  
+  // Get the currently selected response
+  const selectedResponse = responses[selectedResponseIndex];
 
   // Method colors for badges
   const methodColors: Record<string, string> = {
@@ -161,6 +216,18 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
     "DELETE": "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
     "PATCH": "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
     "default": "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300"
+  };
+
+  // Get status code color based on the first digit
+  const getStatusCodeColor = (statusCode: number): string => {
+    const firstDigit = Math.floor(statusCode / 100);
+    switch (firstDigit) {
+      case 2: return statusCodeColors["2xx"];
+      case 3: return statusCodeColors["3xx"];
+      case 4: return statusCodeColors["4xx"];
+      case 5: return statusCodeColors["5xx"];
+      default: return statusCodeColors["default"];
+    }
   };
 
   if (loading) 
@@ -256,6 +323,16 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
   // Count the number of endpoints in the template
   const endpointCount = template.template_data?.endpoints?.length || 0;
 
+  // Count total responses across all endpoints
+  const totalResponses = template.template_data?.endpoints?.reduce((count, endpoint) => {
+    if (endpoint.responses && endpoint.responses.length > 0) {
+      return count + endpoint.responses.length;
+    } else if (endpoint.response) {
+      return count + 1;
+    }
+    return count;
+  }, 0) || 0;
+
   return (
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
@@ -295,6 +372,12 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                       <Server className="h-3 w-3 mr-1" />
                       {endpointCount} {endpointCount === 1 ? 'Endpoint' : 'Endpoints'}
                     </Badge>
+                    {totalResponses > 0 && (
+                      <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                        <Code className="h-3 w-3 mr-1" />
+                        {totalResponses} {totalResponses === 1 ? 'Response' : 'Responses'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -346,7 +429,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
             <TabsList className={themeColors.tabsBg}>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="endpoints">Endpoints ({endpointCount})</TabsTrigger>
-              <TabsTrigger value="responses">Responses</TabsTrigger>
+              <TabsTrigger value="responses">Responses ({totalResponses})</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -590,6 +673,9 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                       {template.template_data.endpoints.map((endpoint, index) => {
                         const methodColor = methodColors[endpoint.method || 'default'] || methodColors.default;
                         
+                        // Count responses for this endpoint
+                        const responseCount = endpoint.responses?.length || (endpoint.response ? 1 : 0);
+                        
                         return (
                           <Card 
                             key={index} 
@@ -605,8 +691,9 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                                     {endpoint.endpoint || '/api/endpoint'}
                                   </span>
                                 </div>
-                                <Badge variant="outline">
-                                  Status: {endpoint.status_code || 200}
+                                <Badge variant="outline" className="flex items-center gap-1">
+                                  <Code className="h-3 w-3 mr-1" />
+                                  {responseCount} {responseCount === 1 ? 'Response' : 'Responses'}
                                 </Badge>
                               </div>
                             </CardHeader>
@@ -643,11 +730,12 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                                   size="sm" 
                                   onClick={() => {
                                     setSelectedEndpointIndex(index);
+                                    setSelectedResponseIndex(0);
                                     setActiveTab("responses");
                                   }}
                                   className="text-xs h-7 px-2"
                                 >
-                                  View Response
+                                  View Responses
                                 </Button>
                               </div>
                             </CardContent>
@@ -679,7 +767,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                       Endpoints
                     </CardTitle>
                     <CardDescription>
-                      Select an endpoint to view its response
+                      Select an endpoint to view its responses
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -689,6 +777,9 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                           template.template_data.endpoints.map((endpoint, index) => {
                             const methodColor = methodColors[endpoint.method || 'default'] || methodColors.default;
                             const isSelected = index === selectedEndpointIndex;
+                            
+                            // Count responses for this endpoint
+                            const responseCount = endpoint.responses?.length || (endpoint.response ? 1 : 0);
                             
                             return (
                               <div 
@@ -709,8 +800,9 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs">
-                                  <Badge variant="outline" className="text-xs h-5">
-                                    {endpoint.status_code || 200}
+                                  <Badge variant="outline" className="text-xs h-5 flex items-center gap-1">
+                                    <Code className="h-3 w-3" />
+                                    {responseCount}
                                   </Badge>
                                   {endpoint.delay_ms && (
                                     <span className={`${themeColors.textMuted} text-xs`}>
@@ -734,97 +826,143 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                 </Card>
 
                 {/* Right Column - Response Viewer */}
-                <Card className={`lg:col-span-2 ${themeColors.cardBg} ${themeColors.cardBorder}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div>
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Status Code Selector */}
+                  {selectedEndpoint && responses.length > 0 && (
+                    <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                      <CardHeader className="pb-3">
                         <CardTitle className="text-lg flex items-center gap-2">
                           <Code className="h-4 w-4 text-purple-500" />
-                          Response Preview
+                          Status Codes
                         </CardTitle>
-                        {selectedEndpoint && (
-                          <CardDescription>
-                            {selectedEndpoint.method || 'GET'} {selectedEndpoint.endpoint || '/api/endpoint'} ({selectedEndpoint.status_code || 200})
-                          </CardDescription>
-                        )}
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={handleCopyJson}
-                        className="gap-2"
-                      >
-                        {copied ? (
-                          <>
-                            <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5" />
-                            Copy
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedEndpoint ? (
-                      <div className="rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
-                        <MonacoJsonEditor
-                          value={jsonString}
-                          onChange={setJsonString}
-                          height="400px"
-                          readOnly={true}
-                          showToolbar={true}
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                        <h3 className={`text-lg font-semibold ${themeColors.text} mb-2`}>No Endpoint Selected</h3>
-                        <p className={`${themeColors.textSecondary}`}>
-                          Select an endpoint from the list to view its response.
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="pt-0">
-                    {selectedEndpoint && (
-                      <div className="w-full">
-                        <Separator className="mb-3" />
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-4">
-                            {selectedEndpoint.headers && Object.keys(selectedEndpoint.headers).length > 0 && (
-                              <div className="flex items-center gap-1">
-                                <Code className="h-3 w-3 text-purple-500" />
-                                <span className={`text-xs ${themeColors.textMuted}`}>
-                                  {Object.keys(selectedEndpoint.headers).length} {Object.keys(selectedEndpoint.headers).length === 1 ? 'header' : 'headers'}
-                                </span>
-                              </div>
-                            )}
-                            {selectedEndpoint.delay_ms && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 text-amber-500" />
-                                <span className={`text-xs ${themeColors.textMuted}`}>
-                                  {selectedEndpoint.delay_ms}ms delay
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <Button 
-                            onClick={handleUseTemplate}
-                            size="sm"
-                            className="gap-2"
-                          >
-                            <Zap className="h-3 w-3" />
-                            Use Template
-                          </Button>
+                        <CardDescription>
+                          Select a status code to view its response
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {responses.map((response, index) => {
+                            const isSelected = index === selectedResponseIndex;
+                            const statusCode = response.status_code || 200;
+                            const statusCodeColor = getStatusCodeColor(statusCode);
+                            
+                            return (
+                              <Button
+                                key={index}
+                                variant={isSelected ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handleSelectResponse(selectedEndpointIndex, index)}
+                                className={`${isSelected ? 'bg-blue-600 text-white' : statusCodeColor} h-8`}
+                              >
+                                {statusCode}
+                              </Button>
+                            );
+                          })}
                         </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Response Viewer */}
+                  <Card className={`${themeColors.cardBg} ${themeColors.cardBorder}`}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Code className="h-4 w-4 text-purple-500" />
+                            Response Preview
+                          </CardTitle>
+                          {selectedEndpoint && selectedResponse && (
+                            <CardDescription>
+                              {selectedEndpoint.method || 'GET'} {selectedEndpoint.endpoint || '/api/endpoint'} ({selectedResponse.status_code || 200})
+                            </CardDescription>
+                          )}
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleCopyJson}
+                          className="gap-2"
+                        >
+                          {copied ? (
+                            <>
+                              <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    )}
-                  </CardFooter>
-                </Card>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedEndpoint && selectedResponse ? (
+                        <div className="rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
+                          <MonacoJsonEditor
+                            value={jsonString}
+                            onChange={setJsonString}
+                            height="400px"
+                            readOnly={true}
+                            showToolbar={true}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                          <h3 className={`text-lg font-semibold ${themeColors.text} mb-2`}>No Response Selected</h3>
+                          <p className={`${themeColors.textSecondary}`}>
+                            {!selectedEndpoint 
+                              ? "Select an endpoint from the list to view its responses." 
+                              : "This endpoint doesn't have any responses defined."}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="pt-0">
+                      {selectedEndpoint && selectedResponse && (
+                        <div className="w-full">
+                          <Separator className="mb-3" />
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              {selectedResponse.headers && Object.keys(selectedResponse.headers).length > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <Code className="h-3 w-3 text-purple-500" />
+                                  <span className={`text-xs ${themeColors.textMuted}`}>
+                                    {Object.keys(selectedResponse.headers).length} {Object.keys(selectedResponse.headers).length === 1 ? 'header' : 'headers'}
+                                  </span>
+                                </div>
+                              )}
+                              {selectedResponse.delay_ms && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3 text-amber-500" />
+                                  <span className={`text-xs ${themeColors.textMuted}`}>
+                                    {selectedResponse.delay_ms}ms delay
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1">
+                                <Badge className={getStatusCodeColor(selectedResponse.status_code || 200)}>
+                                  {selectedResponse.status_code || 200}
+                                </Badge>
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={handleUseTemplate}
+                              size="sm"
+                              className="gap-2"
+                            >
+                              <Zap className="h-3 w-3" />
+                              Use Template
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardFooter>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
