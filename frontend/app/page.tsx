@@ -590,22 +590,13 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2">
-              <Sparkles className={`h-4 w-4 ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
-              <span className={`text-sm font-semibold ${
-                actualTheme === 'light'
-                  ? 'text-blue-700'
-                  : 'text-blue-300'
-              }`}>
-                New: AI-Powered Mock Generation
-              </span>
-            </div>
-            <Badge className={`ml-2 ${
+            <Sparkles className={`h-4 w-4 ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
+            <span className={`text-sm font-semibold ${
               actualTheme === 'light'
-                ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-indigo-700 border-indigo-200'
-                : 'bg-gradient-to-r from-purple-500/30 to-indigo-500/30 text-indigo-300 border-indigo-500/30'
+                ? 'text-blue-700'
+                : 'text-blue-300'
             }`}>
-              Hackathon Winner 🏆
+              New: AI-Powered Mock Generation
             </span>
           </motion.div>
 
@@ -684,7 +675,7 @@ export default function HomePage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <pre className={\`text-left text-sm font-mono ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'} overflow-x-auto`}>
+                <pre className={`text-left text-sm font-mono ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'} overflow-x-auto`}>
                   <code>{typedCode}</code>
                   <motion.span
                     className="inline-block w-2 h-5 bg-blue-400 ml-1"
@@ -710,10 +701,10 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className={\`text-5xl font-bold mb-6 ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
+            <h2 className={`text-5xl font-bold mb-6 ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
               Everything you need to mock APIs
             </h2>
-            <p className={\`text-xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} max-w-3xl mx-auto`}>
+            <p className={`text-xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} max-w-3xl mx-auto`}>
               Powerful features designed for modern development workflows
             </p>
           </motion.div>
@@ -730,19 +721,19 @@ export default function HomePage() {
                 }}
                 className="group will-change-transform"
               >
-                <Card className={\`h-full ${actualTheme === 'light' ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'} backdrop-blur-xl transition-all duration-200 overflow-hidden relative will-change-transform`}>
-                  <div className={\`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/50 to-transparent' : 'bg-gradient-to-br from-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <Card className={`h-full ${actualTheme === 'light' ? 'bg-white border-slate-200 hover:border-slate-300' : 'bg-black/20 border-white/10 hover:bg-black/30 hover:border-white/20'} backdrop-blur-xl transition-all duration-200 overflow-hidden relative will-change-transform`}>
+                  <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/50 to-transparent' : 'bg-gradient-to-br from-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
 
                   <CardHeader className="relative z-10">
-                    <div className={\`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-200 will-change-transform`}>
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-200 will-change-transform`}>
                       <feature.icon className="h-8 w-8 text-white" />
                     </div>
-                    <CardTitle className={\`text-xl ${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} group-hover:${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} transition-colors`}>
+                    <CardTitle className={`text-xl ${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} group-hover:${actualTheme === 'light' ? 'text-slate-900' : 'text-white'} transition-colors`}>
                       {feature.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <CardDescription className={\`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-base leading-relaxed`}>
+                    <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-base leading-relaxed`}>
                       {feature.description}
                     </CardDescription>
                   </CardContent>
@@ -760,7 +751,7 @@ export default function HomePage() {
           <WorldMapSVG />
         </div>
           {/* Subtle overlay to ensure readability */}
-        <div className={\`absolute inset-0 bg-gradient-to-b from-transparent ${actualTheme === 'light' ? 'via-slate-200/20' : 'via-black/20'} to-transparent`} />
+        <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${actualTheme === 'light' ? 'via-slate-200/20' : 'via-black/20'} to-transparent`} />
 
         <div className="container mx-auto relative z-10">
           <motion.div
@@ -772,11 +763,11 @@ export default function HomePage() {
           >
             <div className="flex items-center justify-center gap-3 mb-6">
               <Globe className="h-8 w-8 text-blue-400" />
-              <h2 className={\`text-5xl font-bold ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
+              <h2 className={`text-5xl font-bold ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
                 Loved by developers worldwide
               </h2>
             </div>
-            <p className={\`text-xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'}`}>Join 50,000+ developers building faster with MockBox</p>
+            <p className={`text-xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'}`}>Join 50,000+ developers building faster with MockBox</p>
 
             {/* Global stats */}
             <motion.div
@@ -802,7 +793,7 @@ export default function HomePage() {
           </motion.div>          {/* Auto-scrolling testimonials container */}
           <div className="relative overflow-hidden">
             <div
-              className={\`flex gap-6 testimonials-scroll ${isPaused ? 'paused' : ''}`}
+              className={`flex gap-6 testimonials-scroll ${isPaused ? 'paused' : ''}`}
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}
               style={{
@@ -814,7 +805,7 @@ export default function HomePage() {
 
                 return (
                   <motion.div
-                    key={\`first-${index}`}
+                    key={`first-${index}`}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -822,9 +813,9 @@ export default function HomePage() {
                     className="group will-change-transform flex-shrink-0"
                     style={{ width: '320px', height: '180px' }} // Fixed width and height for consistent cards
                   >
-                    <Card className={\`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform flex flex-col`}>
+                    <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform flex flex-col`}>
                       {/* Optimized gradient overlay */}
-                      <div className={\`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+                      <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
 
                       {/* Subtle border glow effect */}
                       <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
@@ -835,7 +826,7 @@ export default function HomePage() {
                             <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                           ))}
                         </div>
-                        <CardDescription className={\`text-sm ${theme.textSecondary} leading-snug font-medium overflow-hidden`} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                        <CardDescription className={`text-sm ${theme.textSecondary} leading-snug font-medium overflow-hidden`} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                           "{testimonial.content}"
                         </CardDescription>
                       </CardHeader>
@@ -853,10 +844,10 @@ export default function HomePage() {
                             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-current shadow-sm"></div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className={\`font-semibold ${theme.textPrimary} text-sm truncate`}>
+                            <div className={`font-semibold ${theme.textPrimary} text-sm truncate`}>
                               {testimonial.name}
                             </div>
-                            <div className={\`text-xs ${theme.accent} font-medium truncate`}>
+                            <div className={`text-xs ${theme.accent} font-medium truncate`}>
                               {testimonial.role} • {testimonial.company}
                             </div>
                           </div>
@@ -871,13 +862,13 @@ export default function HomePage() {
 
                 return (
                   <motion.div
-                    key={\`second-${index}`}
+                    key={`second-${index}`}
                     className="group will-change-transform flex-shrink-0"
                     style={{ width: '320px', height: '180px' }} // Fixed width and height for consistent cards
                   >
-                    <Card className={\`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform flex flex-col`}>
+                    <Card className={`h-full bg-gradient-to-br ${theme.background} ${theme.border} ${theme.hoverBorder} backdrop-blur-xl transition-all duration-200 relative overflow-hidden shadow-2xl will-change-transform flex flex-col`}>
                       {/* Optimized gradient overlay */}
-                      <div className={\`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+                      <div className={`absolute inset-0 ${actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50/30 to-transparent' : 'bg-gradient-to-br from-white/3 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
 
                       {/* Subtle border glow effect */}
                       <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-hover:opacity-20 transition-opacity duration-200" />
@@ -888,7 +879,7 @@ export default function HomePage() {
                             <Star key={i} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                           ))}
                         </div>
-                        <CardDescription className={\`text-sm ${theme.textSecondary} leading-snug font-medium overflow-hidden`} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                        <CardDescription className={`text-sm ${theme.textSecondary} leading-snug font-medium overflow-hidden`} style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                           "{testimonial.content}"
                         </CardDescription>
                       </CardHeader>
@@ -906,10 +897,10 @@ export default function HomePage() {
                             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-current shadow-sm"></div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className={\`font-semibold ${theme.textPrimary} text-sm truncate`}>
+                            <div className={`font-semibold ${theme.textPrimary} text-sm truncate`}>
                               {testimonial.name}
                             </div>
-                            <div className={\`text-xs ${theme.accent} font-medium truncate`}>
+                            <div className={`text-xs ${theme.accent} font-medium truncate`}>
                               {testimonial.role} • {testimonial.company}
                             </div>
                           </div>
@@ -959,10 +950,10 @@ export default function HomePage() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-        >          <h2 className={\`text-5xl font-bold mb-6 ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent'}`}>
+        >          <h2 className={`text-5xl font-bold mb-6 ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent'}`}>
             Ready to build the future?
           </h2>
-          <p className={\`text-xl mb-12 ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300'} max-w-2xl mx-auto`}>
+          <p className={`text-xl mb-12 ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300'} max-w-2xl mx-auto`}>
             Join thousands of developers who ship faster with MockBox. Start building your next project today.
           </p>
 
@@ -986,10 +977,10 @@ export default function HomePage() {
               <Button
                 variant="outline"
                 size="lg"
-                className={\`text-lg px-12 py-6 ${actualTheme === 'light' ? 'bg-slate-100/50 border-2 border-slate-300 text-slate-900 hover:bg-slate-200/70 hover:border-slate-400' : 'bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30'} backdrop-blur-md hover:shadow-lg transition-all duration-300 font-semibold relative overflow-hidden group`}
+                className={`text-lg px-12 py-6 ${actualTheme === 'light' ? 'bg-slate-100/50 border-2 border-slate-300 text-slate-900 hover:bg-slate-200/70 hover:border-slate-400' : 'bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30'} backdrop-blur-md hover:shadow-lg transition-all duration-300 font-semibold relative overflow-hidden group`}
               >
                 {/* Glass effect overlay */}
-                <div className={\`absolute inset-0 bg-gradient-to-r ${actualTheme === 'light' ? 'from-slate-200/30 via-slate-100/20 to-transparent' : 'from-white/10 via-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                <div className={`absolute inset-0 bg-gradient-to-r ${actualTheme === 'light' ? 'from-slate-200/30 via-slate-100/20 to-transparent' : 'from-white/10 via-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 <Github className="mr-2 h-5 w-5 relative z-10" />
                 <span className="relative z-10">View on GitHub</span>
               </Button>
@@ -997,7 +988,7 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
       </section>      {/* Footer */}
-      <footer className={\`border-t ${themeColors.border} py-16 px-4 ${actualTheme === 'light' ? 'bg-slate-50/50' : 'bg-black/20'} backdrop-blur-xl relative z-20`}>
+      <footer className={`border-t ${themeColors.border} py-16 px-4 ${actualTheme === 'light' ? 'bg-slate-50/50' : 'bg-black/20'} backdrop-blur-xl relative z-20`}>
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-12">
             <div>
@@ -1005,19 +996,19 @@ export default function HomePage() {
                 <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                   <span className="text-white font-bold text-sm">MB</span>
                 </div>
-                <span className={\`font-bold text-xl ${themeColors.text}`}>MockBox</span>
+                <span className={`font-bold text-xl ${themeColors.text}`}>MockBox</span>
               </Link>
-              <p className={\`${themeColors.textSecondary} leading-relaxed`}>
+              <p className={`${themeColors.textSecondary} leading-relaxed`}>
                 The most advanced API mocking platform for modern development teams.
               </p>
             </div>
 
             <div>
-              <h3 className={\`font-semibold mb-6 ${themeColors.text}`}>Product</h3>
-              <ul className={\`space-y-3 ${themeColors.textSecondary}`}>
+              <h3 className={`font-semibold mb-6 ${themeColors.text}`}>Product</h3>
+              <ul className={`space-y-3 ${themeColors.textSecondary}`}>
                 {["Features", "Pricing", "Documentation", "API Reference", "Templates"].map((item) => (
                   <li key={item}>
-                    <Link href="#" className={\`hover:${themeColors.text} transition-colors`}>
+                    <Link href="#" className={`hover:${themeColors.text} transition-colors`}>
                       {item}
                     </Link>
                   </li>
@@ -1026,11 +1017,11 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className={\`font-semibold mb-6 ${themeColors.text}`}>Company</h3>
-              <ul className={\`space-y-3 ${themeColors.textSecondary}`}>
+              <h3 className={`font-semibold mb-6 ${themeColors.text}`}>Company</h3>
+              <ul className={`space-y-3 ${themeColors.textSecondary}`}>
                 {["About", "Blog", "Careers", "Contact", "Privacy"].map((item) => (
                   <li key={item}>
-                    <Link href="#" className={\`hover:${themeColors.text} transition-colors`}>
+                    <Link href="#" className={`hover:${themeColors.text} transition-colors`}>
                       {item}
                     </Link>
                   </li>
@@ -1039,7 +1030,7 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h3 className={\`font-semibold mb-6 ${themeColors.text}`}>Connect</h3>
+              <h3 className={`font-semibold mb-6 ${themeColors.text}`}>Connect</h3>
               <div className="flex gap-4">
                 {[
                   { icon: Github, href: "#" },
@@ -1049,7 +1040,7 @@ export default function HomePage() {
                   <motion.a
                     key={index}
                     href={href}
-                    className={\`w-10 h-10 rounded-lg ${actualTheme === 'light' ? 'bg-slate-200/50 text-slate-600 hover:text-slate-900 hover:bg-slate-300/70' : 'bg-white/10 text-gray-400 hover:text-white hover:bg-white/20'} flex items-center justify-center transition-all`}
+                    className={`w-10 h-10 rounded-lg ${actualTheme === 'light' ? 'bg-slate-200/50 text-slate-600 hover:text-slate-900 hover:bg-slate-300/70' : 'bg-white/10 text-gray-400 hover:text-white hover:bg-white/20'} flex items-center justify-center transition-all`}
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -1060,7 +1051,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className={\`border-t ${themeColors.border} mt-12 pt-8 text-center ${themeColors.textSecondary}`}>
+          <div className={`border-t ${themeColors.border} mt-12 pt-8 text-center ${themeColors.textSecondary}`}>
             <p>&copy; 2024 MockBox. Built with ❤️ for developers worldwide.</p>          </div>
         </div>
       </footer>
@@ -1068,7 +1059,7 @@ export default function HomePage() {
       {/* Scroll to Top Button */}
       <motion.button
         onClick={scrollToTop}
-        className={\`fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${
+        className={`fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg transition-all duration-300 ${
           actualTheme === 'light'
             ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
             : 'bg-gray-900 border border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600'
