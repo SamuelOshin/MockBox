@@ -28,7 +28,7 @@ import { AIGeneratorModal } from "@/components/editor/ai-generator-modal"
 import { AIFloatingActionButton } from "@/components/editor/ai-floating-action-button"
 import { mockApi } from "@/lib/api"
 import { getTemplateById } from "@/lib/api"
-import { CreateMockRequest, TemplateDetail } from "@/lib/types"
+import { CreateMockRequest, TemplateDetail, HTTPMethod } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import {
   ArrowLeft,
@@ -56,7 +56,7 @@ export default function BuilderPage() {
     name: "",
     description: "",
     endpoint: "",
-    method: "GET",
+    method: "GET" as HTTPMethod,
     response: {},
     headers: {},
     status_code: 200,
@@ -187,7 +187,12 @@ export default function BuilderPage() {
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData(prev => ({ ...prev, [name]: value }))
+    if (name === "method") {
+      // Ensure method is properly typed as HTTPMethod
+      setFormData(prev => ({ ...prev, [name]: value as HTTPMethod }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSwitchChange = (checked: boolean) => {

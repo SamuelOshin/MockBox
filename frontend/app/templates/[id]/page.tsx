@@ -199,7 +199,12 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
   
   // If the endpoint has a direct response property but no responses array, create a virtual responses array
   const virtualResponses = selectedEndpoint && !selectedEndpoint.responses && selectedEndpoint.response 
-    ? [{ response: selectedEndpoint.response, status_code: selectedEndpoint.status_code || 200 }] 
+    ? [{ 
+        response: selectedEndpoint.response, 
+        status_code: selectedEndpoint.status_code || 200,
+        headers: selectedEndpoint.headers || {},
+        delay_ms: selectedEndpoint.delay_ms
+      }] 
     : [];
   
   // Combined responses (either from the responses array or the virtual one)
@@ -927,11 +932,11 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                           <Separator className="mb-3" />
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
-                              {selectedResponse.headers && Object.keys(selectedResponse.headers).length > 0 && (
+                              {selectedResponse.headers && Object.keys(selectedResponse.headers || {}).length > 0 && (
                                 <div className="flex items-center gap-1">
                                   <Code className="h-3 w-3 text-purple-500" />
                                   <span className={`text-xs ${themeColors.textMuted}`}>
-                                    {Object.keys(selectedResponse.headers).length} {Object.keys(selectedResponse.headers).length === 1 ? 'header' : 'headers'}
+                                    {Object.keys(selectedResponse.headers || {}).length} {Object.keys(selectedResponse.headers || {}).length === 1 ? 'header' : 'headers'}
                                   </span>
                                 </div>
                               )}
@@ -939,7 +944,7 @@ export default function TemplateDetailPage({ params }: { params: { id: string } 
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-3 w-3 text-amber-500" />
                                   <span className={`text-xs ${themeColors.textMuted}`}>
-                                    {selectedResponse.delay_ms}ms delay
+                                    {selectedResponse.delay_ms || 0}ms delay
                                   </span>
                                 </div>
                               )}

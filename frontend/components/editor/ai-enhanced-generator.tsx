@@ -45,13 +45,14 @@ import {
 import { toast } from 'sonner'
 import { useAIGeneration } from '@/hooks/use-ai-generation'
 import { cn } from '@/lib/utils'
+import { HTTPMethod } from '@/lib/types'
 
 interface AIEnhancedGeneratorProps {
   onMockGenerated?: (mockData: any) => void
   onMockSaved?: (mock: any) => void
   onResponseGenerated?: (response: string) => void
   initialEndpoint?: string
-  initialMethod?: string
+  initialMethod?: HTTPMethod
   className?: string
   isMinimized?: boolean
   onToggleMinimize?: () => void

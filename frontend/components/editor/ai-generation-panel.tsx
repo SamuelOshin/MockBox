@@ -26,12 +26,13 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAIGeneration } from '@/hooks/use-ai-generation'
+import { HTTPMethod } from '@/lib/types'
 
 interface AIGenerationPanelProps {
   onMockGenerated?: (mockData: any) => void
   onMockSaved?: (mock: any) => void
   initialEndpoint?: string
-  initialMethod?: string
+  initialMethod?: HTTPMethod
   className?: string
 }
 

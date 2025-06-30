@@ -1,10 +1,13 @@
+// Export HTTPMethod type for reuse
+export type HTTPMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+
 export interface MockEndpoint {
   id: string
   user_id: string
   name: string
   description?: string | null
   endpoint: string
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS"
+  method: HTTPMethod
   response: any
   headers: Record<string, string>
   status_code: number
@@ -49,7 +52,7 @@ export interface CreateMockRequest {
   name: string
   description?: string
   endpoint: string
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS"
+  method: HTTPMethod
   response: any
   headers?: Record<string, string>
   status_code: number
@@ -87,7 +90,7 @@ export interface TemplateDetail extends Template {
   template_data: {
     endpoints?: Array<{
       endpoint?: string;
-      method?: string;
+      method?: HTTPMethod;
       response?: any;
       headers?: Record<string, string>;
       status_code?: number;
