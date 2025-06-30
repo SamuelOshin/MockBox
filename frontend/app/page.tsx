@@ -590,22 +590,13 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2">
-              <Sparkles className={`h-4 w-4 ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
-              <span className={`text-sm font-semibold ${
-                actualTheme === 'light'
-                  ? 'text-blue-700'
-                  : 'text-blue-300'
-              }`}>
-                New: AI-Powered Mock Generation
-              </span>
-            </div>
-            <Badge className={`ml-2 ${
+            <Sparkles className={`h-4 w-4 ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
+            <span className={`text-sm font-semibold ${
               actualTheme === 'light'
-                ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-indigo-700 border-indigo-200'
-                : 'bg-gradient-to-r from-purple-500/30 to-indigo-500/30 text-indigo-300 border-indigo-500/30'
+                ? 'text-blue-700'
+                : 'text-blue-300'
             }`}>
-              Hackathon Winner 🏆
+              New: AI-Powered Mock Generation
             </span>
           </motion.div>
 
