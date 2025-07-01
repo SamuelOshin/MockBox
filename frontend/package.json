@@ -1,12 +1,11 @@
 {
   "name": "mockbox-app",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
+  "private": true,  "scripts": {
+    "dev": "next dev -p 3000",
     "build": "next build",
     "start": "npx serve@latest out",
-    "start:dev": "next dev",
+    "start:dev": "next dev -p 3000",
     "start:server": "next start",
     "lint": "next lint"
   },

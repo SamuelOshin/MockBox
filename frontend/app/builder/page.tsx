@@ -1,227 +1,275 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import dynamic from "next/dynamic"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Header } from "@/components/layout/header"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
-import {
-  Play,
-  Copy,
-  Save,
-  Eye,
-  Settings,
-  Loader2,
-  CheckCircle,
-  AlertTriangle,
-  Globe,
-  Code,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Sparkles,
-  Zap
-} from "lucide-react"
-import { responseTemplates } from "@/lib/mock-data"
-import { mockApi } from "@/lib/api"
-import type { CreateMockRequest } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { BuilderPageSkeleton } from "@/components/ui/builder-skeleton"
-
-// Dynamically import components to avoid SSR issues
-const MonacoJsonEditor = dynamic(() => import("@/components/editor/monaco-json-editor"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] bg-gradient-to-br from-muted/50 to-muted rounded-lg flex items-center justify-center border">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-        Loading Monaco Editor...
-      </div>
-    </div>
-  ),
-})
-
-const JsonSnippets = dynamic(() => import("@/components/editor/json-snippets"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] bg-gradient-to-br from-muted/50 to-muted rounded-lg flex items-center justify-center border">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-        Loading Snippets...
-      </div>
-    </div>
-  ),
-})
-
-// Dynamically import AI components
+import MonacoJsonEditor from "@/components/editor/monaco-json-editor"
+import JsonSnippets from "@/components/editor/json-snippets"
+import { AISnippetWizard } from "@/components/editor/ai-snippet-wizard"
+import { AIGenerationPanel } from "@/components/editor/ai-generation-panel"
 import { AIGeneratorModal } from "@/components/editor/ai-generator-modal"
+import { AIFloatingActionButton } from "@/components/editor/ai-floating-action-button"
+import { mockApi } from "@/lib/api"
+import { getTemplateById } from "@/lib/api"
+import { CreateMockRequest, TemplateDetail, HTTPMethod } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import {
+  ArrowLeft,
+  Save,
+  Play,
+  Code,
+  Settings,
+  Zap,
+  Globe,
+  Lock,
+  Sparkles,
+  Loader2,
+  Copy,
+  Download,
+  Smartphone,
+  Tablet,
+  Monitor,
+  ExternalLink,
+  CheckCircle,
+  AlertTriangle
+} from "lucide-react"
 
-const AISnippetWizard = dynamic(() => import("@/components/editor/ai-snippet-wizard").then(m => ({ default: m.AISnippetWizard })), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[200px] bg-gradient-to-br from-muted/50 to-muted rounded-lg flex items-center justify-center border">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-        Loading AI Snippets...
-      </div>
-    </div>
-  ),
-})
-
-const AIFloatingActionButton = dynamic(() => import("@/components/editor/ai-floating-action-button").then(m => ({ default: m.AIFloatingActionButton })), {
-  ssr: false,
-})
-
-const httpMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"]
-const statusCodes = [
-  { value: "200", label: "200 - OK" },
-  { value: "201", label: "201 - Created" },
-  { value: "400", label: "400 - Bad Request" },
-  { value: "401", label: "401 - Unauthorized" },
-  { value: "404", label: "404 - Not Found" },
-  { value: "500", label: "500 - Internal Server Error" },
-]
-
-export default function BuilderPage() {
-  const { actualTheme } = useTheme()
-  const [method, setMethod] = useState("GET")
-  const [path, setPath] = useState("/api/users")
-  const [statusCode, setStatusCode] = useState("200")
-  const [delay, setDelay] = useState([100])
-  const [isPublic, setIsPublic] = useState(true)
-  const [response, setResponse] = useState(JSON.stringify(responseTemplates.userList, null, 2))
-  const [mockName, setMockName] = useState("User List API")
+function BuilderPageContent() {
+  const [formData, setFormData] = useState<CreateMockRequest>({
+    name: "",
+    description: "",
+    endpoint: "",
+    method: "GET" as HTTPMethod,
+    response: {},
+    headers: {},
+    status_code: 200,
+    delay_ms: 0,
+    is_public: false,
+    tags: []
+  })
+  const [jsonString, setJsonString] = useState<string>("{}")
   const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [isTesting, setIsTesting] = useState(false)
-  const [isPublishing, setIsPublishing] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [jsonError, setJsonError] = useState<string | null>(null)
+  const [testResult, setTestResult] = useState<any>(null)
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop")
-  const [showAIModal, setShowAIModal] = useState(false)
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false)
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false)
+  const [templateLoadError, setTemplateLoadError] = useState<string | null>(null)
+  
   const { toast } = useToast()
-
-  const generatedUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/mock${path}`
-
-  // Simulate initial loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialLoading(false)
-    }, 1500) // Show skeleton for 1.5 seconds on initial load
-
-    return () => clearTimeout(timer)
-  }, [])
-
+  const { navigateTo } = useNavigation()
+  const { actualTheme } = useTheme()
+  const searchParams = useSearchParams()
+  
   // Theme-aware colors
   const themeColors = {
-    background: actualTheme === 'light'
-      ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100'
-      : 'bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A]',
+    background: actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100' : 'bg-gradient-to-br from-[#0A0A0A] via-[#111111] to-[#1A1A1A]',
     text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300',
+    textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-500',
     cardBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#1A1A1A] border-gray-800',
-    inputBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    cardHover: actualTheme === 'light' ? 'hover:bg-slate-50' : 'hover:bg-[#1F1F1F]',
     buttonBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300 hover:bg-slate-200' : 'bg-[#2D2D2D] border-gray-700 hover:bg-[#3A3A3A]',
-    selectBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    codeBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    codeText: actualTheme === 'light' ? 'text-slate-800' : 'text-gray-200',
     tabsBg: actualTheme === 'light' ? 'bg-slate-100' : 'bg-[#2D2D2D]',
     tabsActive: actualTheme === 'light' ? 'bg-white' : 'bg-[#3A3A3A]'
   }
 
-  // Enhanced JSON validation with better error messages
-  const validateJson = (jsonString: string) => {
-    try {
-      JSON.parse(jsonString)
-      setJsonError(null)
-      return true
-    } catch (error) {
-      let errorMessage = "Invalid JSON"
-      if (error instanceof SyntaxError) {
-        const match = error.message.match(/at position (\d+)/)
-        if (match) {
-          const position = parseInt(match[1])
-          const lines = jsonString.substring(0, position).split('\n')
-          const line = lines.length
-          const column = lines[lines.length - 1].length + 1
-          errorMessage = `Syntax error at line ${line}, column ${column}: ${error.message}`
-        } else {
-          errorMessage = `Syntax error: ${error.message}`
+  // Load template data if templateId is provided in URL
+  useEffect(() => {
+    const templateId = searchParams.get('templateId')
+    
+    if (templateId) {
+      const loadTemplate = async () => {
+        setIsLoadingTemplate(true)
+        setTemplateLoadError(null)
+        
+        try {
+          const templateData = await getTemplateById(templateId)
+          
+          if (templateData && templateData.template_data) {
+            // Extract endpoints from template data
+            const endpoints = templateData.template_data.endpoints || []
+            
+            if (endpoints.length > 0) {
+              // Use the first endpoint as the default
+              const firstEndpoint = endpoints[0]
+              
+              // Update form data with template values
+              setFormData({
+                name: `${templateData.name} - ${firstEndpoint.endpoint || '/api/endpoint'}`,
+                description: templateData.description || '',
+                endpoint: firstEndpoint.endpoint || '/api/endpoint',
+                method: firstEndpoint.method || 'GET',
+                response: firstEndpoint.response || {},
+                headers: firstEndpoint.headers || {},
+                status_code: firstEndpoint.status_code || 200,
+                delay_ms: firstEndpoint.delay_ms || 0,
+                is_public: false,
+                tags: [...(templateData.tags || []), 'from-template']
+              })
+              
+              // Update JSON string for the editor
+              setJsonString(JSON.stringify(firstEndpoint.response || {}, null, 2))
+              
+              toast({
+                title: "Template loaded",
+                description: `${templateData.name} template has been loaded successfully`,
+                variant: "default",
+              })
+            } else {
+              throw new Error("Template has no endpoints defined")
+            }
+          } else {
+            throw new Error("Invalid template data structure")
+          }
+        } catch (error) {
+          console.error("Error loading template:", error)
+          const errorMessage = error instanceof Error 
+            ? error.message 
+            : typeof error === 'object' && error !== null && 'message' in error 
+              ? String((error as any).message) 
+              : "Failed to load template";
+          
+          setTemplateLoadError(errorMessage)
+          
+          toast({
+            title: "Template loading failed",
+            description: errorMessage,
+            variant: "destructive",
+          })
+        } finally {
+          setIsLoadingTemplate(false)
         }
       }
-      setJsonError(errorMessage)
-      return false
+      
+      loadTemplate()
+    }
+  }, [searchParams, toast])
+
+  // Update response object when JSON string changes
+  useEffect(() => {
+    try {
+      const parsedJson = JSON.parse(jsonString)
+      setFormData(prev => ({ ...prev, response: parsedJson }))
+    } catch (e) {
+      // Invalid JSON, don't update the response
+    }
+  }, [jsonString])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: parseInt(value) || 0 }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    if (name === "method") {
+      // Ensure method is properly typed as HTTPMethod
+      setFormData(prev => ({ ...prev, [name]: value as HTTPMethod }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
     }
   }
 
-  const handleResponseChange = (newResponse: string) => {
-    setResponse(newResponse)
-    validateJson(newResponse)
+  const handleSwitchChange = (checked: boolean) => {
+    setFormData(prev => ({ ...prev, is_public: checked }))
   }
 
-  const handleTemplateSelect = (template: string) => {
-    const templateData = responseTemplates[template as keyof typeof responseTemplates]
-    const formatted = JSON.stringify(templateData, null, 2)
-    setResponse(formatted)
-    setJsonError(null)
-  }
   const handleSnippetSelect = (snippet: string) => {
+    setJsonString(snippet)
+  }
+
+  const handleResponseGeneration = (response: string) => {
+    setJsonString(response)
+  }
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.endpoint || !formData.method) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+
     try {
-      // Parse the snippet string to validate it's valid JSON
-      const parsed = JSON.parse(snippet)
-      const formatted = JSON.stringify(parsed, null, 2)
-      setResponse(formatted)
-      setJsonError(null)
+      const result = await mockApi.createMock(formData)
+      
+      toast({
+        title: "Mock Created",
+        description: "Your mock has been created successfully",
+        variant: "default",
+      })
+      
+      // Navigate to the mock detail page
+      navigateTo(`/mocks/${result.id}`)
     } catch (error) {
-      // If parsing fails, treat it as a string snippet
-      setResponse(snippet)
-      validateJson(snippet)
+      console.error("Error creating mock:", error)
+      
+      toast({
+        title: "Creation Failed",
+        description: error instanceof Error ? error.message : "Failed to create mock",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const handleTest = async () => {
-    if (!validateJson(response)) {
+    if (!formData.endpoint || !formData.method) {
       toast({
-        title: "Invalid JSON",
-        description: "Please fix the JSON syntax errors before testing",
+        title: "Validation Error",
+        description: "Please fill in endpoint and method",
         variant: "destructive",
       })
       return
-    }    setIsTesting(true)
-    try {
-      const mockData: CreateMockRequest = {
-        name: mockName,
-        method: method as any,
-        endpoint: path,
-        status_code: Number.parseInt(statusCode),
-        response: JSON.parse(response),
-        delay_ms: delay[0],
-        is_public: isPublic,
-      }
+    }
 
-      await mockApi.testMock(mockData)
+    setIsTesting(true)
+    setTestResult(null)
+
+    try {
+      const result = await mockApi.testMock(formData)
+      setTestResult(result)
+      
       toast({
-        title: "✅ Test Successful",
-        description: "Mock endpoint is working correctly",
+        title: "Test Successful",
+        description: "Your mock endpoint is working correctly",
         variant: "default",
       })
     } catch (error) {
+      console.error("Error testing mock:", error)
+      
       toast({
-        title: "❌ Test Failed",
+        title: "Test Failed",
         description: error instanceof Error ? error.message : "Failed to test mock",
         variant: "destructive",
       })
@@ -230,93 +278,18 @@ export default function BuilderPage() {
     }
   }
 
-  const handleSave = async () => {
-    if (!validateJson(response)) {
-      toast({
-        title: "Invalid JSON",
-        description: "Please fix the JSON syntax errors before saving",
-        variant: "destructive",
-      })
-      return
-    }    setIsLoading(true)
-    try {
-      const mockData: CreateMockRequest = {
-        name: mockName,
-        method: method as any,
-        endpoint: path,
-        status_code: Number.parseInt(statusCode),
-        response: JSON.parse(response),
-        delay_ms: delay[0],
-        is_public: isPublic,
-      }
-
-      await mockApi.createMock(mockData)
-      setLastSaved(new Date())
-      toast({
-        title: "💾 Mock Saved",
-        description: "Mock endpoint has been saved as draft successfully",
-        variant: "default",
-      })
-    } catch (error) {
-      toast({
-        title: "❌ Save Failed",
-        description: error instanceof Error ? error.message : "Failed to save mock",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handlePublish = async () => {
-    if (!validateJson(response)) {
-      toast({
-        title: "Invalid JSON",
-        description: "Please fix the JSON syntax errors before publishing",
-        variant: "destructive",
-      })
-      return
-    }    setIsPublishing(true)
-    try {
-      const mockData: CreateMockRequest = {
-        name: mockName,
-        method: method as any,
-        endpoint: path,
-        status_code: Number.parseInt(statusCode),
-        response: JSON.parse(response),
-        delay_ms: delay[0],
-        is_public: true, // Force public when publishing
-      }
-
-      await mockApi.createMock(mockData)
-      setLastSaved(new Date())
-      toast({
-        title: "🚀 Mock Published",
-        description: "Mock endpoint is now live and accessible to everyone",
-        variant: "default",
-      })
-    } catch (error) {
-      toast({
-        title: "❌ Publish Failed",
-        description: error instanceof Error ? error.message : "Failed to publish mock",
-        variant: "destructive",
-      })
-    } finally {
-      setIsPublishing(false)
-    }
-  }
-
-  const copyToClipboard = async (text: string) => {
+  const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text)
+      
       toast({
-        title: "📋 Copied",
-        description: "Copied to clipboard",
+        title: "Copied to clipboard",
+        description: `${type} has been copied to clipboard`,
         variant: "default",
       })
     } catch (error) {
       toast({
-        title: "❌ Copy Failed",
+        title: "Copy failed",
         description: "Failed to copy to clipboard",
         variant: "destructive",
       })
@@ -329,467 +302,547 @@ export default function BuilderPage() {
         return "max-w-sm mx-auto"
       case "tablet":
         return "max-w-2xl mx-auto"
-      default:        return "w-full"
+      default:
+        return "w-full"
     }
   }
 
-  // AI Handler Functions
-  const handleAIMockGenerated = (mockData: any) => {
-    if (mockData.response_data) {
-      const formattedResponse = JSON.stringify(mockData.response_data, null, 2)
-      setResponse(formattedResponse)
-      setJsonError(null)
+  // if (isLoading || isLoadingTemplate) {
+  //   return (
+  //     <ProtectedRoute>
+  //       <SidebarLayout>
+  //         <BuilderPageSkeleton theme={actualTheme} />
+  //       </SidebarLayout>
+  //     </ProtectedRoute>
+  //   )
+  // }
 
-      // Update other fields if provided
-      if (mockData.status_code) {
-        setStatusCode(mockData.status_code.toString())
-      }
+  return (
+    <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+      <Header />
+      <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="max-w-6xl mx-auto">
+          {/* Header with Back Button */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => navigateTo("/mocks")}
+                className={`${themeColors.buttonBg} ${themeColors.text} h-9 w-9 p-0`}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className={`text-2xl font-bold ${themeColors.text} mb-1`}>Create New Mock</h1>
+                <p className={`text-sm ${themeColors.textSecondary}`}>
+                  Design your API mock endpoint with custom responses
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+              <Button
+                variant="outline"
+                onClick={handleTest}
+                disabled={isTesting || !formData.endpoint || !formData.method}
+                className={`${themeColors.buttonBg} ${themeColors.text} gap-2`}
+              >
+                {isTesting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Play className="h-4 w-4" />
+                )}
+                {isTesting ? "Testing..." : "Test Mock"}
+              </Button>
+              
+              <Button
+                onClick={handleSave}
+                disabled={isSaving || !formData.name || !formData.endpoint || !formData.method}
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {isSaving ? "Saving..." : "Save Mock"}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => setIsAIModalOpen(true)}
+                className="gap-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20 hover:from-purple-500/20 hover:to-blue-500/20 hover:border-purple-500/30"
+              >
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                AI Generate
+              </Button>
+            </div>
+          </div>
 
-      toast({
-        title: "🤖 AI Generated Successfully",
-        description: "Mock response has been generated and applied",
-        variant: "default",
-      })
-    }
-  }
+          {/* Template Load Error */}
+          {templateLoadError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4"
+            >
+              <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-medium text-red-800 dark:text-red-300">Template Loading Error</h3>
+                    <p className="text-sm text-red-600 dark:text-red-200">{templateLoadError}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
-  const handleAIMockSaved = (savedMock: any) => {
-    if (savedMock) {
-      setLastSaved(new Date())
-      toast({
-        title: "🎉 AI Mock Saved",
-        description: `Mock "${savedMock.name}" has been saved to your collection`,
-        variant: "default",
-      })
-    }
-  }
-  const handleAIResponseGenerated = (generatedResponse: string) => {
-    setResponse(generatedResponse)
-    setJsonError(null)
-  }
-  const handleAIFloatingActionGenerate = (type: string) => {
-    // Quick AI generation based on type
-    setShowAIModal(true)
-  }
-
-  const handleAIFloatingActionOpenFull = () => {
-    setShowAIModal(true)
-  }
-    return (
-    <ProtectedRoute>
-      <TooltipProvider>
-        <SidebarLayout>
-          {isInitialLoading ? (
-            <BuilderPageSkeleton theme={actualTheme} />
-          ) : (
-            <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-all duration-200`}>
-              <Header />
-          <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
-            <div className="max-w-6xl mx-auto">
-              {/* Enhanced Header with Premium Styling */}
-              <motion.div
-                className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2.5 mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >              <div className="flex-1">
-                  <div className="flex items-center gap-2.5 mb-1.5">
-                    <div className="p-1.5 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
-                      <Code className="h-4 w-4 text-white" />
-                    </div>
-                    <h1 className={`text-lg lg:text-xl font-bold ${themeColors.text} compact-leading`}>
-                      Mock Builder
-                    </h1>                </div>
-                  <p className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} mt-0.5 text-xs`}>Create and configure your API mock endpoint</p>
-                  {lastSaved && (
-                    <motion.div
-                      className={`flex items-center gap-2 mt-2 text-xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <CheckCircle className="h-3 w-3 text-green-500" />
-                      Last saved {lastSaved.toLocaleTimeString()}
-                    </motion.div>
-                  )}
-                </div>              {/* Enhanced Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 w-full lg:w-auto">                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTest}
-                      disabled={isTesting || !!jsonError}
-                      className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs h-7 px-3`}
-                    >
-                      {isTesting ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Play className="h-3 w-3 mr-1.5" />}
-                      {isTesting ? "Testing..." : "Test"}
-                    </Button>
-                  </motion.div>
-
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSave}
-                      disabled={isLoading || !!jsonError}
-                      className={`w-full sm:w-auto ${themeColors.buttonBg} ${themeColors.text} text-xs h-7 px-3`}
-                    >
-                      {isLoading ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Save className="h-3 w-3 mr-1.5" />}
-                      {isLoading ? "Saving..." : "Save Draft"}
-                    </Button>
-                  </motion.div>
-
-                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button
-                      onClick={handlePublish}
-                      disabled={isPublishing || !!jsonError}
-                      className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg text-xs h-7 px-3"
-                      size="sm"
-                    >
-                      {isPublishing ? (
-                        <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-                      ) : (
-                        <Globe className="h-3 w-3 mr-1.5" />
-                      )}
-                      {isPublishing ? "Publishing..." : "Publish Live"}
-                    </Button>
-                  </motion.div>
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Configuration */}
+            <div className="space-y-6">
+              {/* Configure Endpoint Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Settings className="h-5 w-5 text-blue-500" />
+                  <h2 className={`text-xl font-bold ${themeColors.text}`}>Configure Endpoint</h2>
                 </div>
-              </motion.div>            {/* Enhanced JSON Error Alert */}
-              {jsonError && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Alert variant="destructive" className="mb-3 border-red-500/20 bg-red-500/10">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription className="text-xs">
-                      <strong>JSON Syntax Error:</strong> {jsonError}
-                    </AlertDescription>
-                  </Alert>
-                </motion.div>
-              )}
-              {/* Enhanced Responsive Grid Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                {/* Left Panel - Configuration */}
-                <motion.div
-                  className="space-y-4"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                  {/* Configure Endpoint Section */}
-                  <div>                  <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="p-1 rounded-md bg-gradient-to-r from-blue-500 to-purple-600">
-                        <Settings className="h-3 w-3 text-white" />
-                      </div>
-                      <h2 className={`text-sm font-semibold ${themeColors.text}`}>Configure Endpoint</h2>
+
+                <Card className={`${themeColors.cardBg} ${themeColors.cardHover} transition-all duration-300`}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">Basic Information</CardTitle>
+                    <CardDescription>
+                      Configure the basic details of your mock API endpoint
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Mock Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Mock Name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        placeholder="Enter a descriptive name"
+                      />
                     </div>
 
-                    <Card className={themeColors.cardBg}>                    <CardHeader className="pb-1.5 pt-3 px-3">
-                        <CardTitle className={`flex items-center gap-1.5 ${themeColors.text} text-xs`}>
-                          <Sparkles className="h-3 w-3 text-blue-400" />
-                          Basic Configuration
-                        </CardTitle>
-                        <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-2xs`}>Set up the fundamental properties of your mock endpoint</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-
-                        <div>
-                          <Label htmlFor="mock-name" className={`${themeColors.text} text-xs`}>Mock Name</Label>
-                          <Input
-                            id="mock-name"
-                            value={mockName}
-                            onChange={(e) => setMockName(e.target.value)}
-                            placeholder="Enter a descriptive name"
-                            className={`mt-1 ${themeColors.inputBg} ${themeColors.text} text-xs h-8`}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <Label htmlFor="method" className={`${themeColors.text} text-xs`}>HTTP Method</Label>
-                            <Select value={method} onValueChange={setMethod}>
-                              <SelectTrigger className={`mt-1 ${themeColors.selectBg} ${themeColors.text} h-8 text-xs`}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className={themeColors.selectBg}>                              {httpMethods.map((m) => (
-                                  <SelectItem key={m} value={m} className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'} text-xs`}>
-                                    <div className="flex items-center gap-2">
-                                      <Badge
-                                        variant="secondary"
-                                        className={cn(
-                                          "text-2xs px-1.5 py-0",
-                                          m === "GET" && "bg-green-600 text-white",
-                                          m === "POST" && "bg-blue-600 text-white",
-                                          m === "PUT" && "bg-orange-600 text-white",
-                                          m === "DELETE" && "bg-red-600 text-white",
-                                          m === "PATCH" && "bg-purple-600 text-white",
-                                        )}
-                                      >
-                                        {m}
-                                      </Badge>
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="status-code" className={`${themeColors.text} text-xs`}>Status Code</Label>
-                            <Select value={statusCode} onValueChange={setStatusCode}>
-                              <SelectTrigger className={`mt-1 ${themeColors.selectBg} ${themeColors.text} h-8 text-xs`}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className={themeColors.selectBg}>
-                                {statusCodes.map((code) => (
-                                  <SelectItem key={code.value} value={code.value} className={`${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'} text-xs`}>
-                                    {code.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>                      <div>
-                          <Label htmlFor="path" className={`${themeColors.text} text-xs`}>Endpoint Path</Label>
-                          <Input
-                            id="path"
-                            value={path}
-                            onChange={(e) => setPath(e.target.value)}
-                            placeholder="/api/endpoint"
-                            className={`mt-1 font-mono ${themeColors.inputBg} ${themeColors.text} text-xs h-8`}
-                          />
-                        </div>
-
-                        <div>
-                          <Label className={`${themeColors.text} text-xs`}>Response Delay: {delay[0]}ms</Label>
-                          <Slider value={delay} onValueChange={setDelay} max={5000} step={50} className="mt-2" />
-                          <div className={`flex justify-between text-2xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'} mt-1`}>
-                            <span>0ms</span>
-                            <span>5000ms</span>
-                          </div>
-                        </div>
-
-                        <div className={`flex items-center justify-between p-2 ${actualTheme === 'light' ? 'border-slate-300 bg-slate-50' : 'border-gray-700 bg-[#2D2D2D]'} rounded-lg`}>
-                          <div>
-                            <Label htmlFor="public-toggle" className={`font-medium ${themeColors.text} text-xs`}>
-                              Public Endpoint
-                            </Label>
-                            <p className={`text-2xs ${actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400'}`}>Allow anyone to access this mock</p>
-                          </div>
-                          <Switch id="public-toggle" checked={isPublic} onCheckedChange={setIsPublic} />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>                {/* AI-Enhanced JSON Snippets */}
-                  <div>
-                    <AISnippetWizard
-                      onSnippetGenerated={handleAIResponseGenerated}
-                      onSnippetSelect={handleSnippetSelect}
-                    />
-                  </div>{/* Advanced Options */}
-                  <Accordion type="single" collapsible>
-                    <AccordionItem value="advanced" className={actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800'}>
-                      <AccordionTrigger className={`text-sm font-medium ${themeColors.text}`}>Advanced Options</AccordionTrigger>
-                      <AccordionContent className="space-y-3 pt-3">
-                        <div>
-                          <Label htmlFor="headers" className={`${themeColors.text} text-xs`}>Custom Headers</Label>
-                          <Textarea
-                            id="headers"
-                            placeholder="Content-Type: application/json&#10;X-Custom-Header: value"
-                            rows={3}
-                            className={`mt-1 font-mono text-xs ${themeColors.inputBg} ${themeColors.text}`}
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="cors" className={`${themeColors.text} text-xs`}>CORS Settings</Label>
-                          <Input id="cors" placeholder="https://example.com, https://app.example.com" className={`mt-1 ${themeColors.inputBg} ${themeColors.text} text-xs h-8`} />
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>                  {/* AI Enhanced Generator - Now Modal Triggered */}
-                </motion.div>
-                {/* Right Panel - Response Editor & Preview */}
-                <motion.div
-                  className="space-y-2.5"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  {/* Mock Response Section */}
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <div className="p-1 rounded-md bg-gradient-to-r from-purple-500 to-pink-600">
-                        <Code className="h-3 w-3 text-white" />
+                    {/* Method and Path */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="method">HTTP Method</Label>
+                        <Select
+                          value={formData.method}
+                          onValueChange={(value) => handleSelectChange("method", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="GET">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-green-600 text-white">GET</Badge>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="POST">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-blue-600 text-white">POST</Badge>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="PUT">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-orange-600 text-white">PUT</Badge>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="DELETE">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-red-600 text-white">DELETE</Badge>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="PATCH">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-purple-600 text-white">PATCH</Badge>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <h2 className={`text-sm font-semibold ${themeColors.text}`}>Mock Response</h2>
+                      <div className="space-y-2">
+                        <Label htmlFor="endpoint">Endpoint Path</Label>
+                        <Input
+                          id="endpoint"
+                          name="endpoint"
+                          value={formData.endpoint}
+                          onChange={handleInputChange}
+                          placeholder="/api/endpoint"
+                        />
+                      </div>
                     </div>
 
+                    {/* Status Code and Delay */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="status_code">Status Code</Label>
+                        <Input
+                          id="status_code"
+                          name="status_code"
+                          type="number"
+                          value={formData.status_code}
+                          onChange={handleNumberChange}
+                          min={100}
+                          max={599}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="delay_ms">Response Delay (ms)</Label>
+                        <Input
+                          id="delay_ms"
+                          name="delay_ms"
+                          type="number"
+                          value={formData.delay_ms}
+                          onChange={handleNumberChange}
+                          min={0}
+                          max={10000}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description (Optional)</Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        value={formData.description || ""}
+                        onChange={handleInputChange}
+                        placeholder="Describe what this mock endpoint does"
+                        rows={3}
+                      />
+                    </div>
+
+                    {/* Public Toggle */}
+                    <div className="flex items-center space-x-2 pt-2">
+                      <Switch
+                        id="is_public"
+                        checked={formData.is_public}
+                        onCheckedChange={handleSwitchChange}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <Label htmlFor="is_public">Public Endpoint</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Make this mock accessible without authentication
+                        </p>
+                      </div>
+                      {formData.is_public ? (
+                        <Globe className="ml-auto h-4 w-4 text-green-500" />
+                      ) : (
+                        <Lock className="ml-auto h-4 w-4 text-amber-500" />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* JSON Snippets */}
+              <JsonSnippets onSnippetSelect={handleSnippetSelect} />
+
+              
+            </div>
+
+            {/* Right Column - Response Editor & Preview */}
+            <div className="space-y-6">
+              {/* Mock Response Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Code className="h-5 w-5 text-purple-500" />
+                  <h2 className={`text-xl font-bold ${themeColors.text}`}>Mock Response</h2>
+                </div>
+
+                <Card className={`${themeColors.cardBg} ${themeColors.cardHover} transition-all duration-300`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Response Body</CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(jsonString, "JSON")}
+                          className={`h-8 ${themeColors.buttonBg}`}
+                        >
+                          <Copy className="h-3.5 w-3.5 mr-1" />
+                          Copy
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const blob = new Blob([jsonString], { type: 'application/json' })
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = 'mock-response.json'
+                            document.body.appendChild(a)
+                            a.click()
+                            document.body.removeChild(a)
+                            URL.revokeObjectURL(url)
+                          }}
+                          className={`h-8 ${themeColors.buttonBg}`}
+                        >
+                          <Download className="h-3.5 w-3.5 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                    <CardDescription>
+                      Edit the JSON response that will be returned by your mock API
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
                     <MonacoJsonEditor
-                      value={response}
-                      onChange={handleResponseChange}
-                      height="350px"
+                      value={jsonString}
+                      onChange={setJsonString}
+                      height="400px"
                       showValidation={true}
                       showToolbar={true}
-                      placeholder="Enter your JSON response..."
                     />
-                  </div>{/* Enhanced Preview Output Section */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-red-600">
-                          <Eye className="h-3 w-3 text-white" />
-                        </div>
-                        <h2 className={`text-lg font-semibold ${themeColors.text}`}>Preview Output</h2>
-                      </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                      {/* Device Preview Toggle */}
-                      <div className={`flex items-center gap-1 ${actualTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-gray-700 bg-[#2D2D2D]'} rounded-lg p-1`}>
-                        <Button
-                          variant={previewDevice === "desktop" ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setPreviewDevice("desktop")}
-                          className="h-6 w-6 p-0 text-xs"
-                        >
-                          <Monitor className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant={previewDevice === "tablet" ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setPreviewDevice("tablet")}
-                          className="h-6 w-6 p-0 text-xs"
-                        >
-                          <Tablet className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant={previewDevice === "mobile" ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setPreviewDevice("mobile")}
-                          className="h-6 w-6 p-0 text-xs"
-                        >
-                          <Smartphone className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className={getDevicePreviewClass()}>
-                      <Card className={themeColors.cardBg}>
-                        <CardHeader className="pb-3">
-                          <CardTitle className={`flex items-center gap-2 ${themeColors.text} text-sm`}>
-                            <Eye className="h-4 w-4 text-blue-400" />
-                            Live Preview
-                          </CardTitle>
-                          <CardDescription className={`${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400'} text-xs`}>Preview your mock endpoint and integration examples</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <Tabs defaultValue="endpoint" className="w-full">
-                            <TabsList className={`grid w-full grid-cols-3 ${themeColors.tabsBg} h-8`}>
-                              <TabsTrigger value="endpoint" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>Endpoint</TabsTrigger>
-                              <TabsTrigger value="curl" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>cURL</TabsTrigger>
-                              <TabsTrigger value="javascript" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>JavaScript</TabsTrigger>
-                            </TabsList>
-
-                            <TabsContent value="endpoint" className="space-y-3 mt-3">
-                              <div>
-                                <Label className={`${themeColors.text} text-xs`}>Generated URL</Label>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Input value={generatedUrl} readOnly className={`font-mono text-xs ${themeColors.inputBg} ${themeColors.text} h-8`} />
-                                  <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedUrl)} className={`${themeColors.buttonBg} ${themeColors.text} h-8 w-8 p-0`}>
-                                    <Copy className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-
-                              <Separator className={actualTheme === 'light' ? 'bg-slate-200' : 'bg-gray-700'} />                            <div>
-                                <Label className={`${themeColors.text} text-xs`}>Response Preview</Label>
-                                <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs max-h-32 overflow-auto border`}>
-                                  <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{response}</pre>
-                                </div>
-                              </div>
-                            </TabsContent>
-
-                            <TabsContent value="curl" className="mt-3">
-                              <div>
-                                <Label className={`${themeColors.text} text-xs`}>cURL Command</Label>
-                                <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
-                                  <pre className={`whitespace-pre-wrap break-all ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`curl -X ${method} "${generatedUrl}" \\-H "Content-Type: application/json"`}</pre>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={`mt-2 ${themeColors.buttonBg} ${themeColors.text} text-xs h-7`}
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      `curl -X ${method} "${generatedUrl}" -H "Content-Type: application/json"`,
-                                    )
-                                  }
-                                >
-                                  <Copy className="h-3 w-3 mr-1" />
-                                  Copy
-                                </Button>
-                              </div>
-                            </TabsContent>
-                            <TabsContent value="javascript" className="mt-3">
-                              <div>
-                                <Label className={`${themeColors.text} text-xs`}>JavaScript Fetch</Label>
-                                <div className={`mt-1 p-2 ${actualTheme === 'light' ? 'bg-slate-100 border-slate-300' : 'bg-[#2D2D2D] border-gray-700'} rounded-lg font-mono text-xs overflow-x-auto border`}>
-                                    <pre className={`whitespace-pre-wrap break-words ${actualTheme === 'light' ? 'text-slate-700' : 'text-gray-300'}`}>{`fetch('${generatedUrl}', {
-                                      method: '${method}',
-                                      headers: {
-                                      'Content-Type': 'application/json'
-                                      }
-                                    })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                      // Handle response data here
-                                    });`}
-                                  </pre>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={`mt-2 ${themeColors.buttonBg} ${themeColors.text} text-xs h-7`}
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      `fetch('${generatedUrl}', {\n  method: '${method}',\n  headers: {\n    'Content-Type': 'application/json'\n  }\n})\n.then(response => response.json())\n.then(data => console.log(data));`,
-                                    )
-                                  }
-                                >
-                                  <Copy className="h-3 w-3 mr-1" />
-                                  Copy
-                                </Button>
-                              </div>
-                            </TabsContent>
-                          </Tabs>
-                        </CardContent>
-                      </Card>
-                    </div>
+              {/* Preview Output Section */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-amber-500" />
+                    <h2 className={`text-xl font-bold ${themeColors.text}`}>Preview & Test</h2>
                   </div>
-                </motion.div>
-                 </div>              {/* AI Floating Action Button */}
-              <AIFloatingActionButton
-                onQuickGenerate={handleAIFloatingActionGenerate}
-                onOpenFullGenerator={handleAIFloatingActionOpenFull}
-              />
 
-              {/* AI Generator Modal */}
-              <AIGeneratorModal
-                isOpen={showAIModal}
-                onClose={() => setShowAIModal(false)}
-                onMockGenerated={handleAIMockGenerated}
-                onMockSaved={handleAIMockSaved}
-                onResponseGenerated={handleAIResponseGenerated}
-                initialEndpoint={path}
-                initialMethod={method}
-              />
+                  {/* Device Preview Toggle */}
+                  <div className={`flex items-center gap-1 ${actualTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-gray-700 bg-[#2D2D2D]'} rounded-lg p-1`}>
+                    <Button
+                      variant={previewDevice === "desktop" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setPreviewDevice("desktop")}
+                      className="h-7 w-7 p-0"
+                    >
+                      <Monitor className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant={previewDevice === "tablet" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setPreviewDevice("tablet")}
+                      className="h-7 w-7 p-0"
+                    >
+                      <Tablet className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant={previewDevice === "mobile" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setPreviewDevice("mobile")}
+                      className="h-7 w-7 p-0"
+                    >
+                      <Smartphone className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+
+                <Card className={`${themeColors.cardBg} ${themeColors.cardHover} transition-all duration-300`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Response Preview</CardTitle>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleTest}
+                        disabled={isTesting || !formData.endpoint || !formData.method}
+                        className={`${themeColors.buttonBg} gap-2`}
+                      >
+                        {isTesting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Play className="h-3.5 w-3.5" />
+                        )}
+                        {isTesting ? "Testing..." : "Test Endpoint"}
+                      </Button>
+                    </div>
+                    <CardDescription>
+                      Preview how your mock API will respond to requests
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className={getDevicePreviewClass()}>
+                      <Tabs defaultValue="preview" className="w-full">
+                        <TabsList className={`grid w-full grid-cols-3 ${themeColors.tabsBg}`}>
+                          <TabsTrigger value="preview" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive}`}>Preview</TabsTrigger>
+                          <TabsTrigger value="curl" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive}`}>cURL</TabsTrigger>
+                          <TabsTrigger value="fetch" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive}`}>Fetch</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="preview" className="mt-4">
+                          <div className="space-y-4">
+                            <div>
+                              <Label className="text-sm font-medium mb-2 block">Response Preview</Label>
+                              <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
+                                <ScrollbarContainer
+                                  maxHeight="300px"
+                                  className="p-4 font-mono text-sm"
+                                  theme={actualTheme === "light" ? "light" : "dark"}
+                                >
+                                  <pre className={themeColors.codeText}>
+                                    {JSON.stringify(formData.response, null, 2)}
+                                  </pre>
+                                </ScrollbarContainer>
+                              </div>
+                            </div>
+
+                            {testResult && (
+                              <div className="space-y-2">
+                                <Label className="text-sm font-medium mb-2 block">Test Result</Label>
+                                <Card className="border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800">
+                                  <CardContent className="p-4">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <CheckCircle className="h-5 w-5 text-green-600" />
+                                      <span className="font-medium text-green-800 dark:text-green-300">
+                                        Test Successful
+                                      </span>
+                                    </div>
+                                    <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden mt-2`}>
+                                      <ScrollbarContainer
+                                        maxHeight="200px"
+                                        className="p-3 font-mono text-xs"
+                                        theme={actualTheme === "light" ? "light" : "dark"}
+                                      >
+                                        <pre className={themeColors.codeText}>
+                                          {JSON.stringify(testResult, null, 2)}
+                                        </pre>
+                                      </ScrollbarContainer>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            )}
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="curl" className="mt-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium mb-2 block">cURL Command</Label>
+                            <div className={`p-4 rounded-lg ${themeColors.codeBg} font-mono text-xs overflow-x-auto`}>
+                              <pre className={themeColors.codeText}>
+                                {`curl -X ${formData.method} "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/simulate${formData.endpoint}"`}
+                              </pre>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => copyToClipboard(`curl -X ${formData.method} "${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/simulate${formData.endpoint}"`, "cURL command")}
+                              className={`${themeColors.buttonBg} gap-2 mt-2`}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy Command
+                            </Button>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="fetch" className="mt-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium mb-2 block">Fetch API</Label>
+                            <div className={`p-4 rounded-lg ${themeColors.codeBg} font-mono text-xs overflow-x-auto`}>
+                              <pre className={themeColors.codeText}>
+                                {`fetch("${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/simulate${formData.endpoint}", {
+  method: "${formData.method}",
+  headers: {
+    "Content-Type": "application/json"
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));`}
+                              </pre>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => copyToClipboard(`fetch("${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/simulate${formData.endpoint}", {
+  method: "${formData.method}",
+  headers: {
+    "Content-Type": "application/json"
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));`, "Fetch code")}
+                              className={`${themeColors.buttonBg} gap-2 mt-2`}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                              Copy Code
+                            </Button>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              {/* AI Generation Panel */}
+              <AISnippetWizard onSnippetGenerated={handleResponseGeneration} onSnippetSelect={handleSnippetSelect} />
             </div>
-          </main>
-            </div>
-          )}
-        </SidebarLayout>
-      </TooltipProvider>
+          </div>
+        </div>
+      </main>
+      {/* AI Generator Modal */}
+      <AIGeneratorModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onMockGenerated={(data) => {
+          // Update form data with generated mock
+          setFormData({
+            ...formData,
+            name: data.name || formData.name,
+            description: data.description || formData.description,
+            endpoint: data.endpoint || formData.endpoint,
+            method: data.method || formData.method,
+            response: data.response || formData.response,
+            headers: data.headers || formData.headers,
+            status_code: data.status_code || formData.status_code,
+            delay_ms: data.delay_ms || formData.delay_ms,
+            is_public: data.is_public !== undefined ? data.is_public : formData.is_public,
+            tags: [...(data.tags || []), 'generated-by-ai']
+          })
+          setJsonString(JSON.stringify(data.response, null, 2))
+        }}
+        onMockSaved={(mock) => {
+          // Navigate to the saved mock
+          navigateTo(`/mocks/${mock.id}`)
+        }}
+        onResponseGenerated={handleResponseGeneration}
+        initialEndpoint={formData.endpoint}
+        initialMethod={formData.method}
+      />
+      {/* AI Floating Action Button */}
+      <AIFloatingActionButton
+        onOpenFullGenerator={() => setIsAIModalOpen(true)}
+        onQuickGenerate={(type) => {
+          toast({
+            title: "AI Generation",
+            description: `Quick generation for ${type} started`,
+          })
+        }}
+      />
+    </div>
+  )
+}
+
+export default function BuilderPage() {
+  const { actualTheme } = useTheme();
+  return (
+    <ProtectedRoute>
+      <SidebarLayout>
+        <Suspense fallback={<BuilderPageSkeleton theme={actualTheme} />}>
+          <BuilderPageContent />
+        </Suspense>
+      </SidebarLayout>
     </ProtectedRoute>
   )
 }

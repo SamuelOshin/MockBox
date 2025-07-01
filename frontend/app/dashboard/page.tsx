@@ -44,7 +44,6 @@ import {
   ExternalLink,
   MoreHorizontal
 } from "lucide-react"
-import { sampleMocks } from "@/lib/mock-data"
 import type { MockEndpoint } from "@/lib/types"
 import { mockApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
@@ -62,8 +61,7 @@ const methodColors = {
   PATCH: "bg-purple-100 text-purple-800 hover:bg-purple-200"
 }
 
-export default function DashboardPage() {
-  const [mocks, setMocks] = useState<MockEndpoint[]>(sampleMocks)
+export default function DashboardPage() {  const [mocks, setMocks] = useState<MockEndpoint[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedMocks, setSelectedMocks] = useState<string[]>([])
@@ -86,24 +84,19 @@ export default function DashboardPage() {
     menuBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#2D2D2D] border-gray-700',
     menuItemHover: actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'
   }
-
   useEffect(() => {
     const fetchMocks = async () => {
       try {
         const data = await mockApi.getAllMocks()
         setMocks(data)
       } catch (error) {
-        // Use sample data for demo
-        setMocks(sampleMocks)
-
-        // Only show toast if it's not a network/auth issue
-        if (error instanceof Error && !error.message.includes('403') && !error.message.includes('401')) {
-          toast({
-            title: "API Error",
-            description: "Failed to load mocks from server. Using sample data.",
-            variant: "destructive",
-          })
-        }
+        console.error("Failed to fetch mocks:", error)
+        toast({
+          title: "Failed to load mocks",
+          description: "Could not fetch mocks from the server",
+          variant: "destructive",
+        })
+        setMocks([]) // Set empty array instead of sample data
       } finally {
         setIsLoading(false)
       }
@@ -447,10 +440,14 @@ export default function DashboardPage() {
                           </TableCell>
                           <TableCell>
                             <Badge className={methodColors[mock.method as keyof typeof methodColors]}>{mock.method}</Badge>
-                          </TableCell>
-                          <TableCell>
+                          </TableCell>                          <TableCell>
                             <div>
-                              <div className={`font-medium ${themeColors.text}`}>{mock.name || "Unnamed Mock"}</div>
+                              <button
+                                onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                className={`font-medium ${themeColors.text} hover:text-blue-600 hover:underline transition-colors text-left`}
+                              >
+                                {mock.name || "Unnamed Mock"}
+                              </button>
                               <div className={`text-sm ${themeColors.textSecondary} font-mono`}>{mock.endpoint}</div>
                             </div>
                           </TableCell>
@@ -477,17 +474,25 @@ export default function DashboardPage() {
                                 <Button variant="ghost" size="icon" className={`opacity-0 group-hover:opacity-100 transition-opacity ${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'}`}>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
-                                <DropdownMenuItem className={`${themeColors.text} ${themeColors.menuItemHover}`}>
+                              </DropdownMenuTrigger>                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={`${themeColors.text} ${themeColors.menuItemHover}`}
+                                >
                                   <Edit className="h-4 w-4 mr-2" />
                                   Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className={`${themeColors.text} ${themeColors.menuItemHover}`}>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/clone/${mock.id}`)}
+                                  className={`${themeColors.text} ${themeColors.menuItemHover}`}
+                                >
                                   <Copy className="h-4 w-4 mr-2" />
                                   Duplicate
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className={`${themeColors.text} ${themeColors.menuItemHover}`}>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={`${themeColors.text} ${themeColors.menuItemHover}`}
+                                >
                                   <ExternalLink className="h-4 w-4 mr-2" />
                                   View Endpoint
                                 </DropdownMenuItem>

@@ -58,6 +58,10 @@ interface AIUsageResponse {
   rate_limit_remaining: number
   rate_limit_reset: string
   last_request: string
+  // Add plan info fields
+  plan_name?: string
+  daily_request_quota?: number
+  monthly_token_quota?: number
 }
 
 interface UseAIGenerationReturn {
@@ -71,6 +75,9 @@ interface UseAIGenerationReturn {
     tokensUsedToday: number
     tokensUsedThisMonth: number
     rateLimitRemaining: number
+    planName?: string
+    dailyRequestQuota?: number
+    monthlyTokenQuota?: number
   } | null
   fetchUsage: () => Promise<void>
 }
@@ -116,8 +123,6 @@ export function useAIGeneration(): UseAIGenerationReturn {
         throw new Error('Failed to generate mock data')
       }
     } catch (err: any) {
-      console.error('AI generation error:', err)
-
       let errorMessage = 'Failed to generate mock data'
 
       if (err.response?.status === 429) {
@@ -134,8 +139,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
       toast.error('Generation Failed', {
         description: errorMessage
       })
-
-      return null
+      return { response_data: null, status_code: err.response?.status || 500, headers: {}, explanation: errorMessage, provider: '', model: '', generation_time: 0 } as AIGenerationResponse
     } finally {
       setIsGenerating(false)
     }
@@ -185,8 +189,6 @@ export function useAIGeneration(): UseAIGenerationReturn {
         throw new Error('Failed to create AI mock')
       }
     } catch (err: any) {
-      console.error('AI creation error:', err)
-
       let errorMessage = 'Failed to create AI mock'
 
       if (err.response?.status === 429) {
@@ -203,8 +205,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
       toast.error('Creation Failed', {
         description: errorMessage
       })
-
-      return null
+      return { error: errorMessage }
     } finally {
       setIsGenerating(false)
     }
@@ -232,7 +233,10 @@ export function useAIGeneration(): UseAIGenerationReturn {
           requestsThisMonth: data.requests_this_month,
           tokensUsedToday: data.tokens_used_today,
           tokensUsedThisMonth: data.tokens_used_this_month,
-          rateLimitRemaining: data.rate_limit_remaining
+          rateLimitRemaining: data.rate_limit_remaining,
+          planName: data.plan_name,
+          dailyRequestQuota: data.daily_request_quota,
+          monthlyTokenQuota: data.monthly_token_quota,
         })
       }
     } catch (err: any) {

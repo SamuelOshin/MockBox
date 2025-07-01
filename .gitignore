@@ -35,6 +35,7 @@ Desktop.ini
 *.log
 *.cache
 
+node_modules
 # Tools and utilities
 bfg.jar
 

@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [hasShownWelcome, setHasShownWelcome] = useState(false) // Track if we've shown welcome message
   const { toast } = useToast()
 
   useEffect(() => {
@@ -36,6 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setSession(session)
         setUser(session?.user ?? null)
+        
+        // If user is already signed in on initial load, mark welcome as shown
+        if (session?.user) {
+          setHasShownWelcome(true)
+        }
       } catch (error) {
         console.error("Error getting session:", error)
       } finally {
@@ -57,24 +63,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Handle different auth events
         switch (event) {
           case 'SIGNED_IN':
-            toast({
-              title: "Welcome back!",
-              description: "You have been signed in successfully.",
-            })
+            // Only show welcome message for actual sign-ins, not session restorations
+            if (!hasShownWelcome) {
+              toast({
+                title: "Welcome back! 🎉",
+                description: "You have been signed in successfully.",
+                variant: "success",
+              })
+              setHasShownWelcome(true)
+            }
             break
           case 'SIGNED_OUT':
             toast({
               title: "Signed out",
               description: "You have been signed out successfully.",
             })
+            setHasShownWelcome(false) // Reset welcome flag on sign out
             break
           case 'TOKEN_REFRESHED':
-
+            // Silent token refresh - no toast needed
             break
           case 'USER_UPDATED':
             toast({
               title: "Profile updated",
               description: "Your profile has been updated successfully.",
+              variant: "success",
             })
             break
           case 'PASSWORD_RECOVERY':
@@ -82,13 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               title: "Password recovery",
               description: "Check your email for password reset instructions.",
             })
-            break
-        }
+            break        }
       }
     )
 
     return () => subscription.unsubscribe()
-  }, [toast])
+  }, [toast, hasShownWelcome])
 
   const signIn = async (email: string, password: string) => {
     try {
