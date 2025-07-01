@@ -11,7 +11,7 @@ from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 
 from app.core.database import DatabaseManager
-from app.models.models import Mock, MockStats, HTTPMethod, MockStatus
+from app.models.models import Mock, MockStats, HTTPMethod, MockStatus, MockTemplate
 from app.schemas.schemas import MockCreate, MockUpdate, PaginationParams
 
 
@@ -450,4 +450,52 @@ class MockService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Error listing public mocks: {str(e)}",
+            )
+
+    async def list_mock_templates(
+        self,
+        pagination: PaginationParams,
+        search: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        category: Optional[str] = None,
+        public_only: bool = True,
+    ) -> Tuple[List[MockTemplate], int]:
+        """List mock templates with filtering and pagination"""
+        try:
+            query = self.client.table("mock_templates").select("*", count="exact")
+            if public_only:
+                query = query.eq("is_public", True)
+            if category:
+                query = query.eq("category", category)
+            if search:
+                search_term = f"%{search}%"
+                query = query.or_(
+                    f"name.ilike.{search_term},description.ilike.{search_term},category.ilike.{search_term}"
+                )
+            if tags:
+                for tag in tags:
+                    query = query.contains("tags", [tag])
+            query = query.order("created_at", desc=True)
+            query = query.range(pagination.offset, pagination.offset + pagination.limit - 1)
+            result = query.execute()
+            templates = [MockTemplate(**row) for row in result.data]
+            total = result.count if result.count is not None else 0
+            return templates, total
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error listing mock templates: {str(e)}",
+            )
+
+    async def get_mock_template(self, template_id: UUID) -> Optional[MockTemplate]:
+        """Get a mock template by ID"""
+        try:
+            result = self.client.table("mock_templates").select("*").eq("id", str(template_id)).single().execute()
+            if not result.data:
+                return None
+            return MockTemplate(**result.data)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error fetching mock template: {str(e)}",
             )

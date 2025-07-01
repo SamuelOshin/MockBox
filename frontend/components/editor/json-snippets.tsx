@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface JsonSnippetsProps {
-  onSnippetSelect: (snippet: object) => void
+  onSnippetSelect: (snippet: string) => void
 }
 
 const snippets = [
@@ -277,7 +277,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                         themeColors.cardHover,
                         actualTheme === 'light' ? 'hover:border-slate-300' : 'hover:border-gray-600'
                       )}
-                      onClick={() => onSnippetSelect(snippet.data)}
+                      onClick={() => onSnippetSelect(JSON.stringify(snippet.data, null, 2))}
                     >
                       <CardHeader className="pb-2 px-3 pt-3">
                         <div className="flex items-start justify-between">
@@ -368,7 +368,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                           )}
                           onClick={(e) => {
                             e.stopPropagation()
-                            onSnippetSelect(snippet.data)
+                            onSnippetSelect(JSON.stringify(snippet.data, null, 2))
                             toast({
                               title: "Template applied",
                               description: `${snippet.title} template has been loaded`,

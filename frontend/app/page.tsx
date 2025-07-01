@@ -370,8 +370,11 @@ export default function HomePage() {
     textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400',
     border: actualTheme === 'light' ? 'border-slate-200' : 'border-white/10',
     cardBg: actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20',
-    cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'  }
-    return (    <div
+    cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'
+  }
+  
+  return (
+    <div
       className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200`}
       style={{
         zoom: 0.9,
@@ -1087,6 +1090,33 @@ export default function HomePage() {
       >
         <ArrowUp className="h-5 w-5" />
       </motion.button>
+
+      {/* Bolt.new Badge */}
+      <motion.a
+        href="https://bolt.new/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 left-6 z-50 w-12 h-12"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {actualTheme === 'light' ? (
+          <img 
+            src="/black_circle_360x360.png" 
+            alt="Powered by Bolt.new" 
+            className="w-full h-full"
+          />
+        ) : (
+          <img 
+            src="/white_circle_360x360.png" 
+            alt="Powered by Bolt.new" 
+            className="w-full h-full"
+          />
+        )}
+      </motion.a>
     </div>
   )
 }

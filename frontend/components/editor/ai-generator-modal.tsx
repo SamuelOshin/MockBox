@@ -9,6 +9,7 @@ import {
   X
 } from 'lucide-react'
 import { AIEnhancedGenerator } from './ai-enhanced-generator'
+import { HTTPMethod } from '@/lib/types'
 
 interface AIGeneratorModalProps {
   isOpen: boolean
@@ -17,7 +18,7 @@ interface AIGeneratorModalProps {
   onMockSaved?: (mock: any) => void
   onResponseGenerated?: (response: string) => void
   initialEndpoint?: string
-  initialMethod?: string
+  initialMethod?: HTTPMethod
   className?: string
 }
 

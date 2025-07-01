@@ -26,6 +26,7 @@ interface MonacoJsonEditorProps {
   showValidation?: boolean
   showToolbar?: boolean
   placeholder?: string
+  readOnly?: boolean 
 }
 
 export default function MonacoJsonEditor({
@@ -34,7 +35,8 @@ export default function MonacoJsonEditor({
   height = "400px",
   showValidation = false,
   showToolbar = false,
-  placeholder = "Enter JSON..."
+  placeholder = "Enter JSON...",
+  readOnly = false // <-- added
 }: MonacoJsonEditorProps) {
   const [copied, setCopied] = useState(false)
   const [isValid, setIsValid] = useState(true)
@@ -401,7 +403,8 @@ export default function MonacoJsonEditor({
           foldingHighlight: true,
           bracketPairColorization: {
             enabled: true
-          }
+          },
+          readOnly: readOnly // <-- added
         }}
       />
     </motion.div>

@@ -129,6 +129,11 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         if "/mocks/public" in path and request.method == "GET":
             return True
 
+        # Print for debug: always outputs
+        if path.startswith("/api/v1/mocks/templates") and request.method == "GET":
+            print(f"[DEBUG] Public endpoint allowed: {path}")
+            return True
+
         return False
 
     def _requires_authentication(self, request: Request) -> bool:

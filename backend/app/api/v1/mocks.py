@@ -11,7 +11,7 @@ import time
 from app.core.security import get_current_user, get_optional_user
 from app.core.database import get_database, DatabaseManager
 from app.services.mock_service import MockService
-from app.models.models import MockStatus, HTTPMethod
+from app.models.models import MockStatus, HTTPMethod, MockTemplate
 from app.schemas.schemas import (
     MockCreate,
     MockUpdate,
@@ -21,6 +21,8 @@ from app.schemas.schemas import (
     PaginationParams,
     BaseResponse,
     ErrorResponse,
+    TemplateListResponse,
+    TemplateResponse,
 )
 
 router = APIRouter(prefix="/mocks", tags=["mocks"])
@@ -291,13 +293,3 @@ async def list_public_mocks(
         limit=pagination.limit,
         has_next=total > pagination.page * pagination.limit,
     )
-
-
-@router.get("/test")
-async def test_endpoint():
-    """Simple test endpoint (no authentication required)"""
-    return {
-        "message": "MockBox API is working!",
-        "timestamp": time.time(),
-        "status": "success",
-    }

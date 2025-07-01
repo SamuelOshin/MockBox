@@ -136,13 +136,21 @@ class AIService:
         pass
 
     async def _select_provider(self) -> AIProvider:
-        """Select the best available AI provider"""
+        """Select the best available AI provider, respecting default and key presence"""
+        # Prefer explicit default provider if set and available
+        if self.default_provider:
+            if self.default_provider == AIProvider.OPENAI and self.openai_api_key:
+                return AIProvider.OPENAI
+            if self.default_provider == AIProvider.ANTHROPIC and self.anthropic_api_key:
+                return AIProvider.ANTHROPIC
+        # Fallback: prefer Anthropic if available
+        if self.anthropic_api_key:
+            return AIProvider.ANTHROPIC
+        # Next, try OpenAI if available
         if self.openai_api_key:
             return AIProvider.OPENAI
-        elif self.anthropic_api_key:
-            return AIProvider.ANTHROPIC
-        else:
-            return AIProvider.LOCAL  # Fallback to deterministic generation
+        # Fallback to local deterministic
+        return AIProvider.LOCAL
 
     async def _generate_with_openai(
         self, request: MockGenerationRequest

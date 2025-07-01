@@ -32,7 +32,6 @@ import {
   CheckCircle,
   AlertCircle
 } from "lucide-react"
-import { sampleMocks } from "@/lib/mock-data"
 import type { MockEndpoint } from "@/lib/types"
 import { mockApi } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
@@ -48,10 +47,12 @@ const methodColors = {
   PUT: "bg-orange-600 text-white",
   DELETE: "bg-red-600 text-white",
   PATCH: "bg-purple-600 text-white",
+  HEAD: "bg-gray-600 text-white",
+  OPTIONS: "bg-indigo-600 text-white",
 }
 
 export default function MocksPage() {
-  const [mocks, setMocks] = useState<MockEndpoint[]>(sampleMocks)
+  const [mocks, setMocks] = useState<MockEndpoint[]>([])
   const [selectedMocks, setSelectedMocks] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState<"name" | "method" | "created" | "accessed">("created")
@@ -81,17 +82,14 @@ export default function MocksPage() {
         if (Array.isArray(data)) {
           setMocks(data)
         } else {
-          console.error('API returned non-array data:', data);
           throw new Error('Invalid data format returned from API');
-        }
-      } catch (error) {
-        console.error('Mocks page fetch error:', error);
+        }      } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to fetch mocks. Using sample data.",
+          description: "Failed to fetch mocks from server",
           variant: "destructive",
         })
-        setMocks(sampleMocks)
+        setMocks([]) // Set empty array instead of sample data
       } finally {
         setIsLoading(false)
       }
@@ -364,10 +362,14 @@ export default function MocksPage() {
                             checked={selectedMocks.includes(mock.id)}
                             onCheckedChange={(checked) => handleSelectMock(mock.id, !!checked)}
                           />
-                        </TableCell>
-                        <TableCell className={`font-medium ${themeColors.text}`}>
+                        </TableCell>                        <TableCell className={`font-medium ${themeColors.text}`}>
                           <div className="flex items-center gap-2">
-                            <span>{mock.name}</span>                            {mock.is_public ? (
+                            <button
+                              onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                              className="hover:text-blue-600 hover:underline transition-colors text-left"
+                            >
+                              {mock.name}
+                            </button>                            {mock.is_public ? (
                               <Globe className="h-3 w-3 text-green-500" />
                             ) : (
                               <Clock className="h-3 w-3 text-orange-500" />
@@ -398,17 +400,25 @@ export default function MocksPage() {
                               <Button variant="ghost" className="h-8 w-8 p-0">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className={themeColors.menuBg}>
-                              <DropdownMenuItem className={themeColors.menuItemHover}>
+                            </DropdownMenuTrigger>                            <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                              <DropdownMenuItem 
+                                onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                className={themeColors.menuItemHover}
+                              >
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem className={themeColors.menuItemHover}>
+                              <DropdownMenuItem 
+                                onClick={() => navigateTo(`/mocks/clone/${mock.id}`)}
+                                className={themeColors.menuItemHover}
+                              >
                                 <Copy className="mr-2 h-4 w-4" />
                                 Duplicate
                               </DropdownMenuItem>
-                              <DropdownMenuItem className={themeColors.menuItemHover}>
+                              <DropdownMenuItem 
+                                onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                className={themeColors.menuItemHover}
+                              >
                                 <ExternalLink className="mr-2 h-4 w-4" />
                                 View
                               </DropdownMenuItem>
