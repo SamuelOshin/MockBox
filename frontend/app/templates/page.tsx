@@ -169,6 +169,8 @@ export default function TemplatesPage() {
   };
 
   const handleUseTemplate = (templateId: string) => {
+    // Store the template ID in localStorage as a fallback for auth redirects
+    localStorage.setItem('pendingTemplateId', templateId);
     navigateTo(`/builder?templateId=${templateId}`);
   };
 

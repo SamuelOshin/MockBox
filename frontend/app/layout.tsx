@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/components/ui/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { LineLoader, NavigationProvider } from '@/components/ui/line-loader';
 import { AuthProvider } from '@/lib/auth-context';
+import { TwentyFirstToolbar } from '@21st-extension/toolbar-next';
+import { ReactPlugin } from '@21st-extension/react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,7 +19,8 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {  return (
+}) {
+  return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
@@ -26,6 +29,11 @@ export default function RootLayout({
               <LineLoader />
               {children}
               <Toaster />
+              <TwentyFirstToolbar
+                config={{
+                  plugins: [ReactPlugin],
+                }}
+              />
             </NavigationProvider>
           </AuthProvider>
         </ThemeProvider>
