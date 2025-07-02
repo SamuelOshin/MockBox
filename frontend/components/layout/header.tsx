@@ -31,6 +31,7 @@ import { useTheme } from "@/components/ui/theme-provider"
 import { useAuth } from "@/lib/auth-context"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import MockBoxLogo from "@/components/ui/mockbox-logo"
 
 export function Header() {
   const { theme, setTheme, actualTheme } = useTheme()
@@ -91,6 +92,11 @@ export function Header() {
       {/* Mobile: Simple layout with search and user */}
       {isMobile ? (
         <>
+          <Link href="/" className="flex items-center gap-2 mr-3">
+            <MockBoxLogo className="h-7 w-7 text-blue-600 dark:text-purple-400" />
+            <span className="font-bold text-lg text-foreground dark:text-foreground">MockBox</span>
+          </Link>
+          
           {/* Mobile Search - Full width */}
           <div className="flex-1 max-w-none">
             <div className="relative">
@@ -185,6 +191,14 @@ export function Header() {
       ) : (
         /* Desktop: Full layout */
         <>
+          {/* Desktop Search */}
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2">
+              <MockBoxLogo className="h-8 w-8 text-blue-600 dark:text-purple-400" />
+              <span className="font-bold text-lg text-foreground dark:text-foreground">MockBox</span>
+            </Link>
+          </div>
+          
           {/* Desktop Search */}
           <div className="flex-1 max-w-md mx-8">
             <div className="relative">

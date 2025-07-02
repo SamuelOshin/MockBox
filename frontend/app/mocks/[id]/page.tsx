@@ -63,6 +63,7 @@ export default function ViewMockPage() {
   const { toast } = useToast()
   const mockId = params.id as string
 
+  // Existing state variables
   const [mock, setMock] = useState<MockEndpoint | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<MockError | null>(null)
@@ -70,6 +71,11 @@ export default function ViewMockPage() {
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop")
   const [copySuccess, setCopySuccess] = useState<string | null>(null)
   const [retryCount, setRetryCount] = useState(0)
+
+  // Test endpoint state
+  const [testResponse, setTestResponse] = useState<{ data: any; status: number } | null>(null)
+  const [isTesting, setIsTesting] = useState(false)
+  const [testError, setTestError] = useState<string | null>(null)
 
   // Theme-aware colors
   const themeColors = {
@@ -208,7 +214,8 @@ export default function ViewMockPage() {
   const generateUrl = () => {
     if (!mock) return ""
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-    return `${baseUrl}/simulate/${mockId}`
+    // Use the mock's endpoint path for simulation (POST requests only)
+    return `${baseUrl}/api/v1/simulate${mock.endpoint}`
   }
 
   const generateCurlCommand = () => {
@@ -216,14 +223,28 @@ export default function ViewMockPage() {
     const url = generateUrl()
     if (!url) return ""
     
-    let curlCommand = `curl -X ${mock.method} "${url}"`
+    // Always use POST for simulation endpoint, regardless of mock's method
+    let curlCommand = `curl -X POST "${url}" \\\n  -H "Content-Type: application/json"`
     
-    // Add headers if they exist
+    // Add any custom headers from the mock
     if (mock.headers && Object.keys(mock.headers).length > 0) {
       Object.entries(mock.headers).forEach(([key, value]) => {
         curlCommand += ` \\\n  -H "${key}: ${value}"`
       })
     }
+    
+    // Add mock configuration as request body
+    const mockConfig = {
+      name: mock.name,
+      endpoint: mock.endpoint,
+      method: mock.method,
+      response: mock.response,
+      headers: mock.headers || {},
+      status_code: mock.status_code,
+      delay_ms: mock.delay_ms
+    }
+    
+    curlCommand += ` \\\n  -d '${JSON.stringify(mockConfig)}'`
     
     return curlCommand
   }
@@ -233,11 +254,22 @@ export default function ViewMockPage() {
     const url = generateUrl()
     if (!url) return ""
     
+    const mockConfig = {
+      name: mock.name,
+      endpoint: mock.endpoint,
+      method: mock.method,
+      response: mock.response,
+      headers: mock.headers || {},
+      status_code: mock.status_code,
+      delay_ms: mock.delay_ms
+    }
+    
     return `fetch('${url}', {
-  method: '${mock.method}',
+  method: 'POST',
   headers: {
     'Content-Type': 'application/json'${Object.entries(mock.headers || {}).map(([key, value]) => `,\n    '${key}': '${value}'`).join('')}
-  }
+  },
+  body: JSON.stringify(${JSON.stringify(mockConfig, null, 2)})
 })
 .then(response => response.json())
 .then(data => console.log(data));`
@@ -248,13 +280,71 @@ export default function ViewMockPage() {
     const url = generateUrl()
     if (!url) return ""
     
-    return `axios.${mock.method.toLowerCase()}('${url}', {
+    const mockConfig = {
+      name: mock.name,
+      endpoint: mock.endpoint,
+      method: mock.method,
+      response: mock.response,
+      headers: mock.headers || {},
+      status_code: mock.status_code,
+      delay_ms: mock.delay_ms
+    }
+    
+    return `axios.post('${url}', ${JSON.stringify(mockConfig, null, 2)}, {
   headers: {
     'Content-Type': 'application/json'${Object.entries(mock.headers || {}).map(([key, value]) => `,\n    '${key}': '${value}'`).join('')}
   }
 })
 .then(response => console.log(response.data))
 .catch(error => console.error(error));`
+  }
+
+  const handleTestEndpoint = async () => {
+    if (!mock || !mockId) return
+
+    try {
+      setIsTesting(true)
+      setTestError(null)
+      setTestResponse(null)
+
+      // Use testMock instead of simulateMockById to match builder behavior
+      const response = await mockApi.testMock({
+        name: mock.name,
+        description: mock.description || "",
+        endpoint: mock.endpoint,
+        method: mock.method,
+        response: mock.response,
+        headers: mock.headers || {},
+        status_code: mock.status_code,
+        delay_ms: mock.delay_ms,
+        is_public: mock.is_public,
+        tags: mock.tags || []
+      })
+      
+      console.log("Test response received:", response)
+      
+      setTestResponse({
+        data: response.body || response.data || response,
+        status: response.status || 200
+      })
+      
+      toast({
+        title: "Test Successful",
+        description: "Your mock endpoint is working correctly",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("Error testing endpoint:", error)
+      setTestError(error instanceof Error ? error.message : "Failed to test endpoint")
+      
+      toast({
+        title: "Test failed",
+        description: error instanceof Error ? error.message : "Failed to test endpoint",
+        variant: "destructive",
+      })
+    } finally {
+      setIsTesting(false)
+    }
   }
 
   // Loading state
@@ -524,6 +614,65 @@ export default function ViewMockPage() {
                             </div>
                           </div>
                         )}
+
+                        <Separator className="my-2" />
+
+                        {/* Test Endpoint Section */}
+                        <div>
+                          <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Test Endpoint</h3>
+                          <div className="space-y-3">
+                            <Button
+                              onClick={handleTestEndpoint}
+                              disabled={isTesting}
+                              className="w-full gap-2"
+                            >
+                              {isTesting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Testing...
+                                </>
+                              ) : (
+                                <>
+                                  <Zap className="h-4 w-4" />
+                                  Test Endpoint
+                                </>
+                              )}
+                            </Button>
+
+                            {(testResponse || testError) && (
+                              <div className={`rounded-md p-3 ${themeColors.codeBg} space-y-2`}>
+                                {testError ? (
+                                  <div className="text-red-500 text-sm">
+                                    <AlertTriangle className="h-4 w-4 inline-block mr-1" />
+                                    {testError}
+                                  </div>
+                                ) : testResponse && (
+                                  <>
+                                    <div className="flex items-center justify-between">
+                                      <Badge 
+                                        variant={testResponse.status >= 400 ? "destructive" : "default"}
+                                        className="text-xs"
+                                      >
+                                        Status: {testResponse.status}
+                                      </Badge>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2"
+                                        onClick={() => copyToClipboard(JSON.stringify(testResponse.data, null, 2), "Response")}
+                                      >
+                                        <Copy className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                    <pre className={`${themeColors.codeText} text-xs overflow-auto max-h-48 mt-2`}>
+                                      {JSON.stringify(testResponse.data, null, 2)}
+                                    </pre>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -658,150 +807,120 @@ export default function ViewMockPage() {
                   >
                     <Card className={themeColors.cardBg}>
                       <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <Code className="h-4 w-4 text-blue-500" />
-                            Integration Examples
-                          </CardTitle>
-                          
-                          {/* Device Preview Toggle */}
-                          <div className={`flex items-center gap-1 ${actualTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-gray-700 bg-[#2D2D2D]'} rounded-lg p-1`}>
-                            <Button
-                              variant={previewDevice === "desktop" ? "default" : "ghost"}
-                              size="sm"
-                              onClick={() => setPreviewDevice("desktop")}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Monitor className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant={previewDevice === "tablet" ? "default" : "ghost"}
-                              size="sm"
-                              onClick={() => setPreviewDevice("tablet")}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Tablet className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant={previewDevice === "mobile" ? "default" : "ghost"}
-                              size="sm"
-                              onClick={() => setPreviewDevice("mobile")}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Smartphone className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Code className="h-4 w-4 text-blue-500" />
+                          Integration Examples
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className={getDevicePreviewClass()}>
-                          <Tabs defaultValue="endpoint" className="w-full">
-                            <TabsList className={`grid w-full grid-cols-3 ${themeColors.tabsBg} h-9`}>
-                              <TabsTrigger value="endpoint" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>Endpoint</TabsTrigger>
-                              <TabsTrigger value="curl" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>cURL</TabsTrigger>
-                              <TabsTrigger value="javascript" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>JavaScript</TabsTrigger>
-                            </TabsList>
+                        <Tabs defaultValue="endpoint" className="w-full">
+                          <TabsList className={`grid w-full grid-cols-3 ${themeColors.tabsBg} h-9`}>
+                            <TabsTrigger value="endpoint" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>Endpoint</TabsTrigger>
+                            <TabsTrigger value="curl" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>cURL</TabsTrigger>
+                            <TabsTrigger value="javascript" className={`${themeColors.text} data-[state=active]:${themeColors.tabsActive} text-xs`}>JavaScript</TabsTrigger>
+                          </TabsList>
 
-                            <TabsContent value="endpoint" className="space-y-4 mt-4">
-                              <div>
-                                <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Mock URL</h3>
-                                <div className="flex items-center gap-2">
-                                  <Input 
-                                    value={generateUrl()} 
-                                    readOnly 
-                                    className={`font-mono text-xs ${themeColors.codeBg} ${themeColors.text}`} 
-                                  />
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => copyToClipboard(generateUrl(), "URL")}
-                                    className={`${themeColors.buttonBg} ${themeColors.text} h-9 w-9 p-0`}
-                                  >
-                                    {copySuccess === "URL" ? (
-                                      <CheckCircle className="h-4 w-4 text-green-500" />
-                                    ) : (
-                                      <Copy className="h-4 w-4" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Test Endpoint</h3>
-                                <Button 
-                                  variant="outline" 
-                                  className={`${themeColors.buttonBg} ${themeColors.text} gap-2`}
-                                  onClick={() => window.open(generateUrl(), '_blank')}
+                          <TabsContent value="endpoint" className="space-y-4 mt-4">
+                            <div>
+                              <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Mock URL (POST requests only)</h3>
+                              <div className="flex items-center gap-2">
+                                <Input 
+                                  value={generateUrl()} 
+                                  readOnly 
+                                  className={`font-mono text-xs ${themeColors.codeBg} ${themeColors.text}`} 
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(generateUrl(), "URL")}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
                                 >
-                                  <ExternalLink className="h-4 w-4" />
-                                  Open in New Tab
+                                  {copySuccess === "URL" ? (
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
                                 </Button>
                               </div>
-                            </TabsContent>
+                              <p className={`text-xs ${themeColors.textMuted} mt-1`}>
+                                Note: This endpoint only accepts POST requests with the mock configuration
+                              </p>
+                            </div>
+                          </TabsContent>
 
-                            <TabsContent value="curl" className="mt-4">
+                          <TabsContent value="curl" className="mt-4">
+                            <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>cURL Command</h3>
-                              <div className={`p-4 rounded-lg ${themeColors.codeBg} font-mono text-xs overflow-x-auto mb-3`}>
-                                <pre className={themeColors.codeText}>{generateCurlCommand()}</pre>
-                              </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => copyToClipboard(generateCurlCommand(), "cURL")}
-                                className={`${themeColors.buttonBg} ${themeColors.text} gap-2`}
-                              >
-                                {copySuccess === "cURL" ? (
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                                {copySuccess === "cURL" ? "Copied!" : "Copy Command"}
-                              </Button>
-                            </TabsContent>
-
-                            <TabsContent value="javascript" className="space-y-6 mt-4">
-                              <div>
-                                <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Fetch API</h3>
-                                <div className={`p-4 rounded-lg ${themeColors.codeBg} font-mono text-xs overflow-x-auto mb-3`}>
-                                  <pre className={themeColors.codeText}>{generateFetchCode()}</pre>
+                              <div className="flex items-center gap-2">
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
+                                  <pre className={themeColors.codeText}>
+                                    {generateCurlCommand()}
+                                  </pre>
                                 </div>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(generateCurlCommand(), "cURL")}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
+                                >
+                                  {copySuccess === "cURL" ? (
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="javascript" className="space-y-6 mt-4">
+                            <div>
+                              <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Fetch API</h3>
+                              <div className="flex items-center gap-2">
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
+                                  <pre className={themeColors.codeText}>
+                                    {generateFetchCode()}
+                                  </pre>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => copyToClipboard(generateFetchCode(), "Fetch")}
-                                  className={`${themeColors.buttonBg} ${themeColors.text} gap-2`}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
                                 >
                                   {copySuccess === "Fetch" ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
                                   ) : (
-                                    <Copy className="h-4 w-4" />
+                                    <Copy className="h-3 w-3" />
                                   )}
-                                  {copySuccess === "Fetch" ? "Copied!" : "Copy Code"}
                                 </Button>
                               </div>
-                              
-                              <div>
-                                <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Axios</h3>
-                                <div className={`p-4 rounded-lg ${themeColors.codeBg} font-mono text-xs overflow-x-auto mb-3`}>
-                                  <pre className={themeColors.codeText}>{generateAxiosCode()}</pre>
+                            </div>
+
+                            <div>
+                              <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Axios</h3>
+                              <div className="flex items-center gap-2">
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
+                                  <pre className={themeColors.codeText}>
+                                    {generateAxiosCode()}
+                                  </pre>
                                 </div>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => copyToClipboard(generateAxiosCode(), "Axios")}
-                                  className={`${themeColors.buttonBg} ${themeColors.text} gap-2`}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
                                 >
                                   {copySuccess === "Axios" ? (
-                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
                                   ) : (
-                                    <Copy className="h-4 w-4" />
+                                    <Copy className="h-3 w-3" />
                                   )}
-                                  {copySuccess === "Axios" ? "Copied!" : "Copy Code"}
                                 </Button>
                               </div>
-                            </TabsContent>
-                          </Tabs>
-                        </div>
+                            </div>
+                          </TabsContent>
+                        </Tabs>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -835,7 +954,7 @@ export default function ViewMockPage() {
                             </div>
                           </Button>
                           
-                          <Button 
+                          {/* <Button 
                             variant="outline" 
                             className={`${themeColors.buttonBg} ${themeColors.text} h-auto py-3 justify-start gap-3`}
                             onClick={() => window.open(generateUrl(), '_blank')}
@@ -847,7 +966,7 @@ export default function ViewMockPage() {
                               <div className="font-medium text-sm">Test Endpoint</div>
                               <div className="text-xs text-muted-foreground">Open in new tab</div>
                             </div>
-                          </Button>
+                          </Button> */}
                           
                           <Button 
                             variant="outline" 

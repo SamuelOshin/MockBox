@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useNavigation } from "@/components/ui/line-loader"
@@ -35,13 +35,21 @@ export function useBuilderState() {
   const [templateLoadError, setTemplateLoadError] = useState<string | null>(null)
   const [loadedTemplate, setLoadedTemplate] = useState<TemplateDetail | null>(null)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [editingMockId, setEditingMockId] = useState<string | null>(null)
+
+  // Use ref to track when we're loading mock data to prevent JSON overwrite
+  const isLoadingMockData = useRef(false)
 
   const { toast } = useToast()
   const { navigateTo } = useNavigation()
   const searchParams = useSearchParams()
 
-  // Update response object when JSON string changes
+  // Update response object when JSON string changes (but not during mock loading)
   useEffect(() => {
+    // Don't update form data from JSON when we're loading mock data
+    if (isLoadingMockData.current) return
+    
     try {
       const parsedJson = JSON.parse(jsonString)
       setFormData(prev => ({ ...prev, response: parsedJson }))
@@ -50,10 +58,20 @@ export function useBuilderState() {
     }
   }, [jsonString])
 
-  // Load template data if templateId is provided
+  // Load template data if templateId is provided, or load mock data if mockId is provided
   useEffect(() => {
+    const mockId = searchParams.get('mockId')
     let templateId = searchParams.get('templateId')
     
+    // Handle mock editing
+    if (mockId) {
+      setIsEditMode(true)
+      setEditingMockId(mockId)
+      loadMockForEditing(mockId)
+      return
+    }
+    
+    // Handle template loading
     if (!templateId) {
       templateId = localStorage.getItem('pendingTemplateId')
       if (templateId) {
@@ -70,6 +88,57 @@ export function useBuilderState() {
       loadTemplate(templateId)
     }
   }, [searchParams])
+
+  const loadMockForEditing = async (mockId: string) => {
+    setIsLoading(true)
+    setTemplateLoadError(null)
+    isLoadingMockData.current = true
+    
+    try {
+      const mockData = await mockApi.getMock(mockId)
+      
+      // Load the mock data into the form
+      const newFormData = {
+        name: mockData.name || "",
+        description: mockData.description || "",
+        endpoint: mockData.endpoint || "",
+        method: mockData.method || "GET",
+        response: mockData.response || {},
+        headers: mockData.headers || {},
+        status_code: mockData.status_code || 200,
+        delay_ms: mockData.delay_ms || 0,
+        is_public: mockData.is_public || false,
+        tags: mockData.tags || []
+      }
+      
+      setFormData(newFormData)
+      
+      // Update the JSON string with the response data
+      setJsonString(JSON.stringify(mockData.response || {}, null, 2))
+      
+      toast({
+        title: "Mock loaded",
+        description: "Mock data loaded successfully for editing",
+        variant: "default",
+      })
+    } catch (error) {
+      console.error("Error loading mock:", error)
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to load mock for editing"
+      
+      setTemplateLoadError(errorMessage)
+      
+      toast({
+        title: "Loading failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      isLoadingMockData.current = false
+    }
+  }
 
   const loadTemplate = async (templateId: string) => {
     setIsLoadingTemplate(true)
@@ -204,21 +273,35 @@ export function useBuilderState() {
     setIsSaving(true)
 
     try {
-      const result = await mockApi.createMock(formData)
+      let result
       
-      toast({
-        title: "Mock Created",
-        description: "Your mock has been created successfully",
-        variant: "default",
-      })
+      if (isEditMode && editingMockId) {
+        // Update existing mock
+        result = await mockApi.updateMock(editingMockId, formData)
+        
+        toast({
+          title: "Mock Updated",
+          description: "Your mock has been updated successfully",
+          variant: "default",
+        })
+      } else {
+        // Create new mock
+        result = await mockApi.createMock(formData)
+        
+        toast({
+          title: "Mock Created",
+          description: "Your mock has been created successfully",
+          variant: "default",
+        })
+      }
       
       navigateTo(`/mocks/${result.id}`)
     } catch (error) {
-      console.error("Error creating mock:", error)
+      console.error("Error saving mock:", error)
       
       toast({
-        title: "Creation Failed",
-        description: error instanceof Error ? error.message : "Failed to create mock",
+        title: isEditMode ? "Update Failed" : "Creation Failed",
+        description: error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'create'} mock`,
         variant: "destructive",
       })
     } finally {
@@ -315,6 +398,8 @@ export function useBuilderState() {
     templateLoadError,
     loadedTemplate,
     showTemplateModal,
+    isEditMode,
+    editingMockId,
     
     // Setters
     setFormData,

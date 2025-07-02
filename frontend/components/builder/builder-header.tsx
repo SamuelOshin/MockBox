@@ -12,7 +12,8 @@ export function BuilderHeader({
   isTesting,
   isSaving,
   formData,
-  themeColors
+  themeColors,
+  isEditMode = false
 }: BuilderHeaderProps) {
   const isFormValid = formData.name && formData.endpoint && formData.method
 
@@ -29,10 +30,10 @@ export function BuilderHeader({
         </Button>
         <div className="min-w-0 flex-1">
           <h1 className={`text-lg sm:text-xl md:text-2xl font-bold ${themeColors.text} mb-0.5 sm:mb-1 truncate`}>
-            Create New Mock
+            {isEditMode ? "Edit Mock" : "Create New Mock"}
           </h1>
           <p className={`text-xs sm:text-sm ${themeColors.textSecondary} line-clamp-2 leading-tight sm:leading-normal`}>
-            Design your API mock endpoint with custom responses
+            {isEditMode ? "Modify your existing API mock endpoint" : "Design your API mock endpoint with custom responses"}
           </p>
         </div>
       </div>
@@ -65,8 +66,8 @@ export function BuilderHeader({
           ) : (
             <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           )}
-          <span className="hidden xs:inline">{isSaving ? "Saving..." : "Save Mock"}</span>
-          <span className="xs:hidden">{isSaving ? "Save..." : "Save"}</span>
+          <span className="hidden xs:inline">{isSaving ? (isEditMode ? "Updating..." : "Saving...") : (isEditMode ? "Update Mock" : "Save Mock")}</span>
+          <span className="xs:hidden">{isSaving ? (isEditMode ? "Update..." : "Save...") : (isEditMode ? "Update" : "Save")}</span>
         </Button>
         
         <Button
