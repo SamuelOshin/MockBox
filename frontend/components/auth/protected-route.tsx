@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Loader2 } from "lucide-react"
@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
   fallback?: React.ReactNode
 }
 
-export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+function ProtectedRouteContent({ children, fallback }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -50,4 +50,27 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   }
 
   return <>{children}</>
+}
+
+export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
+  return (
+    <Suspense fallback={fallback || (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="text-center space-y-6">
+          <div className="flex items-center justify-center">
+            <EngineSpinner size={48} color="#6366f1" />
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground justify-center">
+            <span className="font-bold tracking-tight text-lg text-slate-800 dark:text-slate-100">
+              Loading...
+            </span>
+          </div>
+        </div>
+      </div>
+    )}>
+      <ProtectedRouteContent fallback={fallback}>
+        {children}
+      </ProtectedRouteContent>
+    </Suspense>
+  )
 }
