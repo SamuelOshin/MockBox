@@ -13,6 +13,13 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'MockBox - API Mock Builder',
   description: 'Build, test, and deploy realistic API mocks in seconds',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/placeholder-logo.png', type: 'image/png', sizes: '32x32' }
+    ],
+    apple: '/placeholder-logo.png',
+  },
 };
 
 export default function RootLayout({
