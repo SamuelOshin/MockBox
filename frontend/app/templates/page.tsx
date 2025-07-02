@@ -80,17 +80,17 @@ export default function TemplatesPage() {
 
   // Theme-aware colors
   const themeColors = {
-    background: actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50 to-slate-100' : 'bg-gradient-to-br from-slate-900 to-slate-800',
+    background: actualTheme === 'light' ? 'bg-gradient-to-br from-slate-50 to-slate-100' : 'bg-[#0A0A0A]',
     text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
     textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300',
     textMuted: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400',
-    cardBg: actualTheme === 'light' ? 'bg-white' : 'bg-gray-900',
+    cardBg: actualTheme === 'light' ? 'bg-white' : 'bg-[#1A1A1A]',
     cardBorder: actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800',
     cardHover: actualTheme === 'light' ? 'hover:border-slate-300 hover:shadow-md' : 'hover:border-gray-700 hover:shadow-md',
-    inputBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-gray-800 border-gray-700',
-    buttonBg: actualTheme === 'light' ? 'bg-slate-100 hover:bg-slate-200' : 'bg-gray-800 hover:bg-gray-700',
-    tabsBg: actualTheme === 'light' ? 'bg-slate-100' : 'bg-gray-800',
-    tabsActive: actualTheme === 'light' ? 'bg-white' : 'bg-gray-700',
+    inputBg: actualTheme === 'light' ? 'bg-white border-slate-300' : 'bg-[#2D2D2D] border-gray-700',
+    buttonBg: actualTheme === 'light' ? 'bg-slate-100 hover:bg-slate-200' : 'bg-[#2D2D2D] hover:bg-[#3A3A3A]',
+    tabsBg: actualTheme === 'light' ? 'bg-slate-100' : 'bg-[#2D2D2D]',
+    tabsActive: actualTheme === 'light' ? 'bg-white' : 'bg-[#3A3A3A]',
   };
 
   // Extract unique categories from templates
@@ -196,16 +196,16 @@ export default function TemplatesPage() {
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
         <Header />
-        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 h-[calc(100vh-4rem)] overflow-y-auto">
+        <main className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden">
           {/* Hero Section */}
           <motion.div 
-            className="mb-8 text-center"
+            className="mb-6 md:mb-8 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className={`text-3xl font-bold ${themeColors.text} mb-2`}>API Mock Templates</h1>
-            <p className={`${themeColors.textSecondary} max-w-2xl mx-auto`}>
+            <h1 className={`text-2xl md:text-3xl font-bold ${themeColors.text} mb-2`}>API Mock Templates</h1>
+            <p className={`text-sm md:text-base ${themeColors.textSecondary} max-w-2xl mx-auto px-2`}>
               Jumpstart your API development with our curated collection of mock templates.
               Choose a template to quickly create realistic API endpoints.
             </p>
@@ -213,20 +213,20 @@ export default function TemplatesPage() {
 
           {/* Search and Filters */}
           <motion.div 
-            className="mb-8"
+            className="mb-6 md:mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex flex-col md:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
               {/* Search Bar */}
               <div className="relative flex-1">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${themeColors.textMuted}`} />
                 <Input
-                  placeholder="Search templates by name, description, or tags..."
+                  placeholder="Search templates..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`pl-10 ${themeColors.inputBg}`}
+                  className={`pl-10 h-9 md:h-10 text-sm ${themeColors.inputBg}`}
                 />
               </div>
 
@@ -235,7 +235,7 @@ export default function TemplatesPage() {
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
               >
-                <SelectTrigger className={`w-[180px] ${themeColors.inputBg}`}>
+                <SelectTrigger className={`w-full md:w-[180px] h-9 md:h-10 ${themeColors.inputBg}`}>
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4" />
                     <SelectValue placeholder="Category" />
@@ -255,7 +255,7 @@ export default function TemplatesPage() {
                 value={sortBy}
                 onValueChange={setSortBy}
               >
-                <SelectTrigger className={`w-[180px] ${themeColors.inputBg}`}>
+                <SelectTrigger className={`w-full md:w-[180px] h-9 md:h-10 ${themeColors.inputBg}`}>
                   <div className="flex items-center gap-2">
                     <SlidersHorizontal className="h-4 w-4" />
                     <SelectValue placeholder="Sort by" />
@@ -276,7 +276,7 @@ export default function TemplatesPage() {
                 size="icon" 
                 onClick={refreshTemplates} 
                 disabled={isRefreshing}
-                className={themeColors.buttonBg}
+                className={`${themeColors.buttonBg} h-9 md:h-10 w-9 md:w-10`}
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
@@ -284,35 +284,38 @@ export default function TemplatesPage() {
 
             {/* Category Tabs - Alternative to dropdown for larger screens */}
             <div className="hidden md:block">
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
               <Tabs defaultValue="all" value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className={`${themeColors.tabsBg}`}>
-                  {categories.map((category) => (
-                    <TabsTrigger 
-                      key={category} 
-                      value={category}
-                      className={`${selectedCategory === category ? themeColors.tabsActive : ''}`}
-                    >
-                      {category === "all" ? "All Categories" : category}
-                    </TabsTrigger>
-                  ))}
+                <TabsList className={`${themeColors.tabsBg} min-w-max`}>
+                {categories.map((category) => (
+                  <TabsTrigger 
+                  key={category} 
+                  value={category}
+                  className={`${selectedCategory === category ? themeColors.tabsActive : ''}`}
+                  >
+                  {category === "all" ? "All Categories" : category}
+                  </TabsTrigger>
+                ))}
                 </TabsList>
               </Tabs>
+              </div>
             </div>
           </motion.div>
 
           {/* Results Count and Create Template Button */}
           <motion.div 
-            className="flex justify-between items-center mb-6"
+            className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 md:mb-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <p className={themeColors.textSecondary}>
+            <p className={`${themeColors.textSecondary} text-sm md:text-base`}>
               {filteredTemplates.length} {filteredTemplates.length === 1 ? 'template' : 'templates'} found
             </p>
-            <Button className="gap-2">
+            <Button className="gap-2 h-9 md:h-10 text-sm">
               <Plus className="h-4 w-4" />
-              Create Template
+              <span className="hidden sm:inline">Create Template</span>
+              <span className="sm:hidden">Create</span>
             </Button>
           </motion.div>
 
@@ -368,7 +371,7 @@ export default function TemplatesPage() {
           )}
 
           {/* Templates Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {filteredTemplates.map((template, index) => {
               const CategoryIcon = categoryIcons[template.category] || categoryIcons.default;
               const categoryColor = categoryColors[template.category] || categoryColors.default;
@@ -383,64 +386,65 @@ export default function TemplatesPage() {
                   className="group"
                 >
                   <Card className={`h-full ${themeColors.cardBg} ${themeColors.cardBorder} ${themeColors.cardHover} transition-all duration-200 overflow-hidden`}>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-2 px-4 pt-4 md:px-6 md:pt-6">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${categoryColor}`}>
-                            <CategoryIcon className="h-5 w-5" />
+                        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                          <div className={`p-1.5 md:p-2 rounded-lg ${categoryColor} flex-shrink-0`}>
+                            <CategoryIcon className="h-4 w-4 md:h-5 md:w-5" />
                           </div>
-                          <div>
-                            <CardTitle className={`text-lg ${themeColors.text}`}>{template.name}</CardTitle>
-                            <CardDescription className="line-clamp-1">
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className={`text-base md:text-lg ${themeColors.text} truncate`}>{template.name}</CardTitle>
+                            <CardDescription className="text-xs md:text-sm truncate">
                               {template.category}
                             </CardDescription>
                           </div>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <p className={`text-sm ${themeColors.textSecondary} mb-4 line-clamp-2 h-10`}>
+                    <CardContent className="px-4 md:px-6">
+                      <p className={`text-xs md:text-sm ${themeColors.textSecondary} mb-3 md:mb-4 line-clamp-2 h-8 md:h-10 leading-tight`}>
                         {template.description || "No description provided."}
                       </p>
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {template.tags.slice(0, 4).map((tag) => (
+                      <div className="flex flex-wrap gap-1 md:gap-1.5 mb-3 md:mb-4">
+                        {template.tags.slice(0, 3).map((tag) => (
                           <Badge 
                             key={tag} 
                             variant="secondary" 
-                            className="text-xs"
+                            className="text-xs px-2 py-0.5"
                           >
                             {tag}
                           </Badge>
                         ))}
-                        {template.tags.length > 4 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{template.tags.length - 4} more
+                        {template.tags.length > 3 && (
+                          <Badge variant="outline" className="text-xs px-2 py-0.5">
+                            +{template.tags.length - 3} more
                           </Badge>
                         )}
                       </div>
                     </CardContent>
-                    <CardFooter className="pt-0 flex justify-between items-center">
+                    <CardFooter className="pt-0 px-4 md:px-6 pb-4 md:pb-6 flex justify-between items-center">
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        <span>{new Date(template.created_at).toLocaleDateString()}</span>
+                        <span className="hidden sm:inline">{new Date(template.created_at).toLocaleDateString()}</span>
+                        <span className="sm:hidden">{new Date(template.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5 md:gap-2">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="gap-1"
+                          className="gap-1 h-7 md:h-8 px-2 md:px-3"
                           onClick={() => navigateTo(`/templates/${template.id}`)}
                         >
-                          <Eye className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">Details</span>
+                          <Eye className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                          <span className="hidden md:inline">Details</span>
                         </Button>
                         <Button 
                           size="sm" 
-                          className="gap-1"
+                          className="gap-1 h-7 md:h-8 px-2 md:px-3"
                           onClick={() => handleUseTemplate(template.id)}
                         >
-                          <Zap className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">Use</span>
+                          <Zap className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                          <span className="hidden md:inline">Use</span>
                         </Button>
                       </div>
                     </CardFooter>
