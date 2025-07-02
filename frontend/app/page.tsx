@@ -567,7 +567,7 @@ export default function HomePage() {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0"
-                  onClick={() => navigateTo("/builder")}
+                  onClick={() => navigateTo("/templates")}
                 >
                   Get Started
                 </Button>
@@ -633,7 +633,7 @@ export default function HomePage() {
           >
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                onClick={() => navigateTo(user ? "/dashboard" : "/builder")}
+                onClick={() => navigateTo(user ? "/dashboard" : "/templates")}
                 size="lg"
                 className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
               >
@@ -685,7 +685,8 @@ export default function HomePage() {
                     animate={{ opacity: [1, 0] }}
                     transition={{ duration: 0.8, repeat: Infinity }}
                   />
-                </pre>              </CardContent>
+                </pre>              
+                </CardContent>
             </Card>
           </motion.div>
         </div>
@@ -713,7 +714,8 @@ export default function HomePage() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (              <motion.div
+            {features.map((feature, index) => (             
+               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -859,7 +861,8 @@ export default function HomePage() {
                     </Card>
                   </motion.div>
                 )
-              })}              {/* Duplicate set for seamless loop */}
+              })}              
+              {/* Duplicate set for seamless loop */}
               {testimonials.map((testimonial, index) => {
                 const theme = cardThemes[testimonial.cardTheme as keyof typeof cardThemes]
 
@@ -968,7 +971,7 @@ export default function HomePage() {
           >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
-                onClick={() => navigateTo(user ? "/dashboard" : "/builder")}
+                onClick={() => navigateTo(user ? "/dashboard" : "/templates")}
                 size="lg"
                 className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
               >
@@ -1055,7 +1058,8 @@ export default function HomePage() {
           </div>
 
           <div className={`border-t ${themeColors.border} mt-12 pt-8 text-center ${themeColors.textSecondary}`}>
-            <p>&copy; 2024 MockBox. Built with ❤️ for developers worldwide.</p>          </div>
+            <p>&copy; 2024 MockBox. Built with ❤️ for developers worldwide.</p>         
+             </div>
         </div>
       </footer>
 

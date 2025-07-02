@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Loader2 } from "lucide-react"
 import { EngineSpinner } from "@/components/ui/engine-spinner"
@@ -15,14 +15,16 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     if (!loading && !user) {
-      // Store the current path as the redirect destination
-      const redirectUrl = encodeURIComponent(pathname)
+      // Preserve the full current URL including query parameters
+      const fullUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '')
+      const redirectUrl = encodeURIComponent(fullUrl)
       router.push(`/auth/login?redirect=${redirectUrl}`)
     }
-  }, [user, loading, router, pathname])
+  }, [user, loading, router, pathname, searchParams])
 
   if (loading) {
     return (

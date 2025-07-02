@@ -244,25 +244,25 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
     }
   }
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 rounded-lg bg-gradient-to-r from-green-500 to-teal-600">
-          <Code className="h-3 w-3 text-white" />
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+        <div className="p-1 sm:p-1.5 rounded-lg bg-gradient-to-r from-green-500 to-teal-600 flex-shrink-0">
+          <Code className="h-3 w-3 sm:h-3 sm:w-3 text-white" />
         </div>
-        <h3 className={cn("text-base font-semibold", themeColors.text)}>JSON Snippets</h3>
+        <h3 className={cn("text-sm sm:text-base font-semibold", themeColors.text)}>JSON Snippets</h3>
       </div>
-      <p className={cn("text-xs mb-4", themeColors.textMuted)}>Quick start templates for common API response patterns</p>
+      <p className={cn("text-xs mb-3 sm:mb-4", themeColors.textMuted)}>Quick start templates for common API response patterns</p>
 
       {/* Scrollable container with custom scrollbar */}      <ScrollbarContainer
-        maxHeight="384px"
-        className="pr-2 space-y-4"
+        maxHeight="320px"
+        className="pr-1 sm:pr-2 space-y-3 sm:space-y-4"
         theme={scrollbarTheme}
         scrollbarWidth="6px"
         hoverOpacity={0.8}
-      >{categories.map(category => (
+      >        {categories.map(category => (
           <div key={category}>
-            <h4 className={cn("text-sm font-medium mb-2 uppercase tracking-wide", themeColors.textMuted)}>{category}</h4>
-            <div className="grid grid-cols-1 gap-2">
+            <h4 className={cn("text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 uppercase tracking-wide", themeColors.textMuted)}>{category}</h4>
+            <div className="grid grid-cols-1 gap-1.5 sm:gap-2">
               {snippets
                 .filter(snippet => snippet.category === category)
                 .map(snippet => (
@@ -279,24 +279,24 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                       )}
                       onClick={() => onSnippetSelect(JSON.stringify(snippet.data, null, 2))}
                     >
-                      <CardHeader className="pb-2 px-3 pt-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2 flex-1">
-                            <div className="p-1 rounded-md bg-blue-500/20 flex-shrink-0">
-                              <snippet.icon className="h-3 w-3 text-blue-400" />
+                      <CardHeader className="pb-1.5 sm:pb-2 px-2 sm:px-3 pt-2 sm:pt-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-1.5 sm:gap-2 flex-1 min-w-0">
+                            <div className="p-0.5 sm:p-1 rounded-md bg-blue-500/20 flex-shrink-0">
+                              <snippet.icon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-400" />
                             </div>                            <div className="flex-1 min-w-0">
                               <CardTitle className={cn("text-xs font-medium truncate", themeColors.text)}>{snippet.title}</CardTitle>
-                              <CardDescription className={cn("text-xs line-clamp-1", themeColors.textSecondary)}>
+                              <CardDescription className={cn("text-xs line-clamp-1 leading-tight", themeColors.textSecondary)}>
                                 {snippet.description}
                               </CardDescription>
                             </div>
                           </div>
 
                           {/* Enhanced Action buttons */}
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">                            <Button
+                          <div className="flex items-center gap-0.5 sm:gap-1 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">                            <Button
                               variant="ghost"
                               size="sm"
-                              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+                              className={cn("h-5 w-5 sm:h-6 sm:w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
                               onClick={(e) => copySnippet(snippet.data, snippet.id, e)}
                               title="Copy JSON"
                             >
@@ -309,7 +309,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                                     exit={{ scale: 0 }}
                                     transition={{ duration: 0.2 }}
                                   >
-                                    <Check className="h-3 w-3 text-green-500" />
+                                    <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-500" />
                                   </motion.div>
                                 ) : (
                                   <motion.div
@@ -319,14 +319,14 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                                     exit={{ scale: 0 }}
                                     transition={{ duration: 0.2 }}
                                   >
-                                    <Copy className="h-3 w-3" />
+                                    <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                   </motion.div>
                                 )}
                               </AnimatePresence>
                             </Button>                            <Button
                               variant="ghost"
                               size="sm"
-                              className={cn("h-6 w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
+                              className={cn("h-5 w-5 sm:h-6 sm:w-6 p-0", themeColors.textSecondary, themeColors.buttonHover)}
                               onClick={(e) => downloadSnippet(snippet.data, snippet.title, snippet.id, e)}
                               title="Download JSON"
                               disabled={downloadingStates[snippet.id]}
@@ -336,22 +336,22 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                                   animate={{ y: [0, -2, 0] }}
                                   transition={{ duration: 0.6, repeat: Infinity }}
                                 >
-                                  <Download className="h-3 w-3" />
+                                  <Download className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                                 </motion.div>
                               ) : (
-                                <Download className="h-3 w-3" />
+                                <Download className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                               )}
                             </Button>
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="px-3 pb-3 pt-0">                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1 mb-2">
+                      <CardContent className="px-2 sm:px-3 pb-2 sm:pb-3 pt-0">                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1 mb-1.5 sm:mb-2">
                           {snippet.tags.slice(0, 3).map(tag => (
                             <Badge
                               key={tag}
                               variant="secondary"
-                              className={cn("text-xs px-1.5 py-0 h-4", themeColors.badgeBg)}
+                              className={cn("text-xs px-1 sm:px-1.5 py-0 h-3.5 sm:h-4", themeColors.badgeBg)}
                             >
                               {tag}
                             </Badge>
@@ -361,7 +361,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                           variant="outline"
                           size="sm"
                           className={cn(
-                            "w-full text-xs h-6",
+                            "w-full text-xs h-5 sm:h-6",
                             actualTheme === 'light'
                               ? "bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-slate-400"
                               : "bg-[#1A1A1A] border-gray-600 text-white hover:bg-[#2D2D2D] hover:border-gray-500"

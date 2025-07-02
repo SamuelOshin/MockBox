@@ -160,6 +160,8 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
 
   const handleUseTemplate = () => {
     if (template) {
+      // Store template ID in localStorage as fallback for auth redirects
+      localStorage.setItem('pendingTemplateId', template.id);
       navigateTo(`/builder?templateId=${template.id}`);
     }
   };
