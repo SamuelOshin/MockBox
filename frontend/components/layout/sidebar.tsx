@@ -309,9 +309,21 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-3 overflow-hidden"
               >
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm">MB</span>
-                </div>
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  className="h-8 w-8 flex-shrink-0"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    d="m7.839 40.783 16.03-28.054L20 6 0 40.783h7.839Zm8.214 0H40L27.99 19.894l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
                 <Link href="/">
                   <div className="whitespace-nowrap">
                     <div className={cn("font-bold text-sm", sidebarColors.text)}>MockBox</div>
@@ -321,9 +333,21 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               </motion.div>
             )}
           </AnimatePresence>          {(isCollapsed && !isMobile) && (
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center mx-auto">
-              <span className="text-white font-bold text-sm">MB</span>
-            </div>
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 48 48"
+              fill="none"
+              className="h-8 w-8 mx-auto"
+              aria-hidden="true"
+            >
+              <path
+                fill="currentColor"
+                fillRule="evenodd"
+                d="m7.839 40.783 16.03-28.054L20 6 0 40.783h7.839Zm8.214 0H40L27.99 19.894l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z"
+                clipRule="evenodd"
+              />
+            </svg>
           )}<Button
             variant="ghost"
             size="sm"
@@ -510,9 +534,21 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             </Button>
             
             <Link href="/dashboard" className="flex items-center gap-3 ml-3 transition-all duration-200 hover:opacity-80">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-sm">MB</span>
-              </div>
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 48 48"
+                fill="none"
+                className="h-8 w-8 flex-shrink-0 shadow-md"
+                aria-hidden="true"
+              >
+                <path
+                  fill="currentColor"
+                  fillRule="evenodd"
+                  d="m7.839 40.783 16.03-28.054L20 6 0 40.783h7.839Zm8.214 0H40L27.99 19.894l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z"
+                  clipRule="evenodd"
+                />
+              </svg>
               <div className="flex flex-col">
                 <span className={cn("font-bold text-sm leading-none", sidebarColors.text)}>
                   MockBox

@@ -40,6 +40,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import MockBoxLogo from "@/components/ui/mockbox-logo"
 
 const features = [
   {
@@ -430,13 +431,7 @@ export default function HomePage() {
       <header className={`relative z-50 border-b ${themeColors.border} ${actualTheme === 'light' ? 'bg-white/80' : 'bg-black/20'} backdrop-blur-xl`}>
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <motion.div
-              className="h-10 w-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <span className="text-white font-bold text-lg">MB</span>
-            </motion.div>
+            <MockBoxLogo className="h-10 w-10 text-blue-600 dark:text-purple-400" />
             <span className={`font-bold text-xl ${actualTheme === 'light' ? 'text-slate-900' : 'bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent'}`}>
               MockBox
             </span>
@@ -572,7 +567,8 @@ export default function HomePage() {
                   Get Started
                 </Button>
               </motion.div>
-            )}
+            )
+            }
           </div>
         </div>
       </header>
@@ -999,9 +995,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-12">
             <div>
               <Link href="/" className="flex items-center gap-3 mb-6">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">MB</span>
-                </div>
+                <MockBoxLogo className="h-8 w-8 text-blue-600 dark:text-purple-400" />
                 <span className={`font-bold text-xl ${themeColors.text}`}>MockBox</span>
               </Link>
               <p className={`${themeColors.textSecondary} leading-relaxed`}>

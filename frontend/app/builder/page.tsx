@@ -28,6 +28,7 @@ function BuilderPageContent() {
     // State
     formData,
     jsonString,
+    isLoading,
     isSaving,
     isTesting,
     testResult,
@@ -36,6 +37,7 @@ function BuilderPageContent() {
     templateLoadError,
     loadedTemplate,
     showTemplateModal,
+    isEditMode,
     
     // Setters
     setJsonString,
@@ -65,86 +67,101 @@ function BuilderPageContent() {
       <Header />
       <main className="p-2 sm:p-3 md:p-6 h-[calc(100vh-4rem)] overflow-y-auto">
         <div className="max-w-7xl mx-auto">
-          {/* Header with Back Button */}
-          <BuilderHeader
-            onNavigateBack={() => navigateTo("/mocks")}
-            onTest={handleTest}
-            onSave={handleSave}
-            onOpenAI={() => setIsAIModalOpen(true)}
-            isTesting={isTesting}
-            isSaving={isSaving}
-            formData={formData}
-            themeColors={themeColors}
-          />
-
-          {/* Template Status Indicator */}
-          {loadedTemplate && (
-            <TemplateStatusCard
-              loadedTemplate={loadedTemplate}
-              formData={formData}
-              onSwitchConfiguration={() => setShowTemplateModal(true)}
-              onClearTemplate={clearTemplate}
-              themeColors={themeColors}
-            />
-          )}
-
-          {/* Template Load Error */}
-          {templateLoadError && (
-            <TemplateErrorCard
-              error={templateLoadError}
-              themeColors={themeColors}
-            />
-          )}
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-            {/* Left Column - Configuration */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Configure Endpoint Section */}
-              <BasicInformationForm
-                formData={formData}
-                onInputChange={handleInputChange}
-                onNumberChange={handleNumberChange}
-                onSelectChange={handleSelectChange}
-                onSwitchChange={handleSwitchChange}
-                themeColors={themeColors}
-              />
-
-              {/* JSON Snippets */}
-              <JsonSnippets onSnippetSelect={handleSnippetSelect} />
+          {/* Show loading indicator when loading mock data */}
+          {isLoading && (
+            <div className="flex items-center justify-center p-8">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span className="text-sm">Loading mock data...</span>
+              </div>
             </div>
-
-            {/* Right Column - Response Editor & Preview */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Mock Response Section */}
-              <ResponseEditor
-                jsonString={jsonString}
-                onChange={setJsonString}
-                onCopy={copyToClipboard}
-                themeColors={themeColors}
-              />
-
-              {/* Preview Output Section */}
-              <ResponsePreview
-                formData={formData}
-                jsonString={jsonString}
-                testResult={testResult}
-                isTesting={isTesting}
-                previewDevice={previewDevice}
+          )}
+          
+          {!isLoading && (
+            <>
+              {/* Header with Back Button */}
+              <BuilderHeader
+                onNavigateBack={() => navigateTo("/mocks")}
                 onTest={handleTest}
-                onCopy={copyToClipboard}
-                onDeviceChange={setPreviewDevice}
+                onSave={handleSave}
+                onOpenAI={() => setIsAIModalOpen(true)}
+                isTesting={isTesting}
+                isSaving={isSaving}
+                formData={formData}
                 themeColors={themeColors}
-                actualTheme={actualTheme}
+                isEditMode={isEditMode}
               />
 
-              {/* AI Generation Panel */}
-              <AISnippetWizard 
-                onSnippetGenerated={handleResponseGeneration} 
-                onSnippetSelect={handleSnippetSelect} 
-              />
-            </div>
-          </div>
+              {/* Template Status Indicator */}
+              {loadedTemplate && (
+                <TemplateStatusCard
+                  loadedTemplate={loadedTemplate}
+                  formData={formData}
+                  onSwitchConfiguration={() => setShowTemplateModal(true)}
+                  onClearTemplate={clearTemplate}
+                  themeColors={themeColors}
+                />
+              )}
+
+              {/* Template Load Error */}
+              {templateLoadError && (
+                <TemplateErrorCard
+                  error={templateLoadError}
+                  themeColors={themeColors}
+                />
+              )}
+
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+                {/* Left Column - Configuration */}
+                <div className="space-y-4 sm:space-y-6">
+                  {/* Configure Endpoint Section */}
+                  <BasicInformationForm
+                    formData={formData}
+                    onInputChange={handleInputChange}
+                    onNumberChange={handleNumberChange}
+                    onSelectChange={handleSelectChange}
+                    onSwitchChange={handleSwitchChange}
+                    themeColors={themeColors}
+                  />
+
+                  {/* JSON Snippets */}
+                  <JsonSnippets onSnippetSelect={handleSnippetSelect} />
+                </div>
+
+                {/* Right Column - Response Editor & Preview */}
+                <div className="space-y-4 sm:space-y-6">
+                  {/* Mock Response Section */}
+                  <ResponseEditor
+                    jsonString={jsonString}
+                    onChange={setJsonString}
+                    onCopy={copyToClipboard}
+                    themeColors={themeColors}
+                  />
+
+                  {/* Preview Output Section */}
+                  <ResponsePreview
+                    formData={formData}
+                    jsonString={jsonString}
+                    testResult={testResult}
+                    isTesting={isTesting}
+                    previewDevice={previewDevice}
+                    onTest={handleTest}
+                    onCopy={copyToClipboard}
+                    onDeviceChange={setPreviewDevice}
+                    themeColors={themeColors}
+                    actualTheme={actualTheme}
+                  />
+
+                  {/* AI Generation Panel */}
+                  <AISnippetWizard 
+                    onSnippetGenerated={handleResponseGeneration} 
+                    onSnippetSelect={handleSnippetSelect} 
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

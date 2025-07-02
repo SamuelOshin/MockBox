@@ -25,6 +25,7 @@ export interface BuilderHeaderProps {
   isSaving: boolean
   formData: BuilderFormData
   themeColors: ThemeColors
+  isEditMode?: boolean
 }
 
 export interface TemplateStatusCardProps {

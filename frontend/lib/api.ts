@@ -153,25 +153,38 @@ export const mockApi = {
   },
 
   async testMock(data: CreateMockRequest): Promise<any> {
-    // Use the simulate endpoint for testing without creating a mock
-    const endpointPath = data.endpoint.startsWith('/') ? data.endpoint.slice(1) : data.endpoint;
-    const url = `${API_BASE_URL}/api/v1/simulate/${endpointPath}`;
+    // Use the simulate endpoint for testing - always POST with mock config
+    const endpointPath = data.endpoint.startsWith('/') ? data.endpoint : `/${data.endpoint}`;
+    const url = `${API_BASE_URL}/api/v1/simulate${endpointPath}`;
+    
     const fetchOptions: RequestInit = {
-      method: data.method,
+      method: 'POST', // Always POST to simulation endpoint
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        name: data.name,
+        endpoint: data.endpoint,
+        method: data.method,
+        response: data.response,
+        headers: data.headers || {},
+        status_code: data.status_code,
+        delay_ms: data.delay_ms
+      })
     };
-    // Only include body for methods that allow it
-    if (data.method !== 'GET' && data.method !== 'HEAD') {
-      fetchOptions.body = JSON.stringify(data.response);
-    }
+    
     const response = await fetch(url, fetchOptions);
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Test failed: ${response.status} ${errorText}`);
     }
-    return response.json();
+    
+    const responseData = await response.json();
+    return {
+      body: responseData,
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries())
+    };
   },
   async getAllMocks(): Promise<MockEndpoint[]> {
     const response = await apiRequest<PaginatedResponse<MockEndpoint>>('/api/v1/mocks/')
@@ -269,6 +282,15 @@ export const mockApi = {
       fetchOptions.body = JSON.stringify(data.response);
     }
     const response = await fetch(url, fetchOptions);
+    const body = await response.json().catch(() => ({}));
+    const headers: Record<string, string> = {};
+    response.headers.forEach((value, key) => { headers[key] = value });
+    return { status: response.status, headers, body };
+  },
+
+  async simulateMockById(mockId: string): Promise<{ status: number, headers: Record<string, string>, body: any }> {
+    const url = `${API_BASE_URL}/api/v1/simulate/${mockId}`;
+    const response = await fetch(url);
     const body = await response.json().catch(() => ({}));
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => { headers[key] = value });
