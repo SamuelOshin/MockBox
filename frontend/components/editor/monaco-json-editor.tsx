@@ -391,7 +391,11 @@ export default function MonacoJsonEditor({
             vertical: "visible",
             horizontal: "visible",
             verticalScrollbarSize: 8,
-            horizontalScrollbarSize: 8
+            horizontalScrollbarSize: 8,
+            useShadows: false,
+            verticalHasArrows: false,
+            horizontalHasArrows: false,
+            alwaysConsumeMouseWheel: false
           },
           automaticLayout: true,
           formatOnPaste: true,
@@ -404,7 +408,11 @@ export default function MonacoJsonEditor({
           bracketPairColorization: {
             enabled: true
           },
-          readOnly: readOnly // <-- added
+          readOnly: readOnly,
+          overviewRulerLanes: 0,
+          hideCursorInOverviewRuler: true,
+          overviewRulerBorder: false,
+          renderLineHighlight: "none"
         }}
       />
     </motion.div>

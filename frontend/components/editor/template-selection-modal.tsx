@@ -388,7 +388,7 @@ export function TemplateSelectionModal({
               </div>
 
               {/* Right Column - JSON Preview (3/5 width) */}
-              <div className="lg:w-3/5 flex flex-col bg-white dark:bg-gray-900 overflow-y-auto lg:h-auto h-[200px] lg:h-auto">
+              <div className="lg:w-3/5 flex flex-col bg-white dark:bg-gray-900 min-h-0 h-full">
                 <div className="p-3 border-b bg-gray-50 dark:bg-gray-900 flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-xs flex items-center gap-2">
@@ -403,28 +403,26 @@ export function TemplateSelectionModal({
                   </div>
                 </div>
                 
-                <div className="flex-1 p-0 min-h-0 overflow-hidden">
-                  <div className="h-full rounded-lg  overflow-hidden bg-white dark:bg-gray-900">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={`${selectedEndpointIndex}-${selectedResponseIndex}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: isAnimating ? 0.3 : 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="h-full overflow-y-auto"
-                      >
-                        <MonacoJsonEditor
-                          value={previewJson}
-                          onChange={setPreviewJson}
-                          height="90vh"
-                          readOnly={true}
-                          showToolbar={false}
-                          showValidation={true}
-                        />
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
+                <div className="flex-1 min-h-0 h-full">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`${selectedEndpointIndex}-${selectedResponseIndex}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: isAnimating ? 0.3 : 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="h-full w-full overflow-y-auto"
+                    >
+                      <MonacoJsonEditor
+                        value={previewJson}
+                        onChange={setPreviewJson}
+                        height="50vh"
+                        readOnly={true}
+                        showToolbar={false}
+                        showValidation={true}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
                 
                 {selectedResponse && (selectedResponse.delay_ms > 0 || Object.keys(selectedResponse.headers || {}).length > 0) && (
@@ -450,36 +448,76 @@ export function TemplateSelectionModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50 dark:bg-gray-900 flex-shrink-0">
-            <div className="text-xs text-muted-foreground flex items-center gap-2">
-              <div className="flex items-center">
-                <Badge className={methodColors[selectedEndpoint?.endpoint.method || 'default']} variant="secondary">
-                  {selectedEndpoint?.endpoint.method || 'GET'}
-                </Badge>
-                <ChevronRight className="h-3 w-3 mx-1 text-muted-foreground/50" />
-                <span className="font-mono text-xs">{selectedEndpoint?.endpoint.endpoint || '/api/endpoint'}</span>
-              </div>
-              {selectedEndpoint && selectedEndpoint.responses.length > 1 && (
-                <div className="flex items-center">
-                  <ChevronRight className="h-3 w-3 mx-1 text-muted-foreground/50" />
-                  <Badge variant="outline" className="font-mono text-xs">
-                    Response {selectedResponseIndex + 1}
+          <div className="px-3 sm:px-4 py-3 border-t bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+            {/* Mobile Layout */}
+            <div className="block sm:hidden space-y-3">
+              <div className="text-xs text-muted-foreground">
+                <div className="flex items-center flex-wrap gap-1">
+                  <Badge className={methodColors[selectedEndpoint?.endpoint.method || 'default']} variant="secondary">
+                    {selectedEndpoint?.endpoint.method || 'GET'}
                   </Badge>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/50" />
+                  <span className="font-mono text-xs truncate min-w-0">
+                    {selectedEndpoint?.endpoint.endpoint || '/api/endpoint'}
+                  </span>
                 </div>
-              )}
+                {selectedEndpoint && selectedEndpoint.responses.length > 1 && (
+                  <div className="flex items-center mt-1">
+                    <Badge variant="outline" className="font-mono text-xs">
+                      Response {selectedResponseIndex + 1}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 w-full">
+                <Button variant="outline" onClick={onClose} size="sm" className="flex-1">
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleConfirmSelection} 
+                  className="gap-1 bg-blue-600 hover:bg-blue-700 text-white flex-1"
+                  size="sm"
+                >
+                  <span className="truncate">Use Config</span>
+                  <ArrowRight className="h-3 w-3 flex-shrink-0" />
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose} size="sm">
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleConfirmSelection} 
-                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                size="sm"
-              >
-                Use Configuration
-                <ArrowRight className="h-3 w-3" />
-              </Button>
+
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex justify-between items-center">
+              <div className="text-xs text-muted-foreground flex items-center gap-2 min-w-0">
+                <div className="flex items-center min-w-0">
+                  <Badge className={methodColors[selectedEndpoint?.endpoint.method || 'default']} variant="secondary">
+                    {selectedEndpoint?.endpoint.method || 'GET'}
+                  </Badge>
+                  <ChevronRight className="h-3 w-3 mx-1 text-muted-foreground/50" />
+                  <span className="font-mono text-xs truncate">
+                    {selectedEndpoint?.endpoint.endpoint || '/api/endpoint'}
+                  </span>
+                </div>
+                {selectedEndpoint && selectedEndpoint.responses.length > 1 && (
+                  <div className="flex items-center">
+                    <ChevronRight className="h-3 w-3 mx-1 text-muted-foreground/50" />
+                    <Badge variant="outline" className="font-mono text-xs">
+                      Response {selectedResponseIndex + 1}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button variant="outline" onClick={onClose} size="sm">
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleConfirmSelection} 
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  size="sm"
+                >
+                  Use Configuration
+                  <ArrowRight className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
