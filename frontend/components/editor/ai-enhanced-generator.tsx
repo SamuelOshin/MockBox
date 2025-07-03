@@ -46,6 +46,7 @@ import { toast } from 'sonner'
 import { useAIGeneration } from '@/hooks/use-ai-generation'
 import { cn } from '@/lib/utils'
 import { HTTPMethod } from '@/lib/types'
+import { AIUsageDisplay } from '@/components/ui/ai-usage-display'
 
 interface AIEnhancedGeneratorProps {
   onMockGenerated?: (mockData: any) => void
@@ -430,60 +431,7 @@ export function AIEnhancedGenerator({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium">Today's Usage</span>
-                    </div>
-                    <Badge variant={usage.rateLimitRemaining > 5 ? "default" : "destructive"}>
-                      {usage.rateLimitRemaining} left
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">{usage.requestsToday}</div>
-                      <div className="text-xs text-muted-foreground">Requests</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{usage.tokensUsedToday.toLocaleString()}</div>
-                      <div className="text-xs text-muted-foreground">Tokens</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{usage.requestsThisMonth}</div>
-                      <div className="text-xs text-muted-foreground">This Month</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span>Daily Limit</span>
-                      <span>{usage.requestsToday}/10</span>
-                    </div>
-                    <Progress
-                      value={(usage.requestsToday / 10) * 100}
-                      className="h-2"
-                    />
-                  </div>
-
-                  {usage.rateLimitRemaining <= 2 && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="mt-3"
-                    >
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription className="text-xs">
-                          Only {usage.rateLimitRemaining} AI generations remaining today.
-                        </AlertDescription>
-                      </Alert>
-                    </motion.div>
-                  )}
-                </CardContent>
-              </Card>
+              <AIUsageDisplay usage={usage} variant="detailed" />
             </motion.div>
           )}
 
@@ -802,6 +750,11 @@ export function AIEnhancedGenerator({
                   <Loader2 className="h-5 w-5 animate-spin" />
                   <span>Generating Magic...</span>
                 </motion.div>
+              ) : usage?.rateLimitRemaining === 0 ? (
+                <motion.div className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" />
+                  <span>Daily Limit Reached ({usage.requestsToday}/{usage.dailyRequestQuota || 10})</span>
+                </motion.div>
               ) : (
                 <motion.div
                   className="flex items-center gap-2"
@@ -811,6 +764,7 @@ export function AIEnhancedGenerator({
                   <Sparkles className="h-5 w-5" />
                   <span>
                     {formData.autoSave ? 'Generate & Save Mock' : 'Generate Mock Data'}
+                    {usage && ` (${usage.rateLimitRemaining} left)`}
                   </span>
                   <ArrowRight className="h-4 w-4" />
                 </motion.div>

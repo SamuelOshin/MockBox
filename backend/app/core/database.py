@@ -9,6 +9,10 @@ from postgrest import APIResponse
 import httpx
 from app.core.config import settings
 from uuid import UUID
+import logging
+
+# Set up a module-level logger
+logger = logging.getLogger(__name__)
 
 
 class SupabaseClient:
@@ -53,6 +57,11 @@ class DatabaseManager:
     def __init__(self, user_token: Optional[str] = None):
         self.supabase = SupabaseClient()
         self.user_token = user_token
+        # Admin client for operations that require service role
+        self.admin_client = create_client(
+            settings.supabase_url, 
+            settings.supabase_service_role_key
+        )
 
     def get_client_with_auth(self, user_token: Optional[str] = None) -> Client:
         """Get Supabase client with user authentication"""
@@ -115,35 +124,75 @@ class DatabaseManager:
         """Close database connections"""
         await self.supabase.close()
 
-    async def get_user_plan_and_quota(self, user_id: UUID) -> Optional[dict]:
+    async def _create_usage_stats_fallback(self, user_id: UUID):
         """
-        Fetch the user's plan and quota from Supabase (using profiles table).
-        Returns a dict with plan info and quotas, or None if not found.
+        Simple fallback to create usage stats for legacy users.
+        New users are handled by the database trigger automatically.
         """
         try:
-            client = self.supabase.client
-            # Join profiles and user_plans on plan_id
-            response = client.rpc(
-                "execute_sql",
-                {
-                    "query": """
-                        SELECT up.name AS plan_name, up.daily_request_quota, up.monthly_token_quota
-                        FROM public.profiles p
-                        JOIN public.user_plans up ON p.plan_id = up.id
-                        WHERE p.user_id = %(user_id)s
-                    """,
-                    "params": {"user_id": str(user_id)},
-                },
-            ).execute()
-            if response.data and len(response.data) > 0:
-                return response.data[0]
-            return None
+            # Use admin client to create usage stats
+            self.admin_client.table("ai_usage_stats")\
+                .insert({
+                    "user_id": str(user_id),
+                    "rate_limit_remaining": 10  # Free plan default
+                })\
+                .execute()
+            
+            logger.info(f"Created fallback usage stats for legacy user {user_id}")
+            
         except Exception as e:
-            import logging
+            # If it already exists, that's fine
+            if "duplicate key" in str(e).lower() or "unique" in str(e).lower():
+                logger.debug(f"Usage stats already exist for user {user_id}")
+            else:
+                logger.error(f"Failed to create fallback usage stats for user {user_id}: {e}")
 
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to fetch plan/quota for user {user_id}: {e}")
-            return None
+    async def get_user_plan_and_quota(self, user_id: UUID) -> Dict[str, Any]:
+        """
+        Get user plan information and quotas.
+        
+        With database trigger in place, all users should have profiles automatically.
+        Returns default Free plan values if profile is missing (legacy users).
+        """
+        try:
+            # Use admin client for reliable data access
+            response = self.admin_client.table("profiles")\
+                .select("plan_id, user_plans(name, daily_request_quota, monthly_token_quota)")\
+                .eq("user_id", str(user_id))\
+                .execute()
+            
+            if response.data and len(response.data) > 0:
+                profile = response.data[0]
+                plan = profile.get("user_plans")
+                
+                if plan:
+                    return {
+                        "plan_name": plan.get("name"),
+                        "daily_request_quota": plan.get("daily_request_quota"),
+                        "monthly_token_quota": plan.get("monthly_token_quota"),
+                    }
+                else:
+                    logger.warning(f"Profile exists but no plan found for user {user_id}")
+            else:
+                logger.warning(f"No profile found for user {user_id}. Trigger should handle this for new users.")
+        
+            # Return default Free plan values for legacy users or missing profiles
+            return {
+                "plan_name": "Free",
+                "daily_request_quota": 10,
+                "monthly_token_quota": 10000,
+            }
+            
+        except Exception as e:
+            logger.error(f"Error fetching user plan for {user_id}: {e}")
+            # Return default Free plan as last resort
+            return {
+                "plan_name": "Free",
+                "daily_request_quota": 10,
+                "monthly_token_quota": 10000,
+            }
+
+
 
 
 # Global database manager instance
@@ -180,6 +229,8 @@ async def get_usage_stats_for_user(
 ) -> dict:
     """
     Fetch AI usage statistics for a user from Supabase (production-ready).
+    
+    With database trigger in place, usage stats should exist for all users.
     If use_service_key is True (default), uses the service key (admin privileges, for backend writes/updates).
     If use_service_key is False, uses the user's JWT (for user-facing SELECTs, RLS enforced).
     """
@@ -187,10 +238,12 @@ async def get_usage_stats_for_user(
 
     try:
         if use_service_key:
-            client = db_manager.supabase.client
+            # Use admin client for better reliability
+            client = db_manager.admin_client
         else:
             db_with_auth = DatabaseManager(user_token=user_token)
             client = db_with_auth.get_client_with_auth()
+            
         # Query usage stats for the user
         response = (
             client.table("ai_usage_stats")
@@ -199,6 +252,7 @@ async def get_usage_stats_for_user(
             .single()
             .execute()
         )
+        
         if response.data:
             usage = response.data
             now = datetime.utcnow()
@@ -210,41 +264,77 @@ async def get_usage_stats_for_user(
                 "requests_this_month": usage.get("requests_this_month", 0),
                 "tokens_used_today": usage.get("tokens_used_today", 0),
                 "tokens_used_this_month": usage.get("tokens_used_this_month", 0),
-                "rate_limit_remaining": usage.get("rate_limit_remaining", 0),
+                "rate_limit_remaining": usage.get("rate_limit_remaining", 10),  # Default for Free plan
                 "rate_limit_reset": usage.get("rate_limit_reset", rate_limit_reset),
                 "last_request": usage.get("last_request", None),
             }
         else:
+            # If no usage stats found, create them as fallback for legacy users
+            logger.warning(f"No usage stats found for user {user_id}. Creating as fallback for legacy user.")
+            await db_manager._create_usage_stats_fallback(user_id)
+            
+            # Return default values
             return {
                 "requests_today": 0,
                 "requests_this_month": 0,
                 "tokens_used_today": 0,
                 "tokens_used_this_month": 0,
-                "rate_limit_remaining": 0,
+                "rate_limit_remaining": 10,  # Free plan default
                 "rate_limit_reset": (
                     datetime.utcnow() + timedelta(hours=1)
                 ).replace(microsecond=0).isoformat() + "Z",
                 "last_request": None,
             }
     except Exception as e:
-        import logging
-
         logger = logging.getLogger(__name__)
+        
         # Handle Supabase PGRST116 error (no rows found for .single()) gracefully
-        if isinstance(e, dict) and e.get("code") == "PGRST116":
-            return {
-                "requests_today": 0,
-                "requests_this_month": 0,
-                "tokens_used_today": 0,
-                "tokens_used_this_month": 0,
-                "rate_limit_remaining": 0,
-                "rate_limit_reset": (
-                    datetime.utcnow() + timedelta(hours=1)
-                ).replace(microsecond=0).isoformat() + "Z",
-                "last_request": None,
-            }
+        if hasattr(e, 'args') and len(e.args) > 0 and isinstance(e.args[0], dict):
+            error_dict = e.args[0]
+            if error_dict.get("code") == "PGRST116":
+                logger.warning(f"No usage stats record found for user {user_id}. Creating as fallback for legacy user.")
+                try:
+                    await db_manager._create_usage_stats_fallback(user_id)
+                    # Return default values after creating
+                    return {
+                        "requests_today": 0,
+                        "requests_this_month": 0,
+                        "tokens_used_today": 0,
+                        "tokens_used_this_month": 0,
+                        "rate_limit_remaining": 10,  # Free plan default
+                        "rate_limit_reset": (
+                            datetime.utcnow() + timedelta(hours=1)
+                        ).replace(microsecond=0).isoformat() + "Z",
+                        "last_request": None,
+                    }
+                except Exception as create_error:
+                    logger.error(f"Failed to create usage stats for user {user_id}: {create_error}")
+                    # Return defaults even if creation fails
+                    return {
+                        "requests_today": 0,
+                        "requests_this_month": 0,
+                        "tokens_used_today": 0,
+                        "tokens_used_this_month": 0,
+                        "rate_limit_remaining": 10,  # Free plan default
+                        "rate_limit_reset": (
+                            datetime.utcnow() + timedelta(hours=1)
+                        ).replace(microsecond=0).isoformat() + "Z",
+                        "last_request": None,
+                    }
+        
         logger.error(f"Failed to fetch usage stats for user {user_id}: {e}")
-        raise
+        # Return default values as last resort instead of raising
+        return {
+            "requests_today": 0,
+            "requests_this_month": 0,
+            "tokens_used_today": 0,
+            "tokens_used_this_month": 0,
+            "rate_limit_remaining": 10,  # Free plan default
+            "rate_limit_reset": (
+                datetime.utcnow() + timedelta(hours=1)
+            ).replace(microsecond=0).isoformat() + "Z",
+            "last_request": None,
+        }
 
 
 async def upsert_usage_stats_for_user(user_id: UUID, increment: dict = None) -> None:
@@ -252,31 +342,42 @@ async def upsert_usage_stats_for_user(user_id: UUID, increment: dict = None) -> 
     Upsert (insert or update) AI usage statistics for a user in Supabase.
     - If the user does not have a row, create it with initial values.
     - If the user has a row, increment the provided fields atomically.
-    - Uses the service key (admin privileges) to bypass RLS for writes.
+    - Uses the admin client (service key) to bypass RLS for writes.
+    
+    With database trigger in place, this should mainly be used for updates.
+    
     Args:
         user_id: UUID of the user
         increment: dict of fields to increment (e.g., {"requests_today": 1, "tokens_used_today": 100})
     """
     from datetime import datetime
+    import logging
+
+    logger = logging.getLogger(__name__)
 
     try:
-        client = db_manager.supabase.client
+        # Use admin client for reliable writes
+        client = db_manager.admin_client
         now = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+        
         # Prepare the upsert payload
         payload = {"user_id": str(user_id), "updated_at": now}
         if increment:
             payload.update(increment)
+            
         # Upsert: if row exists, update; else, insert
         response = (
             client.table("ai_usage_stats")
             .upsert(payload, on_conflict=["user_id"])
             .execute()
         )
-        if response.error:
+        
+        # Check for errors (Supabase client doesn't have .error attribute)
+        if hasattr(response, 'error') and response.error:
             raise Exception(response.error)
+            
+        logger.debug(f"Updated usage stats for user {user_id}: {increment}")
+        
     except Exception as e:
-        import logging
-
-        logger = logging.getLogger(__name__)
         logger.error(f"Failed to upsert usage stats for user {user_id}: {e}")
         raise

@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner'
 import { useAIGeneration } from '@/hooks/use-ai-generation'
 import { HTTPMethod } from '@/lib/types'
+import { AIUsageDisplay } from '@/components/ui/ai-usage-display'
 
 interface AIGenerationPanelProps {
   onMockGenerated?: (mockData: any) => void
@@ -188,58 +189,7 @@ export function AIGenerationPanel({
       </Card>
 
       {/* Usage Stats */}
-      {usage && (
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-sm font-medium">AI Usage</CardTitle>
-            {usage.planName && (
-              <div className="text-xs text-muted-foreground mt-1">
-                Plan: <span className="font-semibold">{usage.planName}</span>
-                {usage.dailyRequestQuota && (
-                  <> &bull; Daily Quota: <span className="font-semibold">{usage.dailyRequestQuota}</span></>
-                )}
-                {usage.monthlyTokenQuota && (
-                  <> &bull; Monthly Token Quota: <span className="font-semibold">{usage.monthlyTokenQuota.toLocaleString()}</span></>
-                )}
-              </div>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <div className="text-muted-foreground">Requests (Today)</div>
-                <div className="font-medium">
-                  {usage.requestsToday}
-                  {typeof usage.dailyRequestQuota === 'number' && (
-                    <>/<span>{usage.dailyRequestQuota}</span></>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">Tokens (This Month)</div>
-                <div className="font-medium">
-                  {usage.tokensUsedThisMonth.toLocaleString()}
-                  {typeof usage.monthlyTokenQuota === 'number' && (
-                    <>/<span>{usage.monthlyTokenQuota.toLocaleString()}</span></>
-                  )}
-                </div>
-              </div>
-            </div>
-            <Progress
-              value={usage.dailyRequestQuota ? (usage.requestsToday / usage.dailyRequestQuota) * 100 : 0}
-              className="h-2"
-            />
-            {usage.rateLimitRemaining <= 2 && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Only {usage.rateLimitRemaining} AI generations remaining today.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {usage && <AIUsageDisplay usage={usage} />}
 
       {/* Generation Form */}
       <Card>
@@ -403,10 +353,16 @@ export function AIGenerationPanel({
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Generating...
           </>
+        ) : usage?.rateLimitRemaining === 0 ? (
+          <>
+            <AlertCircle className="mr-2 h-4 w-4" />
+            Daily Limit Reached ({usage.requestsToday}/{usage.dailyRequestQuota || 10})
+          </>
         ) : (
           <>
             <Sparkles className="mr-2 h-4 w-4" />
             {formData.autoSave ? 'Generate & Save Mock' : 'Generate Mock Data'}
+            {usage && ` (${usage.rateLimitRemaining} left)`}
           </>
         )}
       </Button>

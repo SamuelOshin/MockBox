@@ -416,7 +416,7 @@ export function TemplateSelectionModal({
                       <MonacoJsonEditor
                         value={previewJson}
                         onChange={setPreviewJson}
-                        height="50vh"
+                        height="60vh"
                         readOnly={true}
                         showToolbar={false}
                         showValidation={true}

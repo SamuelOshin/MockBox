@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_key: str
     supabase_jwt_secret: str
-    supabase_service_role_key: Optional[str] = None
+    supabase_service_role_key: str  # Required for admin operations
 
     # AI Integration settings
     openai_api_key: Optional[str] = None
