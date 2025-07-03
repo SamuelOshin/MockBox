@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
 import {
@@ -270,7 +270,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     )
   }
   return (
-    <div className={cn("flex h-screen", sidebarColors.containerBg)}>      {/* Professional Mobile Overlay */}
+    <div className={cn("flex h-screen w-full", sidebarColors.containerBg)}>
+      {/* Professional Mobile Overlay */}
       <AnimatePresence>
         {isMobile && isMobileOpen && (
           <motion.div
@@ -282,20 +283,24 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             onClick={() => setIsMobileOpen(false)}
           />
         )}
-      </AnimatePresence>{/* Sidebar */}
+      </AnimatePresence>
+
+      {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ 
+        animate={{
           width: isMobile ? (isMobileOpen ? 280 : 0) : (isCollapsed ? 70 : 250),
           x: isMobile ? (isMobileOpen ? 0 : -280) : 0
         }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}        className={cn(
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className={cn(
           "border-r flex flex-col relative z-50 flex-shrink-0 shadow-xl",
           isMobile ? "fixed left-0 top-0 h-full" : "relative",
           sidebarColors.background,
           sidebarColors.border
         )}
-      >        {/* Logo and Toggle */}
+      >
+        {/* Logo and Toggle */}
         <div className={cn(
           "flex items-center justify-between p-4 border-b min-h-[73px]",
           sidebarColors.border
@@ -332,7 +337,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 </Link>
               </motion.div>
             )}
-          </AnimatePresence>          {(isCollapsed && !isMobile) && (
+          </AnimatePresence>
+
+          {(isCollapsed && !isMobile) && (
             <svg
               width="32"
               height="32"
@@ -348,7 +355,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 clipRule="evenodd"
               />
             </svg>
-          )}<Button
+          )}
+
+          <Button
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
@@ -368,13 +377,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <ChevronLeft className="h-4 w-4" />
             )}
           </Button>
-        </div>        {/* Navigation with ScrollbarContainer */}
-        <ScrollbarContainer
-          className="flex-1 py-4 space-y-1"
-          theme="auto"
-          scrollbarWidth="6px"
-          hoverOpacity={0.8}
-        >
+        </div>
+
+        {/* Navigation with native scrolling */}
+        <div className="flex-1 py-4 space-y-1 overflow-auto">
           {/* Navigation Section */}
           <div className="px-2">
             <SectionHeader title="Navigation" isCollapsed={!isMobile && isCollapsed} />
@@ -404,7 +410,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               ))}
             </div>
           </div>
-        </ScrollbarContainer>        {/* User Profile */}
+        </div>
+
+        {/* User Profile */}
         <div className={cn(
           "border-t p-4 flex-shrink-0",
           sidebarColors.border
@@ -441,7 +449,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                     </div>
                   </motion.div>
                 )}
-              </AnimatePresence>              
+              </AnimatePresence>
+              
               {/* Tooltip for collapsed state */}
               {!isMobile && isCollapsed && (
                 <div className={cn(
@@ -458,7 +467,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 </div>
               )}
             </motion.div>
-          ) : (            <Link href="/auth/login">
+          ) : (
+            <Link href="/auth/login">
               <motion.div
                 className={cn(
                   "flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer group relative",
@@ -487,7 +497,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>                {/* Tooltip for collapsed state */}
+                </AnimatePresence>
+
+                {/* Tooltip for collapsed state */}
                 {!isMobile && isCollapsed && (
                   <div className={cn(
                     "absolute left-full ml-3 px-3 py-2 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
@@ -506,8 +518,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             </Link>
           )}
         </div>
-      </motion.aside>      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">        {/* Simple Mobile Header - Just Menu and Logo */}
+      </motion.aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col md:overflow-hidden">
+        {/* Simple Mobile Header - Just Menu and Logo */}
         {isMobile && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}

@@ -14,7 +14,7 @@ export function MocksPageSkeleton({ theme }: MocksPageSkeletonProps) {
 
   return (
     <div className={`flex-1 ${themeColors.background} transition-colors duration-200`}>
-      <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+      <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
         {/* Header Section Skeleton */}
         <motion.div
           className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"

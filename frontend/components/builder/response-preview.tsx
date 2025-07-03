@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+
 import { 
   Zap, 
   Play, 
@@ -135,15 +135,11 @@ export function ResponsePreview({
                   <div>
                     <Label className="text-xs sm:text-sm font-medium mb-2 block">Response Preview</Label>
                     <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
-                      <ScrollbarContainer
-                        maxHeight="250px"
-                        className="p-3 sm:p-4 font-mono text-xs sm:text-sm"
-                        theme={actualTheme === "light" ? "light" : "dark"}
-                      >
+                      <div className="p-3 sm:p-4 font-mono text-xs sm:text-sm overflow-auto max-h-[250px]">
                         <pre className={themeColors.codeText}>
                           {JSON.stringify(formData.response, null, 2)}
                         </pre>
-                      </ScrollbarContainer>
+                      </div>
                     </div>
                   </div>
 
@@ -159,15 +155,11 @@ export function ResponsePreview({
                             </span>
                           </div>
                           <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden mt-2`}>
-                            <ScrollbarContainer
-                              maxHeight="150px"
-                              className="p-2 sm:p-3 font-mono text-xs"
-                              theme={actualTheme === "light" ? "light" : "dark"}
-                            >
+                            <div className="max-h-[150px] overflow-auto p-2 sm:p-3 font-mono text-xs">
                               <pre className={themeColors.codeText}>
                                 {JSON.stringify(testResult, null, 2)}
                               </pre>
-                            </ScrollbarContainer>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>

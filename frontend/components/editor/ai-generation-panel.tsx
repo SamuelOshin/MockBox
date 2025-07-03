@@ -444,7 +444,7 @@ export function AIGenerationPanel({
                   Copy
                 </Button>
               </div>
-              <pre className="bg-muted p-3 rounded-md text-sm overflow-x-auto max-h-60">
+              <pre className="bg-muted p-3 rounded-md text-sm overflow-auto max-h-60">
                 {JSON.stringify(generatedData.response_data, null, 2)}
               </pre>
             </div>

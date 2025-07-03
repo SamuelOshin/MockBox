@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
 import { useToast } from "@/hooks/use-toast"
@@ -483,9 +483,9 @@ export default function ViewMockPage() {
   return (
     <ProtectedRoute>
       <SidebarLayout>
-        <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+        <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
           <Header />
-          <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+          <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
             <div className="max-w-6xl mx-auto">
               {/* Enhanced Header with Back Button */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -665,8 +665,8 @@ export default function ViewMockPage() {
                                       </Button>
                                     </div>
                                     <pre className={`${themeColors.codeText} text-xs overflow-auto max-h-48 mt-2`}>
-                                      {JSON.stringify(testResponse.data, null, 2)}
-                                    </pre>
+                              {JSON.stringify(testResponse.data, null, 2)}
+                            </pre>
                                   </>
                                 )}
                               </div>
@@ -785,15 +785,11 @@ export default function ViewMockPage() {
                       </CardHeader>
                       <CardContent>
                         <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
-                          <ScrollbarContainer
-                            maxHeight="400px"
-                            className="p-4 font-mono text-sm"
-                            theme={actualTheme === "light" ? "light" : "dark"}
-                          >
-                            <pre className={themeColors.codeText}>
+                          <div className={`rounded-lg border ${themeColors.codeBg} overflow-auto`}>
+                            <pre className={`${themeColors.codeText} p-4 font-mono text-sm max-h-[400px]`}>
                               {JSON.stringify(mock.response, null, 2)}
                             </pre>
-                          </ScrollbarContainer>
+                        </div>
                         </div>
                       </CardContent>
                     </Card>

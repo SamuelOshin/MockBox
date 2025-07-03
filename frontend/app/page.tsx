@@ -376,10 +376,7 @@ export default function HomePage() {
   
   return (
     <div
-      className={`min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden relative transition-all duration-200`}
-      style={{
-        zoom: 0.9,
-      }}
+      className={`min-h-screen ${themeColors.background} ${themeColors.text} relative transition-all duration-200`}
     >
       {/* CSS Keyframes for background animations */}
       <style jsx>{`

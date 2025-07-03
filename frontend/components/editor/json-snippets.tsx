@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+
 import { useTheme } from "@/components/ui/theme-provider"
 import { User, Package, AlertTriangle, Database, ShoppingCart, MessageSquare, Copy, Code, Download, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -253,13 +253,9 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
       </div>
       <p className={cn("text-xs mb-3 sm:mb-4", themeColors.textMuted)}>Quick start templates for common API response patterns</p>
 
-      {/* Scrollable container with custom scrollbar */}      <ScrollbarContainer
-        maxHeight="320px"
-        className="pr-1 sm:pr-2 space-y-3 sm:space-y-4"
-        theme={scrollbarTheme}
-        scrollbarWidth="6px"
-        hoverOpacity={0.8}
-      >        {categories.map(category => (
+      {/* Scrollable container with native scrolling */}
+      <div className="max-h-[320px] overflow-auto pr-1 sm:pr-2 space-y-3 sm:space-y-4">
+        {categories.map(category => (
           <div key={category}>
             <h4 className={cn("text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 uppercase tracking-wide", themeColors.textMuted)}>{category}</h4>
             <div className="grid grid-cols-1 gap-1.5 sm:gap-2">
@@ -385,7 +381,7 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
             </div>
           </div>
         ))}
-      </ScrollbarContainer>
+      </div>
     </div>
   )
 }

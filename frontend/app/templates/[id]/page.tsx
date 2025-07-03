@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container";
+
 import { EngineSpinner } from "@/components/ui/engine-spinner";
 import { useTheme } from "@/components/ui/theme-provider";
 import { useNavigation } from "@/components/ui/line-loader";
@@ -350,9 +350,9 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
 
   return (
     <SidebarLayout>
-      <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
+      <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200 md:overflow-hidden`}>
         <Header />
-        <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 h-[calc(100vh-4rem)] overflow-y-auto">
+        <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
           {/* Back Button and Header */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -786,7 +786,7 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <ScrollbarContainer maxHeight="400px" theme={actualTheme === 'light' ? 'light' : 'dark'}>
+                    <div className="max-h-[400px] overflow-y-auto">
                       <div className="p-3 space-y-1">
                         {template.template_data?.endpoints && template.template_data.endpoints.length > 0 ? (
                           template.template_data.endpoints.map((endpoint, index) => {
@@ -836,7 +836,7 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
                           </div>
                         )}
                       </div>
-                    </ScrollbarContainer>
+                    </div>
                   </CardContent>
                 </Card>
 

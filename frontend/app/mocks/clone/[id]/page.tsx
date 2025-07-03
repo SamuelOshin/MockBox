@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
 import { useToast } from "@/hooks/use-toast"
@@ -488,16 +488,10 @@ export default function CloneMockPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
-                        <ScrollbarContainer
-                          maxHeight="300px"
-                          className="p-4 font-mono text-sm"
-                          theme={actualTheme === "light" ? "light" : "dark"}
-                        >
-                          <pre className={themeColors.codeText}>
-                            {JSON.stringify(formData.response, null, 2)}
-                          </pre>
-                        </ScrollbarContainer>
+                      <div className={`rounded-lg border ${themeColors.codeBg} overflow-auto`}>
+                        <pre className={`${themeColors.codeText} p-4 font-mono text-sm max-h-[300px]`}>
+                          {JSON.stringify(formData.response, null, 2)}
+                        </pre>
                       </div>
                       <p className={`text-xs ${themeColors.textMuted} mt-2`}>
                         To modify the response, save this clone and then edit it in the builder.
