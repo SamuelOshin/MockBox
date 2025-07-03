@@ -374,6 +374,19 @@ export default function HomePage() {
     cardBorder: actualTheme === 'light' ? 'border-slate-200/50' : 'border-white/10'
   }
   
+  // Animation variants for staggered hero section
+  const heroAnimationVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.6, 
+        ease: "easeOut" 
+      }
+    }
+  }
+  
   return (
     <div
       className={`min-h-screen ${themeColors.background} ${themeColors.text} relative transition-all duration-200`}
@@ -383,6 +396,15 @@ export default function HomePage() {
         @keyframes float {
           0%, 100% { transform: translateY(0px) scale(1); }
           50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+
+        .animate-gradient-x {
+          animation: gradient-x 4s ease-in-out infinite;
         }
 
         .will-change-transform {
@@ -582,9 +604,9 @@ export default function HomePage() {
                 ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm'
                 : 'bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-blue-500/30'
             }`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial="hidden"
+            animate="visible"
+            variants={heroAnimationVariants}
           >
             <Sparkles className={`h-4 w-4 ${actualTheme === 'light' ? 'text-blue-600' : 'text-blue-400'}`} />
             <span className={`text-sm font-semibold ${
@@ -596,54 +618,78 @@ export default function HomePage() {
             </span>
           </motion.div>
 
+          {/* Heading with staggered animation */}
           <motion.h1
-            className="text-6xl md:text-8xl font-bold mb-8 leading-tight"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1] tracking-tight"
+            initial="hidden"
+            animate="visible"
+            variants={heroAnimationVariants}
           >
-            <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500 bg-[length:200%_100%] bg-clip-text text-transparent animate-gradient-x">
               Mock APIs
             </span>
             <br />
-            <span className={actualTheme === 'light' ? 'text-slate-900' : 'text-white'}>Like Never Before</span>
+            <span className={`font-black ${actualTheme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+              like never before
+            </span>
+            <br />
+            <span className={` mt-6 text-xl font-semibold ${actualTheme === 'light' ? 'text-blue-700' : 'text-blue-300'}`}>
+              Kickstart your project instantly with ready-to-use templates and AI-powered data generation.
+            </span>
           </motion.h1>
 
+          {/* Subheading with delayed animation */}
           <motion.p
-            className={`text-xl md:text-2xl ${actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300'} mb-12 max-w-4xl mx-auto leading-relaxed`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            className={`italic text-sm sm:text-base md:text-lg ${actualTheme === 'light' ? 'text-gray-600' : 'text-gray-400'} mb-12 max-w-md mx-auto leading-relaxed font-medium`}
+            initial="hidden"
+            animate="visible"
+            variants={heroAnimationVariants}
+            transition={{ 
+              delay: 0.3,
+              duration: 0.6, 
+              ease: "easeOut" 
+            }}
           >
-            Build, test, and deploy realistic API mocks in seconds. The most advanced API
-            mocking platform for modern development teams.
+            No setup required – just pick a template and start building faster.
           </motion.p>
+
+          {/* CTA Buttons with further delayed animation */}
           <motion.div
-            className="flex flex-col sm:flex-row gap-6 justify-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col sm:flex-row gap-6 justify-center mb-20"
+            initial="hidden"
+            animate="visible"
+            variants={heroAnimationVariants}
+            transition={{ 
+              delay: 0.6,
+              duration: 0.6, 
+              ease: "easeOut" 
+            }}
           >
+            {/* Primary Button - Updated style */}
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={() => navigateTo(user ? "/dashboard" : "/templates")}
                 size="lg"
-                className="text-lg px-12 py-6 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-2xl shadow-blue-500/25"
+                className="text-lg px-10 py-6 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white shadow-lg border-0"
               >
                 {user ? "Go to Dashboard" : "Start Building Free"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+
+            {/* Secondary Button - Updated style */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 variant="outline"
                 size="lg"
-                className={`text-lg px-12 py-6 ${actualTheme === 'light' ? 'bg-slate-100/50 border-2 border-slate-300 text-slate-900 hover:bg-slate-200/70 hover:border-slate-400' : 'bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30'} backdrop-blur-md hover:shadow-lg transition-all duration-300 font-semibold relative overflow-hidden group`}
+                className={`text-lg px-10 py-6 rounded-xl ${
+                  actualTheme === 'light' 
+                    ? 'bg-white/80 border border-slate-200 text-slate-800 hover:bg-slate-50 hover:border-slate-300' 
+                    : 'bg-white/5 border border-white/20 text-white hover:bg-white/10 hover:border-white/30'
+                } backdrop-blur-sm transition-all duration-300`}
               >
-                {/* Glass effect overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-r ${actualTheme === 'light' ? 'from-slate-200/30 via-slate-100/20 to-transparent' : 'from-white/10 via-white/5 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                <Activity className="mr-2 h-5 w-5 relative z-10" />
-                <span className="relative z-10">View Live Demo</span>
+                <Activity className="mr-2 h-5 w-5" />
+                <span>View Live Demo</span>
               </Button>
             </motion.div>
           </motion.div>
