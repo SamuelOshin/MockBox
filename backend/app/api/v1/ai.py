@@ -306,14 +306,13 @@ async def ai_health_check(ai_service: AIService = Depends(get_ai_service)):
 
 
 @router.get("/usage/{user_id}")
-async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_user), db: DatabaseManager = Depends(get_database)):
+async def get_ai_usage(
+    user_id: UUID, 
+    current_user: dict = Depends(get_current_user), 
+    db: DatabaseManager = Depends(get_database)
+):
     """
-    Get AI usage statistics for a user
-
-    Returns current usage statistics including request counts,
-    token usage, rate limit status, and plan info.
-
-    **Note:** Users can only view their own usage statistics.
+    Get AI usage statistics for a user with robust error handling and fallbacks.
     """
     # Verify user can access this data
     request_user_id = current_user.get("sub") or current_user.get("id")
@@ -327,6 +326,7 @@ async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_u
         from datetime import datetime, timedelta
         from app.core.database import get_usage_stats_for_user
 
+        # Get usage stats with proper error handling
         try:
             usage = await get_usage_stats_for_user(user_id)
         except Exception as db_exc:
@@ -336,31 +336,105 @@ async def get_ai_usage(user_id: UUID, current_user: dict = Depends(get_current_u
                 detail="Failed to retrieve usage statistics from database",
             )
 
-        # Fetch plan info
-        plan_info = await db.get_user_plan_and_quota(user_id)
-        plan_name = plan_info.get("plan_name") if plan_info else None
-        daily_request_quota = plan_info.get("daily_request_quota") if plan_info else None
-        monthly_token_quota = plan_info.get("monthly_token_quota") if plan_info else None
+        # Get plan info with comprehensive fallback strategy
+        plan_info = await _get_user_plan_with_fallback(db, user_id)
+        
+        # Extract plan details with validation
+        plan_name = plan_info.get("plan_name", "free")
+        daily_request_quota = plan_info.get("daily_request_quota")
+        monthly_token_quota = plan_info.get("monthly_token_quota")
+        
+        # Validate quota values
+        if daily_request_quota is None or daily_request_quota < 0:
+            logger.warning(f"Invalid daily quota for user {user_id}, using free plan default")
+            daily_request_quota = 10
+            
+        if monthly_token_quota is None or monthly_token_quota < 0:
+            logger.warning(f"Invalid monthly quota for user {user_id}, using free plan default")
+            monthly_token_quota = 10000
+
+        # Calculate rate_limit_remaining with safety checks
+        requests_today = max(0, usage.get("requests_today", 0))
+        rate_limit_remaining = max(0, daily_request_quota - requests_today)
+        
+        # Calculate rate limit reset time (next midnight UTC)
+        now = datetime.utcnow()
+        next_midnight = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        rate_limit_reset = next_midnight.isoformat() + "Z"
 
         usage_stats = {
             "user_id": str(user_id),
-            "requests_today": usage.get("requests_today", 0),
-            "requests_this_month": usage.get("requests_this_month", 0),
-            "tokens_used_today": usage.get("tokens_used_today", 0),
-            "tokens_used_this_month": usage.get("tokens_used_this_month", 0),
-            "rate_limit_remaining": usage.get("rate_limit_remaining", 0),
-            "rate_limit_reset": usage.get("rate_limit_reset", (datetime.utcnow() + timedelta(minutes=10)).isoformat() + "Z"),
-            "last_request": usage.get("last_request", None),
+            "requests_today": requests_today,
+            "requests_this_month": max(0, usage.get("requests_this_month", 0)),
+            "tokens_used_today": max(0, usage.get("tokens_used_today", 0)),
+            "tokens_used_this_month": max(0, usage.get("tokens_used_this_month", 0)),
+            "rate_limit_remaining": rate_limit_remaining,
+            "rate_limit_reset": rate_limit_reset,
+            "last_request": usage.get("last_request"),
             "plan_name": plan_name,
             "daily_request_quota": daily_request_quota,
             "monthly_token_quota": monthly_token_quota,
+            "quota_percentage_used": round((requests_today / daily_request_quota) * 100, 2) if daily_request_quota > 0 else 0,
         }
 
+        # Log successful retrieval for monitoring
+        logger.info(f"Usage stats retrieved for user {user_id}: {rate_limit_remaining}/{daily_request_quota} remaining")
+        
         return usage_stats
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to get AI usage for user {user_id}: {str(e)}")
+        logger.error(f"Unexpected error retrieving usage for user {user_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve usage statistics",
         )
+
+
+async def _get_user_plan_with_fallback(db: DatabaseManager, user_id: UUID) -> dict:
+    """
+    Get user plan with simplified fallback logic.
+    
+    Since database trigger handles new users and get_user_plan_and_quota() 
+    returns sensible defaults, we don't need complex fallback logic anymore.
+    """
+    try:
+        # get_user_plan_and_quota now handles all fallback logic internally
+        plan_info = await db.get_user_plan_and_quota(user_id)
+        
+        if plan_info and _is_valid_plan(plan_info):
+            return plan_info
+        else:
+            # This should rarely happen since get_user_plan_and_quota returns defaults
+            logger.warning(f"Invalid plan data returned for user {user_id}, using defaults")
+            return _get_free_plan_defaults()
+            
+    except Exception as e:
+        logger.error(f"Error getting plan for user {user_id}: {e}")
+        return _get_free_plan_defaults()
+
+
+def _is_valid_plan(plan_info: dict) -> bool:
+    """Validate that plan info contains required fields with valid values."""
+    required_fields = ["plan_name", "daily_request_quota", "monthly_token_quota"]
+    
+    if not all(field in plan_info for field in required_fields):
+        return False
+        
+    if not isinstance(plan_info.get("daily_request_quota"), int) or plan_info["daily_request_quota"] < 0:
+        return False
+        
+    if not isinstance(plan_info.get("monthly_token_quota"), int) or plan_info["monthly_token_quota"] < 0:
+        return False
+        
+    return True
+
+
+def _get_free_plan_defaults() -> dict:
+    """Return hardcoded free plan defaults as absolute fallback."""
+    return {
+        "plan_name": "Free",  # Use "Free" to match database
+        "daily_request_quota": 10,
+        "monthly_token_quota": 10000,
+    }
