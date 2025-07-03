@@ -207,10 +207,10 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
         {isLoading ? (
           <DashboardSkeleton theme={actualTheme} />
         ) : (
-          <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+          <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
             <Header />
 
-            <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+            <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
             {/* Welcome Section */}
             <motion.div
               className="mb-8"

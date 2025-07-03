@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container"
+
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
 import { useToast } from "@/hooks/use-toast"
@@ -641,15 +641,11 @@ export default function ViewMockPage() {
                       </CardHeader>
                       <CardContent>
                         <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
-                          <ScrollbarContainer
-                            maxHeight="400px"
-                            className="p-4 font-mono text-sm"
-                            theme={actualTheme === "light" ? "light" : "dark"}
-                          >
+                          <div className="max-h-[400px] overflow-auto p-4 font-mono text-sm">
                             <pre className={themeColors.codeText}>
                               {JSON.stringify(mock.response, null, 2)}
                             </pre>
-                          </ScrollbarContainer>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

@@ -893,7 +893,7 @@ export function AIEnhancedGenerator({
                         </div>
                       </div>
                       <div className="relative">
-                        <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto max-h-60 border shadow-inner">
+                        <pre className="bg-white dark:bg-gray-900 p-4 rounded-lg text-sm overflow-auto max-h-60 border shadow-inner">
                           {JSON.stringify(generatedData.response_data, null, 2)}
                         </pre>
                       </div>

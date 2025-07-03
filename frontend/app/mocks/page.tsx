@@ -173,10 +173,10 @@ export default function MocksPage() {
         {isLoading ? (
           <MocksPageSkeleton theme={actualTheme} />
         ) : (
-          <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+          <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
             <Header />
 
-            <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+            <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
             {/* Header Section */}
             <motion.div
               className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"

@@ -123,7 +123,7 @@
   }
 
   /* Apply centralized scrollbar styling to all elements */
-  html, body, * {
+  html, body {
     @apply scrollbar-base;
   }
 

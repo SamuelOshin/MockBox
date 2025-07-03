@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ScrollbarContainer } from "@/components/ui/scrollbar-container";
+
 import { EngineSpinner } from "@/components/ui/engine-spinner";
 import { useTheme } from "@/components/ui/theme-provider";
 import { useNavigation } from "@/components/ui/line-loader";
@@ -194,9 +194,9 @@ export default function TemplatesPage() {
 
   return (
     <SidebarLayout>
-      <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200`}>
+      <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200 md:overflow-hidden`}>
         <Header />
-        <main className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden">
+        <main className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
           {/* Hero Section */}
           <motion.div 
             className="mb-6 md:mb-8 text-center"

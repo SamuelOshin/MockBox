@@ -31,7 +31,7 @@ export * from "./progress"
 export * from "./radio-group"
 export * from "./resizable"
 export * from "./scroll-area"
-export * from "./scrollbar-container"
+
 export * from "./select"
 export * from "./separator"
 export * from "./sheet"

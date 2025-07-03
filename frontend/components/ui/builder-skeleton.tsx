@@ -14,7 +14,7 @@ export function BuilderPageSkeleton({ theme }: BuilderPageSkeletonProps) {
 
   return (
     <div className={`flex-1 ${themeColors.background} overflow-hidden transition-colors duration-200`}>
-      <main className="p-1.5 lg:p-2.5 overflow-x-hidden h-[calc(100vh-3.5rem)] overflow-y-auto">
+      <main className="p-1.5 lg:p-2.5 overflow-x-hidden md:h-[calc(100vh-3.5rem)] md:overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* Header Skeleton */}
           <motion.div
