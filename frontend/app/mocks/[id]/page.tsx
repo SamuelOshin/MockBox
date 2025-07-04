@@ -389,9 +389,11 @@ export default function ViewMockPage() {
     return (
       <ProtectedRoute>
         <SidebarLayout>
-          <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-            <Header />
-            <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
+            <div className="hidden md:block">
+              <Header />
+            </div>
+            <main className="py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
               <div className="max-w-6xl mx-auto">
                 <div className="flex items-center gap-3 mb-6">
                   <Button 
@@ -483,12 +485,14 @@ export default function ViewMockPage() {
   return (
     <ProtectedRoute>
       <SidebarLayout>
-        <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
-          <Header />
-          <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
-            <div className="max-w-6xl mx-auto">
+        <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+          <div className="hidden md:block">
+            <Header />
+          </div>
+          <main className="max-w-6xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
+            <div className="space-y-6">
               {/* Enhanced Header with Back Button */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <Button 
                     variant="outline" 
@@ -498,13 +502,13 @@ export default function ViewMockPage() {
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
-                  <div>
-                    <h1 className={`text-2xl font-bold ${themeColors.text} mb-1`}>{mock.name}</h1>
+                  <div className="flex-1 min-w-0">
+                    <h1 className={`text-xl md:text-2xl font-bold ${themeColors.text} mb-1 truncate`}>{mock.name}</h1>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={methodColors[mock.method as keyof typeof methodColors]}>
                         {mock.method}
                       </Badge>
-                      <span className={`text-sm font-mono ${themeColors.textSecondary}`}>
+                      <span className={`text-xs md:text-sm font-mono ${themeColors.textSecondary} break-all`}>
                         {mock.endpoint}
                       </span>
                       {mock.is_public ? (
@@ -522,33 +526,33 @@ export default function ViewMockPage() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 sm:justify-end">
                   <Button 
                     variant="outline" 
                     onClick={handleEdit}
-                    className={`${themeColors.buttonBg} ${themeColors.text} gap-2`}
+                    className={`${themeColors.buttonBg} ${themeColors.text} gap-2 h-9 md:h-10 flex-1 sm:flex-initial`}
                   >
                     <Edit className="h-4 w-4" />
-                    Edit
+                    <span className="hidden sm:inline">Edit</span>
                   </Button>
                   <Button 
                     variant="destructive" 
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="gap-2"
+                    className="gap-2 h-9 md:h-10 flex-1 sm:flex-initial"
                   >
                     {isDeleting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}
-                    {isDeleting ? "Deleting..." : "Delete"}
+                    <span className="hidden sm:inline">{isDeleting ? "Deleting..." : "Delete"}</span>
                   </Button>
                 </div>
               </div>
               
               {/* Main Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Left Column - Details & Stats */}
                 <div className="lg:col-span-1 space-y-6">
                   {/* Mock Details Card */}
@@ -589,11 +593,11 @@ export default function ViewMockPage() {
                         
                         <div>
                           <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-1`}>Headers</h3>
-                          <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto max-h-32`}>
+                          <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto max-h-32 w-full`}>
                             {Object.entries(mock.headers || {}).map(([key, value]) => (
-                              <div key={key} className="mb-1">
-                                <span className="text-blue-500 dark:text-blue-400">{key}</span>
-                                <span className={themeColors.codeText}>: {value}</span>
+                              <div key={key} className="mb-1 break-words overflow-wrap-anywhere">
+                                <span className="text-blue-500 dark:text-blue-400 break-words">{key}</span>
+                                <span className={`${themeColors.codeText} break-words`}>: {value}</span>
                               </div>
                             ))}
                             {Object.keys(mock.headers || {}).length === 0 && (
@@ -640,11 +644,11 @@ export default function ViewMockPage() {
                             </Button>
 
                             {(testResponse || testError) && (
-                              <div className={`rounded-md p-3 ${themeColors.codeBg} space-y-2`}>
+                              <div className={`rounded-md p-3 ${themeColors.codeBg} space-y-2 w-full overflow-hidden`}>
                                 {testError ? (
-                                  <div className="text-red-500 text-sm">
-                                    <AlertTriangle className="h-4 w-4 inline-block mr-1" />
-                                    {testError}
+                                  <div className="text-red-500 text-sm break-words overflow-wrap-anywhere">
+                                    <AlertTriangle className="h-4 w-4 inline-block mr-1 flex-shrink-0" />
+                                    <span className="break-words">{testError}</span>
                                   </div>
                                 ) : testResponse && (
                                   <>
@@ -658,15 +662,17 @@ export default function ViewMockPage() {
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-6 px-2"
+                                        className="h-6 px-2 flex-shrink-0"
                                         onClick={() => copyToClipboard(JSON.stringify(testResponse.data, null, 2), "Response")}
                                       >
                                         <Copy className="h-3 w-3" />
                                       </Button>
                                     </div>
-                                    <pre className={`${themeColors.codeText} text-xs overflow-auto max-h-48 mt-2`}>
-                              {JSON.stringify(testResponse.data, null, 2)}
-                            </pre>
+                                    <div className="w-full overflow-hidden">
+                                      <pre className={`${themeColors.codeText} text-xs overflow-x-auto overflow-y-auto max-h-48 mt-2 whitespace-pre-wrap break-words w-full`}>
+                                        {JSON.stringify(testResponse.data, null, 2)}
+                                      </pre>
+                                    </div>
                                   </>
                                 )}
                               </div>
@@ -784,12 +790,12 @@ export default function ViewMockPage() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
-                          <div className={`rounded-lg border ${themeColors.codeBg} overflow-auto`}>
-                            <pre className={`${themeColors.codeText} p-4 font-mono text-sm max-h-[400px]`}>
+                        <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden w-full`}>
+                          <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden w-full`}>
+                            <pre className={`${themeColors.codeText} p-4 font-mono text-sm max-h-[400px] overflow-x-auto overflow-y-auto whitespace-pre-wrap break-words w-full`}>
                               {JSON.stringify(mock.response, null, 2)}
                             </pre>
-                        </div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -847,9 +853,9 @@ export default function ViewMockPage() {
                           <TabsContent value="curl" className="mt-4">
                             <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>cURL Command</h3>
-                              <div className="flex items-center gap-2">
-                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
-                                  <pre className={themeColors.codeText}>
+                              <div className="flex items-start gap-2">
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto flex-1 max-w-0`}>
+                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words w-full`}>
                                     {generateCurlCommand()}
                                   </pre>
                                 </div>
@@ -857,7 +863,7 @@ export default function ViewMockPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => copyToClipboard(generateCurlCommand(), "cURL")}
-                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1 flex-shrink-0`}
                                 >
                                   {copySuccess === "cURL" ? (
                                     <CheckCircle className="h-3 w-3 text-green-500" />
@@ -872,9 +878,9 @@ export default function ViewMockPage() {
                           <TabsContent value="javascript" className="space-y-6 mt-4">
                             <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Fetch API</h3>
-                              <div className="flex items-center gap-2">
-                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
-                                  <pre className={themeColors.codeText}>
+                              <div className="flex items-start gap-2">
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto flex-1 max-w-0`}>
+                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words w-full`}>
                                     {generateFetchCode()}
                                   </pre>
                                 </div>
@@ -882,7 +888,7 @@ export default function ViewMockPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => copyToClipboard(generateFetchCode(), "Fetch")}
-                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1 flex-shrink-0`}
                                 >
                                   {copySuccess === "Fetch" ? (
                                     <CheckCircle className="h-3 w-3 text-green-500" />
@@ -895,9 +901,9 @@ export default function ViewMockPage() {
 
                             <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Axios</h3>
-                              <div className="flex items-center gap-2">
-                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
-                                  <pre className={themeColors.codeText}>
+                              <div className="flex items-start gap-2">
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto flex-1 max-w-0`}>
+                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words w-full`}>
                                     {generateAxiosCode()}
                                   </pre>
                                 </div>
@@ -905,7 +911,7 @@ export default function ViewMockPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => copyToClipboard(generateAxiosCode(), "Axios")}
-                                  className={`h-8 ${themeColors.buttonBg} gap-1`}
+                                  className={`h-8 ${themeColors.buttonBg} gap-1 flex-shrink-0`}
                                 >
                                   {copySuccess === "Axios" ? (
                                     <CheckCircle className="h-3 w-3 text-green-500" />

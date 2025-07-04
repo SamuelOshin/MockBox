@@ -68,6 +68,7 @@ export default function MocksPage() {
     text: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
     textSecondary: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-400',
     cardBg: actualTheme === 'light' ? 'bg-white border-slate-200' : 'bg-[#1A1A1A] border-gray-800',
+    cardBorder: actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800',
     cardHover: actualTheme === 'light' ? 'hover:bg-slate-50' : 'hover:bg-[#1F1F1F]',
     buttonBg: actualTheme === 'light' ? 'bg-slate-100 border-slate-300 hover:bg-slate-200' : 'bg-[#2D2D2D] border-gray-700 hover:bg-[#3A3A3A]',
     tableBg: actualTheme === 'light' ? 'border-slate-200 hover:bg-slate-50' : 'border-gray-800 hover:bg-[#2D2D2D]',
@@ -173,38 +174,41 @@ export default function MocksPage() {
         {isLoading ? (
           <MocksPageSkeleton theme={actualTheme} />
         ) : (
-          <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
-            <Header />
+          <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
+            <div className="hidden md:block">
+              <Header />
+            </div>
 
-            <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
+            <main className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
             {/* Header Section */}
             <motion.div
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
               <div>
-                <h1 className={`text-3xl font-bold ${themeColors.text} mb-2`}>My Mocks</h1>
-                <p className={`${themeColors.textSecondary} text-lg`}>
+                <h1 className={`text-2xl sm:text-3xl font-bold ${themeColors.text} mb-2`}>My Mocks</h1>
+                <p className={`${themeColors.textSecondary} text-base sm:text-lg`}>
                   Manage and organize your API mocks
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <Button
                   onClick={() => navigateTo("/builder")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2 w-full sm:w-auto"
                 >
                   <Plus className="h-4 w-4" />
-                  Create New Mock
+                  <span className="hidden xs:inline">Create New Mock</span>
+                  <span className="xs:hidden">Create</span>
                 </Button>
               </div>
             </motion.div>
 
             {/* Quick Stats */}
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -243,15 +247,15 @@ export default function MocksPage() {
                   transition={{ duration: 0.6, delay: index * 0.05 }}
                   whileHover={{ scale: 1.02 }}
                 >
-                  <Card className={`${themeColors.cardBg} ${themeColors.cardHover} transition-all duration-300`}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Card className={`relative overflow-hidden ${themeColors.cardBg} ${themeColors.cardHover} transition-all duration-300`}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10 px-4 sm:px-6">
                       <CardTitle className={`text-sm font-medium ${themeColors.textSecondary}`}>
                         {stat.title}
                       </CardTitle>
-                      <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                      <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
                     </CardHeader>
-                    <CardContent>
-                      <div className={`text-2xl font-bold ${themeColors.text}`}>
+                    <CardContent className="relative z-10 px-4 sm:px-6 pb-4 sm:pb-6">
+                      <div className={`text-xl sm:text-2xl font-bold ${themeColors.text}`}>
                         {stat.value}
                       </div>
                     </CardContent>
@@ -262,27 +266,28 @@ export default function MocksPage() {
 
             {/* Search and Filters */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 mb-6"
+              className="flex flex-col sm:flex-row gap-3 lg:gap-4 mb-4 sm:mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <div className="relative flex-1 max-w-sm">
+              <div className="relative flex-1 max-w-full sm:max-w-sm">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${themeColors.textSecondary}`} />
                 <Input
                   placeholder="Search mocks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`pl-10 ${themeColors.cardBg}`}
+                  className={`pl-10 h-9 sm:h-10 ${actualTheme === 'light' ? 'bg-white border-slate-300 text-slate-900 placeholder-slate-500' : 'bg-[#2D2D2D] border-gray-700 text-white placeholder-gray-400'} transition-colors duration-200`}
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 w-full sm:w-auto">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className={`gap-2 ${themeColors.buttonBg}`}>
+                    <Button variant="outline" className={`gap-2 ${themeColors.buttonBg} flex-1 sm:flex-none`}>
                       <Filter className="h-4 w-4" />
-                      Sort by: {sortBy}
+                      <span className="hidden xs:inline">Sort by: {sortBy}</span>
+                      <span className="xs:hidden">Sort</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className={themeColors.menuBg}>
@@ -306,158 +311,276 @@ export default function MocksPage() {
             {/* Bulk Actions */}
             {selectedMocks.length > 0 && (
               <motion.div
-                className={`flex items-center gap-3 p-4 ${themeColors.cardBg} rounded-lg border mb-6`}
+                className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 sm:p-4 ${themeColors.cardBg} rounded-lg border mb-4 sm:mb-6`}
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <span className={themeColors.textSecondary}>
+                <span className={`${themeColors.textSecondary} text-sm sm:text-base`}>
                   {selectedMocks.length} selected
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  disabled={isDeleting}
-                  className="gap-2"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
-                  Delete Selected
-                </Button>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={isDeleting}
+                    className="gap-2 flex-1 sm:flex-none"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                    <span className="hidden xs:inline">Delete Selected</span>
+                    <span className="xs:hidden">Delete</span>
+                  </Button>
+                </div>
               </motion.div>
-            )}            {/* Mocks Table */}
+            )}
+
+            {/* Mocks Table/Cards */}
             <motion.div
                 className={`${themeColors.cardBg} rounded-lg border overflow-hidden`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <Table>
-                  <TableHeader>
-                    <TableRow className={themeColors.tableBg}>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={selectedMocks.length === filteredMocks.length && filteredMocks.length > 0}
-                          onCheckedChange={handleSelectAll}
-                        />
-                      </TableHead>
-                      <TableHead className={themeColors.text}>Name</TableHead>
-                      <TableHead className={themeColors.text}>Method</TableHead>
-                      <TableHead className={themeColors.text}>Path</TableHead>
-                      <TableHead className={themeColors.text}>Status</TableHead>
-                      <TableHead className={themeColors.text}>Requests</TableHead>
-                      <TableHead className={themeColors.text}>Last Accessed</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMocks.map((mock) => (
-                      <TableRow key={mock.id} className={themeColors.tableBg}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedMocks.includes(mock.id)}
-                            onCheckedChange={(checked) => handleSelectMock(mock.id, !!checked)}
-                          />
-                        </TableCell>                        <TableCell className={`font-medium ${themeColors.text}`}>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => navigateTo(`/mocks/${mock.id}`)}
-                              className="hover:text-blue-600 hover:underline transition-colors text-left"
-                            >
-                              {mock.name}
-                            </button>                            {mock.is_public ? (
-                              <Globe className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <Clock className="h-3 w-3 text-orange-500" />
-                            )}
+                {/* Mobile Card View */}
+                <div className="block lg:hidden">
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Checkbox
+                        checked={selectedMocks.length === filteredMocks.length && filteredMocks.length > 0}
+                        onCheckedChange={handleSelectAll}
+                      />
+                      <span className={`text-sm ${themeColors.textSecondary}`}>
+                        Select All
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      {filteredMocks.map((mock) => (
+                        <div
+                          key={mock.id}
+                          className={`p-4 rounded-lg border ${themeColors.cardBg} ${themeColors.cardBorder}`}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3 flex-1">
+                              <Checkbox
+                                checked={selectedMocks.includes(mock.id)}
+                                onCheckedChange={(checked) => handleSelectMock(mock.id, !!checked)}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <button
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={`font-medium ${themeColors.text} hover:text-blue-600 hover:underline transition-colors text-left truncate block`}
+                                >
+                                  {mock.name}
+                                </button>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge className={methodColors[mock.method]} variant="secondary">
+                                    {mock.method}
+                                  </Badge>
+                                  {mock.is_public ? (
+                                    <Globe className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <Clock className="h-3 w-3 text-orange-500" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={themeColors.menuItemHover}
+                                >
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/clone/${mock.id}`)}
+                                  className={themeColors.menuItemHover}
+                                >
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Duplicate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={themeColors.menuItemHover}
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  View
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className={themeColors.menuItemHover}>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Export
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteMock(mock.id)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={methodColors[mock.method]} variant="secondary">
-                            {mock.method}
-                          </Badge>
-                        </TableCell>                        <TableCell className={`font-mono text-sm ${themeColors.textSecondary}`}>
-                          {mock.endpoint}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={mock.status_code === 200 ? "default" : "destructive"}>
-                            {mock.status_code}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className={themeColors.textSecondary}>
-                          {mock.access_count}
-                        </TableCell>
-                        <TableCell className={`text-sm ${themeColors.textSecondary}`}>
-                          {mock.last_accessed ? new Date(mock.last_accessed).toLocaleDateString() : 'Never'}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>                            <DropdownMenuContent align="end" className={themeColors.menuBg}>
-                              <DropdownMenuItem 
-                                onClick={() => navigateTo(`/mocks/${mock.id}`)}
-                                className={themeColors.menuItemHover}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => navigateTo(`/mocks/clone/${mock.id}`)}
-                                className={themeColors.menuItemHover}
-                              >
-                                <Copy className="mr-2 h-4 w-4" />
-                                Duplicate
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => navigateTo(`/mocks/${mock.id}`)}
-                                className={themeColors.menuItemHover}
-                              >
-                                <ExternalLink className="mr-2 h-4 w-4" />
-                                View
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className={themeColors.menuItemHover}>
-                                <Download className="mr-2 h-4 w-4" />
-                                Export
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteMock(mock.id)}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                          <div className={`text-xs sm:text-sm ${themeColors.textSecondary} font-mono mb-2 truncate`}>
+                            {mock.endpoint}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Badge variant={mock.status_code === 200 ? "default" : "destructive"}>
+                                {mock.status_code}
+                              </Badge>
+                              <span className={`text-xs ${themeColors.textSecondary}`}>
+                                {mock.access_count} requests
+                              </span>
+                            </div>
+                            <span className={`text-xs ${themeColors.textSecondary}`}>
+                              {mock.last_accessed ? new Date(mock.last_accessed).toLocaleDateString() : 'Never'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden lg:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className={themeColors.tableBg}>
+                        <TableHead className="w-[50px]">
+                          <Checkbox
+                            checked={selectedMocks.length === filteredMocks.length && filteredMocks.length > 0}
+                            onCheckedChange={handleSelectAll}
+                          />
+                        </TableHead>
+                        <TableHead className={themeColors.text}>Name</TableHead>
+                        <TableHead className={themeColors.text}>Method</TableHead>
+                        <TableHead className={themeColors.text}>Path</TableHead>
+                        <TableHead className={themeColors.text}>Status</TableHead>
+                        <TableHead className={themeColors.text}>Requests</TableHead>
+                        <TableHead className={themeColors.text}>Last Accessed</TableHead>
+                        <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredMocks.map((mock) => (
+                        <TableRow key={mock.id} className={themeColors.tableBg}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedMocks.includes(mock.id)}
+                              onCheckedChange={(checked) => handleSelectMock(mock.id, !!checked)}
+                            />
+                          </TableCell>                          <TableCell className={`font-medium ${themeColors.text}`}>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                className="hover:text-blue-600 hover:underline transition-colors text-left"
+                              >
+                                {mock.name}
+                              </button>                              {mock.is_public ? (
+                                <Globe className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <Clock className="h-3 w-3 text-orange-500" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={methodColors[mock.method]} variant="secondary">
+                              {mock.method}
+                            </Badge>
+                          </TableCell>                          <TableCell className={`font-mono text-sm ${themeColors.textSecondary}`}>
+                            {mock.endpoint}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={mock.status_code === 200 ? "default" : "destructive"}>
+                              {mock.status_code}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className={themeColors.textSecondary}>
+                            {mock.access_count}
+                          </TableCell>
+                          <TableCell className={`text-sm ${themeColors.textSecondary}`}>
+                            {mock.last_accessed ? new Date(mock.last_accessed).toLocaleDateString() : 'Never'}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={themeColors.menuItemHover}
+                                >
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/clone/${mock.id}`)}
+                                  className={themeColors.menuItemHover}
+                                >
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Duplicate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={themeColors.menuItemHover}
+                                >
+                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  View
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className={themeColors.menuItemHover}>
+                                  <Download className="mr-2 h-4 w-4" />
+                                  Export
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteMock(mock.id)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>                  
+                    </Table>
+                </div>
               </motion.div>
 
             {filteredMocks.length === 0 && (
               <motion.div
-                className={`${themeColors.cardBg} rounded-lg border p-12 text-center`}
+                className={`${themeColors.cardBg} rounded-lg border p-6 sm:p-8 lg:p-12 text-center`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <Database className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <Database className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 text-gray-400" />
                 <h3 className={`text-lg font-semibold ${themeColors.text} mb-2`}>No mocks found</h3>
-                <p className={`${themeColors.textSecondary} mb-6`}>
+                <p className={`${themeColors.textSecondary} mb-4 sm:mb-6 text-sm sm:text-base`}>
                   {searchQuery ? "Try adjusting your search terms" : "Get started by creating your first mock"}
                 </p>
-                <Button onClick={() => navigateTo("/builder")} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+                <Button onClick={() => navigateTo("/builder")} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 w-full sm:w-auto">
                   <Plus className="h-4 w-4" />
                   Create New Mock
                 </Button>
               </motion.div>
-            )}            </main>
+            )}
+
+            </main>
           </div>
         )}
       </SidebarLayout>
