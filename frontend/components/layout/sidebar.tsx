@@ -2,9 +2,18 @@
 
 import { useState, ReactNode, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
@@ -22,10 +31,14 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Search,
+  Bell,
+  LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import MockBoxLogo from "@/components/ui/mockbox-logo"
 
 interface SidebarLayoutProps {
   children: ReactNode
@@ -105,6 +118,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const { actualTheme } = useTheme()
   const { user, signOut, loading } = useAuth()
   // Check for mobile screen size
@@ -155,6 +169,27 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     tooltipBg: actualTheme === 'light' ? 'bg-slate-800' : 'bg-gray-900',
     tooltipText: actualTheme === 'light' ? 'text-white' : 'text-white',
     tooltipBorder: actualTheme === 'light' ? 'border-slate-700' : 'border-gray-700'
+  }
+
+  // Header colors for mobile search and actions
+  const headerColors = {
+    searchBg: actualTheme === 'light' ? '#ffffff' : '#2D2D2D',
+    searchBorder: actualTheme === 'light' ? 'border-slate-300 focus:border-blue-500' : 'border-gray-600 focus:border-blue-400',
+    searchText: actualTheme === 'light' ? 'text-slate-900' : 'text-white',
+    searchPlaceholder: actualTheme === 'light' ? 'placeholder-slate-500' : 'placeholder-gray-400',
+    searchIcon: actualTheme === 'light' ? 'text-slate-500' : 'text-gray-400',
+    buttonText: actualTheme === 'light' ? 'text-slate-600' : 'text-gray-300',
+    buttonHoverText: actualTheme === 'light' ? 'hover:text-slate-900' : 'hover:text-white',
+    buttonHoverBg: actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      router.push('/auth/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
   }
   const toggleSidebar = () => {
     if (isMobile) {
@@ -270,7 +305,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     )
   }
   return (
-    <div className={cn("flex h-screen w-full", sidebarColors.containerBg)}>
+    <div className={cn("flex h-screen w-full", sidebarColors.containerBg, "overflow-x-hidden")}>
       {/* Professional Mobile Overlay */}
       <AnimatePresence>
         {isMobile && isMobileOpen && (
@@ -297,7 +332,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           "border-r flex flex-col relative z-50 flex-shrink-0 shadow-xl",
           isMobile ? "fixed left-0 top-0 h-full" : "relative",
           sidebarColors.background,
-          sidebarColors.border
+          sidebarColors.border,
+          isCollapsed && !isMobile ? "overflow-visible" : "overflow-hidden"
         )}
       >
         {/* Logo and Toggle */}
@@ -314,22 +350,22 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-3 overflow-hidden"
               >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  className="h-8 w-8 flex-shrink-0"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill="currentColor"
-                    fillRule="evenodd"
-                    d="m7.839 40.783 16.03-28.054L20 6 0 40.783h7.839Zm8.214 0H40L27.99 19.894l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <Link href="/">
+                <Link href="/" className="flex items-center gap-3">
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 48 48"
+                    fill="none"
+                    className="h-8 w-8 flex-shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="currentColor"
+                      fillRule="evenodd"
+                      d="m7.839 40.783 16.03-28.054L20 6 0 40.783h7.839Zm8.214 0H40L27.99 19.894l-4.02 7.032 3.976 6.914H20.02l-3.967 6.943Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   <div className="whitespace-nowrap">
                     <div className={cn("font-bold text-sm", sidebarColors.text)}>MockBox</div>
                     <div className={cn("text-xs", sidebarColors.textSecondary)}>Mock API Builder</div>
@@ -380,7 +416,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         </div>
 
         {/* Navigation with native scrolling */}
-        <div className="flex-1 py-4 space-y-1 overflow-auto">
+        <div className="flex-1 py-4 space-y-1 overflow-hidden md:overflow-y-auto">
           {/* Navigation Section */}
           <div className="px-2">
             <SectionHeader title="Navigation" isCollapsed={!isMobile && isCollapsed} />
@@ -521,14 +557,14 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       </motion.aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col md:overflow-hidden">
-        {/* Simple Mobile Header - Just Menu and Logo */}
+      <div className="flex-1 flex flex-col md:overflow-hidden min-w-0">
+        {/* Enhanced Mobile Header - Menu, Logo, Search, and Actions */}
         {isMobile && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className={cn(
-              "flex items-center justify-start p-4 border-b md:hidden",
+              "flex items-center gap-3 p-4 border-b md:hidden",
               sidebarColors.background,
               sidebarColors.border
             )}
@@ -548,13 +584,13 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <Menu className="h-5 w-5" />
             </Button>
             
-            <Link href="/dashboard" className="flex items-center gap-3 ml-3 transition-all duration-200 hover:opacity-80">
+            <Link href="/dashboard" className="flex items-center gap-2 transition-all duration-200 hover:opacity-80 flex-shrink-0">
               <svg
                 width="32"
                 height="32"
                 viewBox="0 0 48 48"
                 fill="none"
-                className="h-8 w-8 flex-shrink-0 shadow-md"
+                className="h-7 w-7 flex-shrink-0"
                 aria-hidden="true"
               >
                 <path
@@ -564,8 +600,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                   clipRule="evenodd"
                 />
               </svg>
-              <div className="flex flex-col">
-                <span className={cn("font-bold text-sm leading-none", sidebarColors.text)}>
+              <div className="flex flex-col leading-tight">
+                <span className={cn("font-bold text-xs", sidebarColors.text)}>
                   MockBox
                 </span>
                 <span className={cn("text-xs leading-none mt-1", sidebarColors.textMuted)}>
@@ -573,6 +609,97 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
                 </span>
               </div>
             </Link>
+
+            {/* Mobile Search - Full width */}
+            <div className="flex-1 max-w-none">
+              <div className="relative">
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${headerColors.searchIcon}`} />
+                <Input
+                  placeholder="Search mocks..."
+                  className={`pl-10 pr-4 h-8 text-sm ${headerColors.searchBorder} ${headerColors.searchText} ${headerColors.searchPlaceholder} focus:border-blue-500 focus:ring-blue-500/20 transition-colors duration-200`}
+                  style={{ backgroundColor: headerColors.searchBg }}
+                />
+              </div>
+            </div>
+            
+            {/* Mobile Actions - Minimal */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Notifications */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`${headerColors.buttonText} ${headerColors.buttonHoverText} ${headerColors.buttonHoverBg} h-8 w-8 p-0 transition-colors duration-200`}
+                >
+                  <Bell className="h-4 w-4" />
+                </Button>
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-[10px] font-bold">2</span>
+                </div>
+              </div>
+              
+              {/* User Profile */}
+              {loading ? (
+                <div className={`h-8 w-8 rounded-full animate-pulse ${actualTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'}`} />
+              ) : user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
+                        <AvatarFallback>
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
+                            <span className="text-white font-bold text-xs">
+                              {user?.email?.charAt(0).toUpperCase() || "U"}
+                            </span>
+                          </div>
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">
+                          {user.user_metadata?.full_name || user.email?.split('@')[0] || "User"}
+                        </p>
+                        <p className="w-[200px] truncate text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => {
+                    const currentPath = window.location.pathname
+                    const redirectUrl = encodeURIComponent(currentPath === '/auth/login' ? '/dashboard' : currentPath)
+                    router.push(`/auth/login?redirect=${redirectUrl}`)
+                  }}
+                  disabled={loading}
+                  className="h-8 px-3 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                >
+                  {loading ? "Loading..." : "Sign In"}
+                </Button>
+              )}
+            </div>
           </motion.div>
         )}
         {children}

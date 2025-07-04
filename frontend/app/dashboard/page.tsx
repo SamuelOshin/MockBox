@@ -207,21 +207,23 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
         {isLoading ? (
           <DashboardSkeleton theme={actualTheme} />
         ) : (
-          <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
-            <Header />
+          <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
+            <div className="hidden md:block">
+              <Header />
+            </div>
 
-            <main className="p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
+            <main className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
             {/* Welcome Section */}
             <motion.div
-              className="mb-8"
+              className="mb-6 md:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className={`text-4xl font-bold ${themeColors.text} mb-2`}>
+              <h1 className={`text-2xl md:text-4xl font-bold ${themeColors.text} mb-2`}>
                 Welcome back! 👋
               </h1>
-              <p className={`${themeColors.textSecondary} text-lg mb-6`}>
+              <p className={`${themeColors.textSecondary} text-base md:text-lg mb-4 md:mb-6`}>
                 Here's what's happening with your API mocks today.
               </p>
 
@@ -229,33 +231,36 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
               <div className="flex flex-wrap gap-3">
                 <Button
                   onClick={() => navigateTo("/builder")}
-                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-9 md:h-10"
                 >
                   <Plus className="h-4 w-4" />
-                  Create New Mock
+                  <span className="hidden sm:inline">Create New Mock</span>
+                  <span className="sm:hidden">Create</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigateTo("/mocks")}
-                  className={`${themeColors.buttonBg} gap-2`}
+                  className={`${themeColors.buttonBg} gap-2 h-9 md:h-10`}
                 >
                   <Database className="h-4 w-4" />
-                  View All Mocks
+                  <span className="hidden sm:inline">View All Mocks</span>
+                  <span className="sm:hidden">Mocks</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigateTo("/analytics")}
-                  className={`${themeColors.buttonBg} gap-2`}
+                  className={`${themeColors.buttonBg} gap-2 h-9 md:h-10`}
                 >
                   <BarChart3 className="h-4 w-4" />
-                  Analytics
+                  <span className="hidden sm:inline">Analytics</span>
+                  <span className="sm:hidden">Stats</span>
                 </Button>
               </div>
             </motion.div>
 
             {/* Key Metrics */}
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -325,36 +330,37 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
 
             {/* Enhanced Header with Search and Actions */}
             <motion.div
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <div>
-                <h2 className={`text-2xl font-bold ${themeColors.text}`}>
+                <h2 className={`text-xl md:text-2xl font-bold ${themeColors.text}`}>
                   My Mocks
                 </h2>
-                <p className={themeColors.textSecondary}>Manage your API mock endpoints</p>
+                <p className={`${themeColors.textSecondary} text-sm md:text-base`}>Manage your API mock endpoints</p>
               </div>
 
               <div className="flex items-center gap-2">
-                <Button variant="outline" className={`${themeColors.buttonBg} ${themeColors.text}`}>
+                <Button variant="outline" className={`${themeColors.buttonBg} ${themeColors.text} h-9 md:h-10`}>
                   <Download className="h-4 w-4 mr-2" />
-                  Export
+                  <span className="hidden sm:inline">Export</span>
                 </Button>
                 <Button
                   onClick={() => navigateTo("/builder")}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg h-9 md:h-10"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Mock
+                  <span className="hidden sm:inline">Create Mock</span>
+                  <span className="sm:hidden">Create</span>
                 </Button>
               </div>
             </motion.div>
 
             {/* Search and Filters */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 mb-6"
+              className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -365,12 +371,12 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
                   placeholder="Search mocks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`pl-10 ${actualTheme === 'light' ? 'bg-white border-slate-300 text-slate-900 placeholder-slate-500' : 'bg-[#2D2D2D] border-gray-700 text-white placeholder-gray-400'} transition-colors duration-200`}
+                  className={`pl-10 h-9 md:h-10 ${actualTheme === 'light' ? 'bg-white border-slate-300 text-slate-900 placeholder-slate-500' : 'bg-[#2D2D2D] border-gray-700 text-white placeholder-gray-400'} transition-colors duration-200`}
                 />
               </div>
-              <Button variant="outline" className={`${themeColors.buttonBg} ${themeColors.text}`}>
+              <Button variant="outline" className={`${themeColors.buttonBg} ${themeColors.text} h-9 md:h-10`}>
                 <Filter className="h-4 w-4 mr-2" />
-                Filter
+                <span className="hidden sm:inline">Filter</span>
               </Button>
             </motion.div>
 
@@ -395,7 +401,7 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
               </motion.div>
             )}
 
-            {/* Mocks Table */}
+            {/* Mocks Table - Desktop */}
             {isLoading ? (
               <DashboardSkeleton theme={actualTheme} />
             ) : (
@@ -404,7 +410,8 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <Card className={`${themeColors.cardBg} transition-colors duration-200`}>
+                {/* Desktop Table View */}
+                <Card className={`${themeColors.cardBg} transition-colors duration-200 hidden md:block`}>
                   <Table>
                     <TableHeader>
                       <TableRow className={`${actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800'}`}>
@@ -440,7 +447,8 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
                           </TableCell>
                           <TableCell>
                             <Badge className={methodColors[mock.method as keyof typeof methodColors]}>{mock.method}</Badge>
-                          </TableCell>                          <TableCell>
+                          </TableCell>
+                          <TableCell>
                             <div>
                               <button
                                 onClick={() => navigateTo(`/mocks/${mock.id}`)}
@@ -474,7 +482,8 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
                                 <Button variant="ghost" size="icon" className={`opacity-0 group-hover:opacity-100 transition-opacity ${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'}`}>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
-                              </DropdownMenuTrigger>                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
                                 <DropdownMenuItem 
                                   onClick={() => navigateTo(`/mocks/${mock.id}`)}
                                   className={`${themeColors.text} ${themeColors.menuItemHover}`}
@@ -508,6 +517,95 @@ export default function DashboardPage() {  const [mocks, setMocks] = useState<Mo
                     </TableBody>
                   </Table>
                 </Card>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-4">
+                  {filteredMocks.map((mock, index) => (
+                    <motion.div
+                      key={mock.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                    >
+                      <Card className={`${themeColors.cardBg} ${themeColors.cardHover} transition-colors duration-200`}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <Checkbox
+                                checked={selectedMocks.includes(mock.id)}
+                                onCheckedChange={(checked) => handleSelectMock(mock.id, checked as boolean)}
+                              />
+                              <Badge className={methodColors[mock.method as keyof typeof methodColors]}>
+                                {mock.method}
+                              </Badge>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className={`h-8 w-8 ${themeColors.text} ${actualTheme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-[#3A3A3A]'}`}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className={themeColors.menuBg}>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={`${themeColors.text} ${themeColors.menuItemHover}`}
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/clone/${mock.id}`)}
+                                  className={`${themeColors.text} ${themeColors.menuItemHover}`}
+                                >
+                                  <Copy className="h-4 w-4 mr-2" />
+                                  Duplicate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                                  className={`${themeColors.text} ${themeColors.menuItemHover}`}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-2" />
+                                  View Endpoint
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className={`text-destructive ${themeColors.menuItemHover}`} onClick={() => handleDeleteMock(mock.id)}>
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <button
+                              onClick={() => navigateTo(`/mocks/${mock.id}`)}
+                              className={`font-medium ${themeColors.text} hover:text-blue-600 hover:underline transition-colors text-left block`}
+                            >
+                              {mock.name || "Unnamed Mock"}
+                            </button>
+                            <div className={`text-sm ${themeColors.textSecondary} font-mono break-all`}>
+                              {mock.endpoint}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-4">
+                              <Badge variant={mock.status_code >= 400 ? "destructive" : "secondary"}>
+                                {mock.status_code}
+                              </Badge>
+                              <div className={`flex items-center gap-1 text-sm ${themeColors.textSecondary}`}>
+                                <Activity className="h-3 w-3" />
+                                {mock.access_count}
+                              </div>
+                            </div>
+                            <Badge variant={mock.is_public ? "default" : "secondary"}>
+                              {mock.is_public ? "Public" : "Private"}
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
               </motion.div>
             )}
 

@@ -195,7 +195,9 @@ export default function TemplatesPage() {
   return (
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200 md:overflow-hidden`}>
-        <Header />
+        <div className="hidden md:block">
+          <Header />
+        </div>
         <main className="max-w-7xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
           {/* Hero Section */}
           <motion.div 
@@ -280,25 +282,6 @@ export default function TemplatesPage() {
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
-            </div>
-
-            {/* Category Tabs - Alternative to dropdown for larger screens */}
-            <div className="hidden md:block">
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
-              <Tabs defaultValue="all" value={selectedCategory} onValueChange={setSelectedCategory}>
-                <TabsList className={`${themeColors.tabsBg} min-w-max`}>
-                {categories.map((category) => (
-                  <TabsTrigger 
-                  key={category} 
-                  value={category}
-                  className={`${selectedCategory === category ? themeColors.tabsActive : ''}`}
-                  >
-                  {category === "all" ? "All Categories" : category}
-                  </TabsTrigger>
-                ))}
-                </TabsList>
-              </Tabs>
-              </div>
             </div>
           </motion.div>
 
