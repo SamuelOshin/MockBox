@@ -265,7 +265,9 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
     return (
       <SidebarLayout>
         <div className={`flex-1 min-h-screen ${themeColors.background}`}>
-          <Header />
+          <div className="hidden md:block">
+            <Header />
+          </div>
           <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6">
             <div className="mb-6">
               <Button 
@@ -300,7 +302,9 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
     return (
       <SidebarLayout>
         <div className={`flex-1 min-h-screen ${themeColors.background}`}>
-          <Header />
+          <div className="hidden md:block">
+              <Header />
+          </div>
           <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 overflow-y-auto">
             <div className="mb-6">
               <Button 
