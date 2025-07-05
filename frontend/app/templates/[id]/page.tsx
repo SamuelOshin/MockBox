@@ -355,7 +355,9 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
   return (
     <SidebarLayout>
       <div className={`flex-1 min-h-screen ${themeColors.background} transition-colors duration-200 md:overflow-hidden`}>
-        <Header />
+        <div className="hidden md:block">
+          <Header />
+        </div>
         <main className="max-w-6xl mx-auto py-8 px-4 sm:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
           {/* Back Button and Header */}
           <div className="mb-8">
