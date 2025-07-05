@@ -177,15 +177,23 @@ export default function TemplatesPage() {
   if (loading) 
     return (
       <SidebarLayout>
-        <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
-          <div className="text-center space-y-6">
-            <div className="flex items-center justify-center">
-              <EngineSpinner size={48} color="#6366f1" />
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground justify-center">
-              <span className={`font-bold tracking-tight text-lg ${themeColors.text}`}>
-                Loading templates...
-              </span>
+        <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} transition-colors duration-200`}>
+          {/* Hidden desktop header during loading */}
+          <div className="hidden md:block">
+            <Header />
+          </div>
+          
+          {/* Centered loading content that works on both mobile and desktop */}
+          <div className="flex items-center justify-center min-h-screen md:min-h-[calc(100vh-4rem)]">
+            <div className="text-center space-y-6 px-4">
+              <div className="flex items-center justify-center">
+                <EngineSpinner size={48} color="#6366f1" />
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground justify-center">
+                <span className={`font-bold tracking-tight text-lg ${themeColors.text}`}>
+                  Loading templates...
+                </span>
+              </div>
             </div>
           </div>
         </div>
