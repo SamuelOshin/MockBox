@@ -459,7 +459,9 @@ export default function ViewMockPage() {
       <ProtectedRoute>
         <SidebarLayout>
           <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-            <Header />
+            <div className="hidden md:block">
+              <Header />
+            </div>
             <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
               <div className="max-w-6xl mx-auto">
                 <Alert variant="destructive" className="mb-6">
@@ -485,11 +487,11 @@ export default function ViewMockPage() {
   return (
     <ProtectedRoute>
       <SidebarLayout>
-        <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
+        <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} transition-colors duration-200`}>
           <div className="hidden md:block">
             <Header />
           </div>
-          <main className="max-w-6xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto overflow-x-hidden">
+          <main className="max-w-6xl mx-auto py-4 md:py-8 px-3 sm:px-4 md:px-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
             <div className="space-y-6">
               {/* Enhanced Header with Back Button */}
               <div className="flex flex-col gap-4">
@@ -593,11 +595,11 @@ export default function ViewMockPage() {
                         
                         <div>
                           <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-1`}>Headers</h3>
-                          <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto max-h-32 w-full`}>
+                          <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto max-h-32`}>
                             {Object.entries(mock.headers || {}).map(([key, value]) => (
-                              <div key={key} className="mb-1 break-words overflow-wrap-anywhere">
-                                <span className="text-blue-500 dark:text-blue-400 break-words">{key}</span>
-                                <span className={`${themeColors.codeText} break-words`}>: {value}</span>
+                              <div key={key} className="mb-1 break-words">
+                                <span className="text-blue-500 dark:text-blue-400">{key}</span>
+                                <span className={`${themeColors.codeText}`}>: {value}</span>
                               </div>
                             ))}
                             {Object.keys(mock.headers || {}).length === 0 && (
@@ -644,9 +646,9 @@ export default function ViewMockPage() {
                             </Button>
 
                             {(testResponse || testError) && (
-                              <div className={`rounded-md p-3 ${themeColors.codeBg} space-y-2 w-full overflow-hidden`}>
+                              <div className={`rounded-md p-3 ${themeColors.codeBg} space-y-2 overflow-hidden`}>
                                 {testError ? (
-                                  <div className="text-red-500 text-sm break-words overflow-wrap-anywhere">
+                                  <div className="text-red-500 text-sm break-words">
                                     <AlertTriangle className="h-4 w-4 inline-block mr-1 flex-shrink-0" />
                                     <span className="break-words">{testError}</span>
                                   </div>
@@ -668,8 +670,8 @@ export default function ViewMockPage() {
                                         <Copy className="h-3 w-3" />
                                       </Button>
                                     </div>
-                                    <div className="w-full overflow-hidden">
-                                      <pre className={`${themeColors.codeText} text-xs overflow-x-auto overflow-y-auto max-h-48 mt-2 whitespace-pre-wrap break-words w-full`}>
+                                    <div className="overflow-hidden">
+                                      <pre className={`${themeColors.codeText} text-xs overflow-auto max-h-48 mt-2 whitespace-pre-wrap break-words`}>
                                         {JSON.stringify(testResponse.data, null, 2)}
                                       </pre>
                                     </div>
@@ -790,12 +792,10 @@ export default function ViewMockPage() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden w-full`}>
-                          <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden w-full`}>
-                            <pre className={`${themeColors.codeText} p-4 font-mono text-sm max-h-[400px] overflow-x-auto overflow-y-auto whitespace-pre-wrap break-words w-full`}>
-                              {JSON.stringify(mock.response, null, 2)}
-                            </pre>
-                          </div>
+                        <div className={`rounded-lg border ${themeColors.codeBg} overflow-hidden`}>
+                          <pre className={`${themeColors.codeText} p-4 font-mono text-sm max-h-[400px] overflow-auto whitespace-pre-wrap break-words`}>
+                            {JSON.stringify(mock.response, null, 2)}
+                          </pre>
                         </div>
                       </CardContent>
                     </Card>
@@ -854,8 +854,8 @@ export default function ViewMockPage() {
                             <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>cURL Command</h3>
                               <div className="flex items-start gap-2">
-                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto flex-1 max-w-0`}>
-                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words w-full`}>
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
+                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words`}>
                                     {generateCurlCommand()}
                                   </pre>
                                 </div>
@@ -879,8 +879,8 @@ export default function ViewMockPage() {
                             <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Fetch API</h3>
                               <div className="flex items-start gap-2">
-                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto flex-1 max-w-0`}>
-                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words w-full`}>
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
+                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words`}>
                                     {generateFetchCode()}
                                   </pre>
                                 </div>
@@ -902,8 +902,8 @@ export default function ViewMockPage() {
                             <div>
                               <h3 className={`text-sm font-medium ${themeColors.textSecondary} mb-2`}>Axios</h3>
                               <div className="flex items-start gap-2">
-                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-x-auto overflow-y-auto flex-1 max-w-0`}>
-                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words w-full`}>
+                                <div className={`rounded-md p-3 ${themeColors.codeBg} font-mono text-xs overflow-auto flex-1`}>
+                                  <pre className={`${themeColors.codeText} whitespace-pre-wrap break-words`}>
                                     {generateAxiosCode()}
                                   </pre>
                                 </div>
@@ -955,20 +955,6 @@ export default function ViewMockPage() {
                               <div className="text-xs text-muted-foreground">Modify configuration</div>
                             </div>
                           </Button>
-                          
-                          {/* <Button 
-                            variant="outline" 
-                            className={`${themeColors.buttonBg} ${themeColors.text} h-auto py-3 justify-start gap-3`}
-                            onClick={() => window.open(generateUrl(), '_blank')}
-                          >
-                            <div className="p-2 rounded-md bg-green-100 dark:bg-green-900/30">
-                              <ExternalLink className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </div>
-                            <div className="text-left">
-                              <div className="font-medium text-sm">Test Endpoint</div>
-                              <div className="text-xs text-muted-foreground">Open in new tab</div>
-                            </div>
-                          </Button> */}
                           
                           <Button 
                             variant="outline" 

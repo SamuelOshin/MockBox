@@ -221,7 +221,9 @@ export default function CloneMockPage() {
       <ProtectedRoute>
         <SidebarLayout>
           <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-            <Header />
+            <div className="hidden md:block">
+              <Header />
+            </div>
             <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
               <div className="max-w-6xl mx-auto">
                 {/* Header Skeleton */}
@@ -252,7 +254,9 @@ export default function CloneMockPage() {
       <ProtectedRoute>
         <SidebarLayout>
           <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-            <Header />
+            <div className="hidden md:block">
+              <Header />
+            </div>
             <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
               <div className="max-w-6xl mx-auto">
                 <Alert variant="destructive" className="mb-6">
@@ -278,7 +282,9 @@ export default function CloneMockPage() {
     <ProtectedRoute>
       <SidebarLayout>
         <div className={`flex-1 ${themeColors.background} ${themeColors.text} overflow-hidden transition-colors duration-200`}>
-          <Header />
+          <div className="hidden md:block">
+            <Header />
+          </div>
           <main className="p-6 h-[calc(100vh-4rem)] overflow-y-auto">
             <div className="max-w-6xl mx-auto">
               {/* Enhanced Header with Back Button */}
