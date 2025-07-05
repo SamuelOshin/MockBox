@@ -133,7 +133,7 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
+                      <AvatarImage src={user?.user_metadata?.avatar_url} alt="User" />
                       <AvatarFallback>
                         <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
                           <span className="text-white font-bold text-xs">
@@ -288,7 +288,7 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.user_metadata?.avatar_url || "/placeholder.svg?height=32&width=32"} alt="User" />
+                      <AvatarImage src={user?.user_metadata?.avatar_url} alt="User" />
                       <AvatarFallback>
                         <div className="h-8 w-8 rounded-full bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-bold text-xs">
