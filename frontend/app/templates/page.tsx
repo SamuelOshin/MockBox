@@ -177,7 +177,7 @@ export default function TemplatesPage() {
   if (loading) 
     return (
       <SidebarLayout>
-        <div className={`min-h-screen flex items-center justify-center ${themeColors.background}`}>
+        <div className={`flex-1 min-h-screen ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
           <div className="text-center space-y-6">
             <div className="flex items-center justify-center">
               <EngineSpinner size={48} color="#6366f1" />
