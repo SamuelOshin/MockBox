@@ -64,7 +64,9 @@ function BuilderPageContent() {
 
   return (
     <div className={`flex-1 ${themeColors.background} ${themeColors.text} md:overflow-hidden transition-colors duration-200`}>
-      <Header />
+      <div className="hidden md:block">
+        <Header />
+      </div>
       <main className="p-2 sm:p-3 md:p-6 md:h-[calc(100vh-4rem)] md:overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           {/* Show loading indicator when loading mock data */}

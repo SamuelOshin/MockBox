@@ -370,10 +370,11 @@ export default function MocksPage() {
                                 checked={selectedMocks.includes(mock.id)}
                                 onCheckedChange={(checked) => handleSelectMock(mock.id, !!checked)}
                               />
-                              <div className="flex-1 min-w-0">
+                              <div className="flex-1 min-w-0 overflow-hidden">
                                 <button
                                   onClick={() => navigateTo(`/mocks/${mock.id}`)}
-                                  className={`font-medium ${themeColors.text} hover:text-blue-600 hover:underline transition-colors text-left truncate block`}
+                                  className={`font-medium ${themeColors.text} hover:text-blue-600 hover:underline transition-colors text-left truncate block w-full`}
+                                  style={{ maxWidth: "100%" }}
                                 >
                                   {mock.name}
                                 </button>
