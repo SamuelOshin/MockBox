@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { apiClient } from '@/lib/api'
 import { useAuth } from '@/lib/auth-context'
@@ -87,6 +87,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
   const [error, setError] = useState<string | null>(null)
   const [usage, setUsage] = useState<UseAIGenerationReturn['usage']>(null)
   const { user } = useAuth() // Get user from auth context
+  const isFetchingUsage = useRef(false) // Prevent concurrent requests
 
   const generateMockData = async (request: AIGenerationRequest): Promise<AIGenerationResponse | null> => {
     setIsGenerating(true)
@@ -211,8 +212,15 @@ export function useAIGeneration(): UseAIGenerationReturn {
     }
   }
 
-  const fetchUsage = async () => {
+  const fetchUsage = useCallback(async () => {
+    // Prevent concurrent requests
+    if (isFetchingUsage.current) {
+      return
+    }
+    
     try {
+      isFetchingUsage.current = true
+      
       // Get current user from auth context
       if (!user) {
         throw new Error('User not found')
@@ -242,8 +250,10 @@ export function useAIGeneration(): UseAIGenerationReturn {
     } catch (err: any) {
       console.error('Failed to fetch AI usage:', err)
       // Don't show error to user for usage fetch failures
+    } finally {
+      isFetchingUsage.current = false
     }
-  }
+  }, [user]) // Only recreate when user changes
 
   return {
     generateMockData,
