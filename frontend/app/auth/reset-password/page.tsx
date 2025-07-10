@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useTheme } from "@/components/ui/theme-provider"
 import { Eye, EyeOff, ArrowLeft, CheckCircle } from "lucide-react"
 
@@ -41,7 +41,7 @@ function ResetPasswordForm() {
   const [isValidSession, setIsValidSession] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
+  // use sonner's toast directly
   const { actualTheme } = useTheme()
 
   useEffect(() => {
@@ -51,10 +51,8 @@ function ResetPasswordForm() {
         const { data: { session }, error } = await supabase.auth.getSession()
 
         if (error || !session) {
-          toast({
-            title: "Invalid reset link",
-            description: "This password reset link is invalid or has expired.",
-            variant: "destructive",
+          toast.error("Invalid reset link", {
+            description: "This password reset link is invalid or has expired."
           })
           router.push("/auth/forgot-password")
           return
@@ -77,19 +75,15 @@ function ResetPasswordForm() {
     if (!password || !confirmPassword) return
 
     if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure both passwords are identical.",
-        variant: "destructive",
+      toast.error("Passwords don't match", {
+        description: "Please make sure both passwords are identical."
       })
       return
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
+      toast.error("Password too short", {
+        description: "Password must be at least 6 characters long."
       })
       return
     }
@@ -103,9 +97,8 @@ function ResetPasswordForm() {
       if (error) throw error
 
       setIsSuccess(true)
-      toast({
-        title: "Password updated",
-        description: "Your password has been successfully updated.",
+      toast.success("Password updated", {
+        description: "Your password has been successfully updated."
       })
 
       // Redirect to dashboard after a short delay
@@ -114,10 +107,8 @@ function ResetPasswordForm() {
       }, 2000)
     } catch (error: any) {
       console.error("Password reset error:", error)
-      toast({
-        title: "Password reset failed",
-        description: error.message || "An error occurred while resetting your password.",
-        variant: "destructive",
+      toast.error("Password reset failed", {
+        description: error.message || "An error occurred while resetting your password."
       })
     } finally {
       setIsLoading(false)

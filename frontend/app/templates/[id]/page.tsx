@@ -38,7 +38,7 @@ import {
   Code,
   Server
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner"
 
 // Category icons mapping
 const categoryIcons: Record<string, any> = {
@@ -94,7 +94,6 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
   const router = useRouter();
   const { navigateTo } = useNavigation();
   const { actualTheme } = useTheme();
-  const { toast } = useToast();
 
   // Theme-aware colors
   const themeColors = {
@@ -151,8 +150,7 @@ const TemplateDetailPage = ({ params }: TemplateDetailPageProps) => {
   const handleCopyJson = () => {
     navigator.clipboard.writeText(jsonString);
     setCopied(true);
-    toast({
-      title: "Copied to clipboard",
+    toast.success("Copied to clipboard",{
       description: "Template JSON has been copied to your clipboard",
     });
     setTimeout(() => setCopied(false), 2000);

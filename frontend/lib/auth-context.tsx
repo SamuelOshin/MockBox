@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import { User, Session, AuthError } from "@supabase/supabase-js"
 import { supabase } from "./supabase"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface AuthContextType {
   user: User | null
@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [hasShownWelcome, setHasShownWelcome] = useState(false) // Track if we've shown welcome message
-  const { toast } = useToast()
+  // use sonner's toast directly
 
   useEffect(() => {
     // Get initial session
@@ -65,18 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           case 'SIGNED_IN':
             // Only show welcome message for actual sign-ins, not session restorations
             if (!hasShownWelcome) {
-              toast({
-                title: "Welcome back! 🎉",
-                description: "You have been signed in successfully.",
-                variant: "success",
+              toast.success("Welcome back! 🎉", {
+                description: "You have been signed in successfully."
               })
               setHasShownWelcome(true)
             }
             break
           case 'SIGNED_OUT':
-            toast({
-              title: "Signed out",
-              description: "You have been signed out successfully.",
+            toast("Signed out", {
+              description: "You have been signed out successfully."
             })
             setHasShownWelcome(false) // Reset welcome flag on sign out
             break
@@ -84,16 +81,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Silent token refresh - no toast needed
             break
           case 'USER_UPDATED':
-            toast({
-              title: "Profile updated",
-              description: "Your profile has been updated successfully.",
-              variant: "success",
+            toast.success("Profile updated", {
+              description: "Your profile has been updated successfully."
             })
             break
           case 'PASSWORD_RECOVERY':
-            toast({
-              title: "Password recovery",
-              description: "Check your email for password reset instructions.",
+            toast("Password recovery", {
+              description: "Check your email for password reset instructions."
             })
             break        }
       }
@@ -113,10 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "Sign in failed",
-        description: authError.message || "An error occurred during sign in",
-        variant: "destructive",
+      toast.error("Sign in failed", {
+        description: authError.message || "An error occurred during sign in"
       })
       throw error
     } finally {
@@ -137,16 +129,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error
 
-      toast({
-        title: "Check your email",
-        description: "We've sent you a confirmation link to complete your registration.",
+      toast("Check your email", {
+        description: "We've sent you a confirmation link to complete your registration."
       })
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "Sign up failed",
-        description: authError.message || "An error occurred during sign up",
-        variant: "destructive",
+      toast.error("Sign up failed", {
+        description: authError.message || "An error occurred during sign up"
       })
       throw error
     } finally {
@@ -161,10 +150,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "Sign out failed",
-        description: authError.message || "An error occurred during sign out",
-        variant: "destructive",
+      toast.error("Sign out failed", {
+        description: authError.message || "An error occurred during sign out"
       })
       throw error
     } finally {
@@ -190,10 +177,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "Google sign in failed",
-        description: authError.message || "An error occurred during Google sign in",
-        variant: "destructive",
+      toast.error("Google sign in failed", {
+        description: authError.message || "An error occurred during Google sign in"
       })
       throw error
     } finally {
@@ -218,10 +203,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "GitHub sign in failed",
-        description: authError.message || "An error occurred during GitHub sign in",
-        variant: "destructive",
+      toast.error("GitHub sign in failed", {
+        description: authError.message || "An error occurred during GitHub sign in"
       })
       throw error
     } finally {
@@ -238,16 +221,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) throw error
 
-      toast({
-        title: "Password reset sent",
-        description: "Check your email for password reset instructions.",
+      toast("Password reset sent", {
+        description: "Check your email for password reset instructions."
       })
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "Password reset failed",
-        description: authError.message || "An error occurred during password reset",
-        variant: "destructive",
+      toast.error("Password reset failed", {
+        description: authError.message || "An error occurred during password reset"
       })
       throw error
     } finally {
@@ -265,10 +245,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error
     } catch (error) {
       const authError = error as AuthError
-      toast({
-        title: "Profile update failed",
-        description: authError.message || "An error occurred while updating profile",
-        variant: "destructive",
+      toast.error("Profile update failed", {
+        description: authError.message || "An error occurred while updating profile"
       })
       throw error
     } finally {

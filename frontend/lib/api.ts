@@ -152,28 +152,42 @@ export const mockApi = {
     })
   },
 
-  async testMock(data: CreateMockRequest): Promise<any> {
-    // Use the simulate endpoint for testing - always POST with mock config
-    const endpointPath = data.endpoint.startsWith('/') ? data.endpoint : `/${data.endpoint}`;
-    const url = `${API_BASE_URL}/api/v1/simulate${endpointPath}`;
+  async testMock(data: CreateMockRequest & { id?: string }): Promise<any> {
+    // If we have a mock ID, use the authenticated test endpoint
+    if (data.id) {
+      return this.testMockById(data.id);
+    }
     
-    const fetchOptions: RequestInit = {
-      method: 'POST', // Always POST to simulation endpoint
+    // For testing without ID (during creation), simulate locally
+    try {
+      // Simulate the delay if specified
+      if (data.delay_ms && data.delay_ms > 0) {
+        await new Promise(resolve => setTimeout(resolve, data.delay_ms));
+      }
+      
+      // Return the mock response directly
+      return {
+        body: data.response,
+        status: data.status_code || 200,
+        headers: data.headers || {}
+      };
+    } catch (error) {
+      throw createMockError(`Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+
+  // New method for testing a mock by ID using the new endpoint
+  async testMockById(mockId: string): Promise<any> {
+    const url = `${API_BASE_URL}/api/v1/simulate/test/${mockId}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: data.name,
-        endpoint: data.endpoint,
-        method: data.method,
-        response: data.response,
-        headers: data.headers || {},
-        status_code: data.status_code,
-        delay_ms: data.delay_ms
-      })
-    };
+        // Authorization header will be added by apiRequest if needed
+      }
+    });
     
-    const response = await fetch(url, fetchOptions);
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Test failed: ${response.status} ${errorText}`);

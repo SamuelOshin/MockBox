@@ -293,3 +293,73 @@ async def list_public_mocks(
         limit=pagination.limit,
         has_next=total > pagination.page * pagination.limit,
     )
+
+
+@router.post("/test/{mock_id}")
+async def test_mock_by_id(
+    mock_id: UUID, 
+    request: Request, 
+    db: DatabaseManager = Depends(get_database),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Test a mock by ID - allows users to test their own mocks (private or public)
+    This endpoint is for authenticated users testing their own mocks
+    """
+    try:
+        # Create service with authentication
+        auth_header = request.headers.get("authorization")
+        user_token = None
+        if auth_header and auth_header.startswith("Bearer "):
+            user_token = auth_header.split(" ")[1]
+        
+        service = MockService(db, user_token)
+
+        # Get the mock with user context (allows private mocks for the owner)
+        mock = await service.get_mock(mock_id, current_user)
+        
+        if not mock:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mock not found or access denied",
+            )
+
+        # Check if user owns the mock (allows testing private mocks)
+        if mock.user_id != current_user:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only test your own mocks",
+            )
+
+        if mock.status != MockStatus.ACTIVE:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Mock is not active",
+            )
+
+        # Prepare request data for logging
+        request_data = {
+            "ip": request.client.host if request.client else "unknown",
+            "user_agent": request.headers.get("user-agent"),
+            "method": request.method,
+            "user_id": str(current_user),
+            "test_mode": True,  # Flag to indicate this is a test
+        }
+
+        # Simulate the mock
+        result = await service.simulate_mock(mock_id, request_data)
+
+        # Return the mock response
+        return JSONResponse(
+            content=result["response_data"],
+            status_code=result["status_code"],
+            headers=result["headers"],
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error testing mock: {str(e)}",
+        )

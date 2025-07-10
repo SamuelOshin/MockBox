@@ -3,7 +3,7 @@
 import { AIGeneratorModal } from "@/components/editor/ai-generator-modal"
 import { TemplateSelectionModal } from "@/components/editor/template-selection-modal"
 import { AIFloatingActionButton } from "@/components/editor/ai-floating-action-button"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { BuilderModalsProps } from "./types"
 
 export function BuilderModals({
@@ -21,13 +21,12 @@ export function BuilderModals({
   onQuickGenerate,
   onOpenFullGenerator
 }: BuilderModalsProps) {
-  const { toast } = useToast()
+  // use sonner's toast directly
 
   const handleQuickGenerate = (type: string) => {
     onQuickGenerate(type)
-    toast({
-      title: "AI Generation",
-      description: `Quick generation for ${type} started`,
+    toast.success("AI Generation", {
+      description: `Quick generation for ${type} started`
     })
   }
 

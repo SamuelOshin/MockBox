@@ -15,7 +15,7 @@ import {
   Settings,
   Minimize2
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
@@ -44,7 +44,7 @@ export default function MonacoJsonEditor({
   const [isUploading, setIsUploading] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isFormatting, setIsFormatting] = useState(false)
-  const { toast } = useToast()
+  // use sonner's toast directly
   const { actualTheme } = useTheme()
 
   // Theme-aware colors
@@ -67,16 +67,12 @@ export default function MonacoJsonEditor({
       await navigator.clipboard.writeText(value)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-      toast({
-        title: "Copied to clipboard",
-        description: "JSON content has been copied successfully",
-        variant: "default",
+      toast.success("Copied to clipboard", {
+        description: "JSON content has been copied successfully"
       })
     } catch (error) {
-      toast({
-        title: "Copy failed",
-        description: "Failed to copy content to clipboard",
-        variant: "destructive",
+      toast.error("Copy failed", {
+        description: "Failed to copy content to clipboard"
       })
     }
   }
@@ -102,16 +98,12 @@ export default function MonacoJsonEditor({
       const parsed = JSON.parse(value)
       const formatted = JSON.stringify(parsed, null, 2)
       onChange(formatted)
-      toast({
-        title: "JSON formatted",
-        description: "Your JSON has been formatted successfully",
-        variant: "default",
+      toast.success("JSON formatted", {
+        description: "Your JSON has been formatted successfully"
       })
     } catch (error) {
-      toast({
-        title: "Format failed",
-        description: "Invalid JSON cannot be formatted",
-        variant: "destructive",
+      toast.error("Format failed", {
+        description: "Invalid JSON cannot be formatted"
       })
     } finally {
       setTimeout(() => setIsFormatting(false), 500)
@@ -130,17 +122,20 @@ export default function MonacoJsonEditor({
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-
-      toast({
-        title: "Download started",
-        description: "JSON file is being downloaded",
-        variant: "default",
+      // Notify user
+      toast.success("Download started", {
+        description: "JSON file is being downloaded"
       })
+      toast.info(
+        "If the download doesn't start automatically, please check your browser's download folder.",
+        {
+          duration: 5000,
+          description: "Click the link to download the JSON file."
+        }
+      )
     } catch (error) {
-      toast({
-        title: "Download failed",
-        description: "Failed to download JSON file",
-        variant: "destructive",
+      toast.error("Download failed", {
+        description: "An error occurred while trying to download the JSON file"
       })
     } finally {
       setTimeout(() => setIsDownloading(false), 1000)
@@ -162,17 +157,13 @@ export default function MonacoJsonEditor({
               const content = e.target?.result as string
               JSON.parse(content) // Validate JSON
               onChange(content)
-              toast({
-                title: "File uploaded",
+              toast.success("File uploaded", {
                 description: "JSON file has been loaded successfully",
-                variant: "default",
               })
             } catch (error) {
-              toast({
-                title: "Upload failed",
+              toast.error("Upload failed", {
                 description: "Invalid JSON file",
-                variant: "destructive",
-              })
+              })              
             }
           }
           reader.readAsText(file)
@@ -181,10 +172,8 @@ export default function MonacoJsonEditor({
       }
       input.click()
     } catch (error) {
-      toast({
-        title: "Upload failed",
+      toast.error("Upload failed", {
         description: "Failed to upload file",
-        variant: "destructive",
       })
       setIsUploading(false)
     }
@@ -192,10 +181,8 @@ export default function MonacoJsonEditor({
 
   const resetEditor = () => {
     onChange("")
-    toast({
-      title: "Editor reset",
+    toast.error("Editor reset", {
       description: "Content has been cleared",
-      variant: "default",
     })
   }
 

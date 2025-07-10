@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/ui/theme-provider';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from 'sonner';
 import { LineLoader, NavigationProvider } from '@/components/ui/line-loader';
 import { AuthProvider } from '@/lib/auth-context';
 import { TwentyFirstToolbar } from '@21st-extension/toolbar-next';
@@ -35,7 +35,17 @@ export default function RootLayout({
             <NavigationProvider>
               <LineLoader />
               {children}
-              <Toaster />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  style: {
+                    background: 'white',
+                    border: '1px solid #d1fae5',
+                    color: '#065f46',
+                  },
+                  className: 'dark:bg-gray-900 dark:border-emerald-900 dark:text-emerald-200',
+                }}
+              />
               <TwentyFirstToolbar
                 config={{
                   plugins: [ReactPlugin],

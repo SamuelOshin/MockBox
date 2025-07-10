@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -51,7 +51,7 @@ export default function CloneMockPage() {
   const router = useRouter()
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
-  const { toast } = useToast()
+  // use sonner's toast directly
   const mockId = params.id as string
 
   const [originalMock, setOriginalMock] = useState<MockEndpoint | null>(null)
@@ -143,10 +143,8 @@ export default function CloneMockPage() {
           is_public: sampleMock.is_public
         })
         
-        toast({
-          title: "Using sample data",
-          description: "Could not fetch mock from API. Using sample data instead.",
-          variant: "destructive",
+        toast.error("Using sample data", {
+          description: "Could not fetch mock from API. Using sample data instead."
         })
       } finally {
         setIsLoading(false)
@@ -186,10 +184,8 @@ export default function CloneMockPage() {
       
       // Validate form data
       if (!formData.name || !formData.endpoint || !formData.method) {
-        toast({
-          title: "Validation Error",
-          description: "Please fill in all required fields",
-          variant: "destructive",
+        toast.error("Validation Error", {
+          description: "Please fill in all required fields"
         })
         return
       }
@@ -197,19 +193,16 @@ export default function CloneMockPage() {
       // Create the mock
       const newMock = await mockApi.createMock(formData as CreateMockRequest)
       
-      toast({
-        title: "Mock Cloned",
-        description: "The mock has been successfully cloned",
+      toast.success("Mock Cloned", {
+        description: "The mock has been successfully cloned"
       })
       
       // Navigate to the new mock
       navigateTo(`/mocks/${newMock.id}`)
     } catch (error) {
       console.error("Error cloning mock:", error)
-      toast({
-        title: "Clone failed",
-        description: error instanceof Error ? error.message : "Failed to clone mock",
-        variant: "destructive",
+      toast.error("Clone failed", {
+        description: error instanceof Error ? error.message : "Failed to clone mock"
       })
     } finally {
       setIsSaving(false)
