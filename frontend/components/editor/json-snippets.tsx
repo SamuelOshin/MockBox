@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 
 import { useTheme } from "@/components/ui/theme-provider"
 import { User, Package, AlertTriangle, Database, ShoppingCart, MessageSquare, Copy, Code, Download, Check } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
@@ -169,7 +169,7 @@ const snippets = [
 export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({})
   const [downloadingStates, setDownloadingStates] = useState<Record<string, boolean>>({})
-  const { toast } = useToast()
+  // use sonner's toast directly
   const { actualTheme } = useTheme()
 
   // Theme-aware colors
@@ -196,16 +196,12 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
         setCopiedStates(prev => ({ ...prev, [snippetId]: false }))
       }, 2000)
 
-      toast({
-        title: "Copied to clipboard",
-        description: "JSON snippet has been copied successfully",
-        variant: "default",
+      toast.success("Copied to clipboard", {
+        description: "JSON snippet has been copied successfully"
       })
     } catch (error) {
-      toast({
-        title: "Copy failed",
-        description: "Failed to copy snippet to clipboard",
-        variant: "destructive",
+      toast.error("Copy failed", {
+        description: "Failed to copy snippet to clipboard"
       })
     }
   }
@@ -226,16 +222,12 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
-      toast({
-        title: "Download started",
-        description: `${title} JSON file is being downloaded`,
-        variant: "default",
+      toast("Download started", {
+        description: `${title} JSON file is being downloaded`
       })
     } catch (error) {
-      toast({
-        title: "Download failed",
-        description: "Failed to download JSON file",
-        variant: "destructive",
+      toast.error("Download failed", {
+        description: "Failed to download JSON file"
       })
     } finally {
       setTimeout(() => {
@@ -365,10 +357,8 @@ export default function JsonSnippets({ onSnippetSelect }: JsonSnippetsProps) {
                           onClick={(e) => {
                             e.stopPropagation()
                             onSnippetSelect(JSON.stringify(snippet.data, null, 2))
-                            toast({
-                              title: "Template applied",
-                              description: `${snippet.title} template has been loaded`,
-                              variant: "default",
+                            toast.success("Template applied", {
+                              description: `${snippet.title} template has been loaded`
                             })
                           }}
                         >

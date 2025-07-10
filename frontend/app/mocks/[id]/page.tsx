@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { useNavigation } from "@/components/ui/line-loader"
 import { useTheme } from "@/components/ui/theme-provider"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -60,7 +60,7 @@ export default function ViewMockPage() {
   const router = useRouter()
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
-  const { toast } = useToast()
+  // use sonner's toast directly
   const mockId = params.id as string
 
   // Existing state variables
@@ -144,9 +144,8 @@ export default function ViewMockPage() {
     try {
       setIsDeleting(true)
       await mockApi.deleteMock(mockId)
-      toast({
-        title: "Mock deleted",
-        description: "The mock has been successfully deleted",
+      toast.success("Mock deleted", {
+        description: "The mock has been successfully deleted"
       })
       navigateTo("/mocks")
     } catch (error) {
@@ -159,10 +158,8 @@ export default function ViewMockPage() {
         errorMessage = error.message
       }
       
-      toast({
-        title: "Delete failed",
-        description: errorMessage,
-        variant: "destructive",
+      toast.error("Delete failed", {
+        description: errorMessage
       })
     } finally {
       setIsDeleting(false)
@@ -178,15 +175,12 @@ export default function ViewMockPage() {
       await navigator.clipboard.writeText(text)
       setCopySuccess(type)
       setTimeout(() => setCopySuccess(null), 2000)
-      toast({
-        title: "Copied to clipboard",
-        description: `${type} has been copied to clipboard`,
+      toast.success("Copied to clipboard", {
+        description: `${type} has been copied to clipboard`
       })
     } catch (error) {
-      toast({
-        title: "Copy failed",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
+      toast.error("Copy failed", {
+        description: "Failed to copy to clipboard"
       })
     }
   }
@@ -328,19 +322,15 @@ export default function ViewMockPage() {
         status: response.status || 200
       })
       
-      toast({
-        title: "Test Successful",
-        description: "Your mock endpoint is working correctly",
-        variant: "default",
+      toast.success("Test Successful", {
+        description: "Your mock endpoint is working correctly"
       })
     } catch (error) {
       console.error("Error testing endpoint:", error)
       setTestError(error instanceof Error ? error.message : "Failed to test endpoint")
       
-      toast({
-        title: "Test failed",
-        description: error instanceof Error ? error.message : "Failed to test endpoint",
-        variant: "destructive",
+      toast.error("Test failed", {
+        description: error instanceof Error ? error.message : "Failed to test endpoint"
       })
     } finally {
       setIsTesting(false)
@@ -990,8 +980,7 @@ export default function ViewMockPage() {
                             variant="outline" 
                             className={`${themeColors.buttonBg} ${themeColors.text} h-auto py-3 justify-start gap-3`}
                             onClick={() => {
-                              toast({
-                                title: "Share feature",
+                              toast.info("Share feature", {
                                 description: "Sharing functionality will be available soon!",
                               })
                             }}

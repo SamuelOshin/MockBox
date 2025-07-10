@@ -34,7 +34,7 @@ import {
 } from "lucide-react"
 import type { MockEndpoint } from "@/lib/types"
 import { mockApi } from "@/lib/api"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { SidebarLayout } from "@/components/layout/sidebar"
 import { useTheme } from "@/components/ui/theme-provider"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -58,7 +58,7 @@ export default function MocksPage() {
   const [sortBy, setSortBy] = useState<"name" | "method" | "created" | "accessed">("created")
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
-  const { toast } = useToast()
+  // use sonner's toast directly
   const { navigateTo } = useNavigation()
   const { actualTheme } = useTheme()
 
@@ -85,10 +85,8 @@ export default function MocksPage() {
         } else {
           throw new Error('Invalid data format returned from API');
         }      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch mocks from server",
-          variant: "destructive",
+        toast.error("Error", {
+          description: "Failed to fetch mocks from server"
         })
         setMocks([]) // Set empty array instead of sample data
       } finally {
@@ -135,15 +133,12 @@ export default function MocksPage() {
       await mockApi.deleteMock(mockId)
       setMocks(mocks.filter((mock) => mock.id !== mockId))
       setSelectedMocks(selectedMocks.filter((id) => id !== mockId))
-      toast({
-        title: "Mock Deleted",
-        description: "Mock has been deleted successfully",
+      toast.success("Mock Deleted", {
+        description: "Mock has been deleted successfully"
       })
     } catch (error) {
-      toast({
-        title: "Delete Failed",
-        description: error instanceof Error ? error.message : "Failed to delete mock",
-        variant: "destructive",
+      toast.error("Delete Failed", {
+        description: error instanceof Error ? error.message : "Failed to delete mock"
       })
     }
   }
@@ -154,15 +149,12 @@ export default function MocksPage() {
       await mockApi.deleteMocks(selectedMocks)
       setMocks(mocks.filter((mock) => !selectedMocks.includes(mock.id)))
       setSelectedMocks([])
-      toast({
-        title: "Mocks Deleted",
-        description: `${selectedMocks.length} mocks have been deleted successfully`,
+      toast.success("Mocks Deleted", {
+        description: `${selectedMocks.length} mocks have been deleted successfully`
       })
     } catch (error) {
-      toast({
-        title: "Delete Failed",
-        description: error instanceof Error ? error.message : "Failed to delete mocks",
-        variant: "destructive",
+      toast.error("Delete Failed", {
+        description: error instanceof Error ? error.message : "Failed to delete mocks"
       })
     } finally {
       setIsDeleting(false)

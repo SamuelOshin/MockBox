@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { useNavigation } from "@/components/ui/line-loader"
 import { mockApi, getTemplateById } from "@/lib/api"
 import { CreateMockRequest, TemplateDetail, HTTPMethod } from "@/lib/types"
@@ -41,7 +41,7 @@ export function useBuilderState() {
   // Use ref to track when we're loading mock data to prevent JSON overwrite
   const isLoadingMockData = useRef(false)
 
-  const { toast } = useToast()
+  // use sonner's toast directly
   const { navigateTo } = useNavigation()
   const searchParams = useSearchParams()
 
@@ -116,10 +116,8 @@ export function useBuilderState() {
       // Update the JSON string with the response data
       setJsonString(JSON.stringify(mockData.response || {}, null, 2))
       
-      toast({
-        title: "Mock loaded",
-        description: "Mock data loaded successfully for editing",
-        variant: "default",
+      toast.success("Mock loaded", {
+        description: "Mock data loaded successfully for editing"
       })
     } catch (error) {
       console.error("Error loading mock:", error)
@@ -129,10 +127,8 @@ export function useBuilderState() {
       
       setTemplateLoadError(errorMessage)
       
-      toast({
-        title: "Loading failed",
-        description: errorMessage,
-        variant: "destructive",
+      toast.error("Loading failed", {
+        description: errorMessage
       })
     } finally {
       setIsLoading(false)
@@ -174,10 +170,8 @@ export function useBuilderState() {
       
       setTemplateLoadError(errorMessage)
       
-      toast({
-        title: "Template loading failed",
-        description: errorMessage,
-        variant: "destructive",
+      toast.error("Template loading failed", {
+        description: errorMessage
       })
     } finally {
       setIsLoadingTemplate(false)
@@ -189,10 +183,8 @@ export function useBuilderState() {
     const selectedEndpoint = endpoints[endpointIndex]
     
     if (!selectedEndpoint) {
-      toast({
-        title: "Invalid selection",
-        description: "Selected endpoint not found",
-        variant: "destructive",
+      toast.error("Invalid selection", {
+        description: "Selected endpoint not found"
       })
       return
     }
@@ -230,10 +222,8 @@ export function useBuilderState() {
     
     setJsonString(JSON.stringify(responseData, null, 2))
     
-    toast({
-      title: "Template configuration applied",
-      description: `Using ${selectedEndpoint.endpoint || '/api/endpoint'} from ${templateData.name}`,
-      variant: "default",
+    toast.success("Template configuration applied", {
+      description: `Using ${selectedEndpoint.endpoint || '/api/endpoint'} from ${templateData.name}`
     })
   }
 
@@ -262,10 +252,8 @@ export function useBuilderState() {
 
   const handleSave = async () => {
     if (!formData.name || !formData.endpoint || !formData.method) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
+      toast.error("Validation Error", {
+        description: "Please fill in all required fields"
       })
       return
     }
@@ -279,19 +267,15 @@ export function useBuilderState() {
         // Update existing mock
         result = await mockApi.updateMock(editingMockId, formData)
         
-        toast({
-          title: "Mock Updated",
-          description: "Your mock has been updated successfully",
-          variant: "default",
+        toast.success("Mock Updated", {
+          description: "Your mock has been updated successfully"
         })
       } else {
         // Create new mock
         result = await mockApi.createMock(formData)
         
-        toast({
-          title: "Mock Created",
-          description: "Your mock has been created successfully",
-          variant: "default",
+        toast.success("Mock Created", {
+          description: "Your mock has been created successfully"
         })
       }
       
@@ -299,10 +283,8 @@ export function useBuilderState() {
     } catch (error) {
       console.error("Error saving mock:", error)
       
-      toast({
-        title: isEditMode ? "Update Failed" : "Creation Failed",
-        description: error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'create'} mock`,
-        variant: "destructive",
+      toast.error(isEditMode ? "Update Failed" : "Creation Failed", {
+        description: error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'create'} mock`
       })
     } finally {
       setIsSaving(false)
@@ -311,10 +293,8 @@ export function useBuilderState() {
 
   const handleTest = async () => {
     if (!formData.endpoint || !formData.method) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in endpoint and method",
-        variant: "destructive",
+      toast.error("Validation Error", {
+        description: "Please fill in endpoint and method"
       })
       return
     }
@@ -326,18 +306,14 @@ export function useBuilderState() {
       const result = await mockApi.testMock(formData)
       setTestResult(result)
       
-      toast({
-        title: "Test Successful",
-        description: "Your mock endpoint is working correctly",
-        variant: "default",
+      toast.success("Test Successful", {
+        description: "Your mock endpoint is working correctly"
       })
     } catch (error) {
       console.error("Error testing mock:", error)
       
-      toast({
-        title: "Test Failed",
-        description: error instanceof Error ? error.message : "Failed to test mock",
-        variant: "destructive",
+      toast.error("Test Failed", {
+        description: error instanceof Error ? error.message : "Failed to test mock"
       })
     } finally {
       setIsTesting(false)
@@ -348,16 +324,12 @@ export function useBuilderState() {
     try {
       await navigator.clipboard.writeText(text)
       
-      toast({
-        title: "Copied to clipboard",
-        description: `${type} has been copied to clipboard`,
-        variant: "default",
+      toast.success("Copied to clipboard", {
+        description: `${type} has been copied to clipboard`
       })
     } catch (error) {
-      toast({
-        title: "Copy failed",
-        description: "Failed to copy to clipboard",
-        variant: "destructive",
+      toast.error("Copy failed", {
+        description: "Failed to copy to clipboard"
       })
     }
   }
