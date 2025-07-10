@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, ReactNode, useEffect } from "react"
+import { useState, ReactNode, useEffect, memo, useMemo } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -39,6 +39,131 @@ import {
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import MockBoxLogo from "@/components/ui/mockbox-logo"
+
+// Moved SidebarItemProps and SidebarItem to module scope for stable references
+interface SidebarItemProps {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  section: string;
+}
+
+interface SidebarItemComponentProps {
+  item: SidebarItemProps;
+  isCollapsed: boolean;
+  isMobile: boolean; // Now passed as a prop
+  pathname: string; // Now passed as a prop
+  navigateTo: (href: string) => void; // Now passed as a prop
+  setIsMobileOpen: (isOpen: boolean) => void; // Now passed as a prop
+  sidebarColors: any; // Passed from parent
+}
+
+const SidebarItem = ({ item, isCollapsed, isMobile, pathname, navigateTo, setIsMobileOpen, sidebarColors }: SidebarItemComponentProps) => {
+  const isActive = pathname === item.href;
+  const Icon = item.icon;
+
+  // For mobile, never show as collapsed (always show text)
+  const showText = isMobile ? true : !isCollapsed;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigateTo(item.href);
+    // Close mobile menu after navigation
+    if (isMobile) {
+      setIsMobileOpen(false);
+    }
+  };
+
+  return (
+    <Link href={item.href} onClick={handleClick}>
+      <motion.div
+        className={cn(
+          "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
+            sidebarColors.itemBg,
+          isActive
+              ? `${sidebarColors.activeBg} ${sidebarColors.text}`
+              : `${sidebarColors.textSecondary} hover:${sidebarColors.text}`,
+          !showText && "justify-center"
+        )}
+        whileHover={{ x: !showText ? 0 : 2 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Icon className="h-5 w-5 flex-shrink-0" />
+
+        <AnimatePresence>
+          {showText && (
+            <motion.span
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm font-medium whitespace-nowrap overflow-hidden"
+            >
+              {item.title}
+            </motion.span>
+          )}
+        </AnimatePresence>
+        {!isMobile && !showText && (
+          <div className={cn(
+            "absolute left-full ml-3 px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
+              sidebarColors.tooltipBg.replace('bg-', 'bg-'), // Or pass directly if these are full classes
+              sidebarColors.tooltipText,
+              sidebarColors.tooltipBorder.replace('border-', 'border-')
+          )}>
+            {item.title}
+              {/* Arrow pointing to the sidebar */}
+            <div className={cn(
+              "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
+                sidebarColors.tooltipBg.replace('bg-', 'border-r-') // Or pass directly
+            )}></div>
+          </div>
+        )}
+        {isActive && (
+          <motion.div
+            className="absolute right-2 w-1.5 h-1.5 bg-blue-500 rounded-full"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </motion.div>
+    </Link>
+  );
+};
+const MemoizedSidebarItem = memo(SidebarItem);
+
+// Moved SectionHeader to module scope
+interface SectionHeaderComponentProps {
+  title: string;
+  isCollapsed: boolean;
+  isMobile: boolean; // Now passed as a prop
+  // sidebarColors: any; // Pass relevant colors if needed, e.g., sidebarColors.textMuted
+  textMutedColor: string;
+}
+
+const SectionHeader = ({ title, isCollapsed, isMobile, textMutedColor }: SectionHeaderComponentProps) => {
+  const showText = isMobile ? true : !isCollapsed;
+
+  return (
+    <AnimatePresence>
+      {showText && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+          className={cn(
+            "px-3 py-2 text-xs font-semibold uppercase tracking-wider",
+            textMutedColor // Use passed prop
+          )}
+        >
+          <h3>{title}</h3>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+const MemoizedSectionHeader = memo(SectionHeader);
 
 interface SidebarLayoutProps {
   children: ReactNode
@@ -113,14 +238,16 @@ const accountItems = [
   }
 ]
 
-export function SidebarLayout({ children }: SidebarLayoutProps) {
+const SidebarLayoutComponent = ({ children }: SidebarLayoutProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const pathname = usePathname()
+  const currentPathname = usePathname() // Renamed to avoid conflict with prop for SidebarItem
   const router = useRouter()
   const { actualTheme } = useTheme()
   const { user, signOut, loading } = useAuth()
+  const { navigateTo } = useNavigation(); // Get navigateTo here
+
   // Check for mobile screen size
   useEffect(() => {
     const checkMobile = () => {
@@ -154,10 +281,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     if (isMobile) {
       setIsMobileOpen(false)
     }
-  }, [pathname, isMobile])
+  }, [currentPathname, isMobile]) // Use currentPathname here
 
   // Theme-aware colors for sidebar
-  const sidebarColors = {
+  const sidebarColors = useMemo(() => ({
     background: actualTheme === 'light' ? 'bg-white' : 'bg-[#1A1A1A]',
     border: actualTheme === 'light' ? 'border-slate-200' : 'border-gray-800',
     containerBg: actualTheme === 'light' ? 'bg-slate-50' : 'bg-[#0A0A0A]',
@@ -169,9 +296,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     tooltipBg: actualTheme === 'light' ? 'bg-slate-800' : 'bg-gray-900',
     tooltipText: actualTheme === 'light' ? 'text-white' : 'text-white',
     tooltipBorder: actualTheme === 'light' ? 'border-slate-700' : 'border-gray-700'
-  }
+  }), [actualTheme]);
 
   // Header colors for mobile search and actions
+  // Consider memoizing headerColors as well if it's passed to memoized components
   const headerColors = {
     searchBg: actualTheme === 'light' ? '#ffffff' : '#2D2D2D',
     searchBorder: actualTheme === 'light' ? 'border-slate-300 focus:border-blue-500' : 'border-gray-600 focus:border-blue-400',
@@ -201,109 +329,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       localStorage.setItem('sidebar-collapsed', JSON.stringify(newCollapsed))
     }
   }
-  interface SidebarItemProps {
-    title: string;
-    href: string;
-    icon: React.ComponentType<{ className?: string }>;
-    section: string;
-  }  const SidebarItem = ({ item, isCollapsed }: { item: SidebarItemProps, isCollapsed: boolean }) => {
-    const isActive = pathname === item.href
-    const Icon = item.icon
-    const { navigateTo } = useNavigation()
+  // SidebarItem and SectionHeader are now defined at module scope.
+  // SidebarLayoutComponent will pass them the necessary props.
 
-    // For mobile, never show as collapsed (always show text)
-    const showText = isMobile ? true : !isCollapsed
-
-    const handleClick = (e: React.MouseEvent) => {
-      e.preventDefault()
-      navigateTo(item.href)
-      // Close mobile menu after navigation
-      if (isMobile) {
-        setIsMobileOpen(false)
-      }
-    }
-
-    return (
-      <Link href={item.href} onClick={handleClick}>
-        <motion.div
-          className={cn(
-            "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer",
-            sidebarColors.itemBg,
-            isActive
-              ? `${sidebarColors.activeBg} ${sidebarColors.text}`
-              : `${sidebarColors.textSecondary} hover:${sidebarColors.text}`,
-            !showText && "justify-center"
-          )}
-          whileHover={{ x: !showText ? 0 : 2 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Icon className="h-5 w-5 flex-shrink-0" />
-
-          <AnimatePresence>
-            {showText && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "auto" }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.2 }}
-                className="text-sm font-medium whitespace-nowrap overflow-hidden"
-              >
-                {item.title}
-              </motion.span>
-            )}
-          </AnimatePresence>          {/* Tooltip for collapsed state - only show on desktop when collapsed */}
-          {!isMobile && !showText && (
-            <div className={cn(
-              "absolute left-full ml-3 px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] shadow-lg border",
-              sidebarColors.tooltipBg.replace('bg-', 'bg-'),
-              sidebarColors.tooltipText,
-              sidebarColors.tooltipBorder.replace('border-', 'border-')
-            )}>
-              {item.title}
-              {/* Arrow pointing to the sidebar */}
-              <div className={cn(
-                "absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent",
-                sidebarColors.tooltipBg.replace('bg-', 'border-r-')
-              )}></div>
-            </div>
-          )}
-
-          {/* Active indicator */}
-          {isActive && (
-            <motion.div
-              className="absolute right-2 w-1.5 h-1.5 bg-blue-500 rounded-full"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.2 }}
-            />
-          )}
-        </motion.div>
-      </Link>
-    )
-  }
-  const SectionHeader = ({ title, isCollapsed }: { title: string, isCollapsed: boolean }) => {
-    // For mobile, never show as collapsed (always show text)
-    const showText = isMobile ? true : !isCollapsed
-    
-    return (
-      <AnimatePresence>
-        {showText && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className={cn(
-              "px-3 py-2 text-xs font-semibold uppercase tracking-wider",
-              sidebarColors.textMuted
-            )}
-          >
-            <h3>{title}</h3>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    )
-  }
   return (
     <div className={cn("flex h-screen w-full", sidebarColors.containerBg, "overflow-x-hidden")}>
       {/* Professional Mobile Overlay */}
@@ -419,30 +447,73 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
         <div className="flex-1 py-4 space-y-1 overflow-hidden md:overflow-y-auto">
           {/* Navigation Section */}
           <div className="px-2">
-            <SectionHeader title="Navigation" isCollapsed={!isMobile && isCollapsed} />
+            <MemoizedSectionHeader
+              title="Navigation"
+              isCollapsed={!isMobile && isCollapsed}
+              isMobile={isMobile}
+              textMutedColor={sidebarColors.textMuted}
+            />
             <div className="space-y-1">
               {navigationItems.map((item) => (
-                <SidebarItem key={item.href} item={item} isCollapsed={!isMobile && isCollapsed} />
+                <MemoizedSidebarItem
+                  key={item.href}
+                  item={item}
+                  isCollapsed={!isMobile && isCollapsed}
+                  isMobile={isMobile}
+                  pathname={currentPathname}
+                  navigateTo={navigateTo}
+                  setIsMobileOpen={setIsMobileOpen}
+                  // Pass sidebarColors or specific needed colors
+                  sidebarColors={sidebarColors}
+                />
               ))}
             </div>
           </div>
 
           {/* Tools Section */}
           <div className="px-2 mt-6">
-            <SectionHeader title="Tools" isCollapsed={!isMobile && isCollapsed} />
+            <MemoizedSectionHeader
+              title="Tools"
+              isCollapsed={!isMobile && isCollapsed}
+              isMobile={isMobile}
+              textMutedColor={sidebarColors.textMuted}
+            />
             <div className="space-y-1">
               {toolsItems.map((item) => (
-                <SidebarItem key={item.href} item={item} isCollapsed={!isMobile && isCollapsed} />
+                <MemoizedSidebarItem
+                  key={item.href}
+                  item={item}
+                  isCollapsed={!isMobile && isCollapsed}
+                  isMobile={isMobile}
+                  pathname={currentPathname}
+                  navigateTo={navigateTo}
+                  setIsMobileOpen={setIsMobileOpen}
+                  sidebarColors={sidebarColors}
+                />
               ))}
             </div>
           </div>
 
           {/* Account Section */}
           <div className="px-2 mt-6">
-            <SectionHeader title="Account" isCollapsed={!isMobile && isCollapsed} />
+            <MemoizedSectionHeader
+              title="Account"
+              isCollapsed={!isMobile && isCollapsed}
+              isMobile={isMobile}
+              textMutedColor={sidebarColors.textMuted}
+            />
             <div className="space-y-1">
               {accountItems.map((item) => (
-                <SidebarItem key={item.href} item={item} isCollapsed={!isMobile && isCollapsed} />
+                <MemoizedSidebarItem
+                  key={item.href}
+                  item={item}
+                  isCollapsed={!isMobile && isCollapsed}
+                  isMobile={isMobile}
+                  pathname={currentPathname}
+                  navigateTo={navigateTo}
+                  setIsMobileOpen={setIsMobileOpen}
+                  sidebarColors={sidebarColors}
+                />
               ))}
             </div>
           </div>
@@ -707,3 +778,5 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     </div>
   )
 }
+
+export const SidebarLayout = memo(SidebarLayoutComponent)
