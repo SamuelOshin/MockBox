@@ -1,0 +1,14 @@
+name: Check DB Status
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs once daily at 02:00 UTC
+  workflow_dispatch:    # Allows manual trigger
+
+jobs:
+  ping-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl MockBox endpoint to keep DB active
+        run: |
+          curl -sSL -o /dev/null -w "%{http_code}\n" "https://mockbox-yspt.onrender.com/api/v1/mocks/templates?page=1&limit=20"
